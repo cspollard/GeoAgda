@@ -3,13 +3,14 @@
 module GeoAgda.Rendering.SVG.Coordinates where
 
 open import Level using (0ℓ)
-open import Data.Bool.Base using (Bool; true; false)
+open import Data.Bool.Base using (Bool; true; false; if_then_else_)
 open import Data.Char.Base using (Char)
 open import Data.String.Base as String using (String; toList; fromList)
-open import Data.Nat.Base using (ℕ; zero; suc)
-open import Data.Integer.Base using (ℤ; +_; -[1+_])
+open import Data.Nat.Base as ℕ using (ℕ; zero; suc; _*_; _/_; _%_) renaming (_+_ to _+ℕ_)
+import Data.Nat.Show as NatShow
+open import Data.Integer.Base as ℤ using (ℤ; +_; -[1+_]; 0ℤ; _-_; ∣_∣)
 open import Data.Sign.Base using (Sign; +; -)
-open import Data.Fin.Base using (Fin)
+open import Data.Fin.Base as Fin using (Fin)
 open import Data.List.Base as List using (List; []; _∷_; _++_; concat; map; intersperse)
 open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
 open import Data.Maybe.Base using (Maybe; just; nothing)
@@ -18,6 +19,7 @@ open import Function.Base using (_∘_; _$_)
 open import GeoAgda.Data.JSON.AST using (JSONNumber; jsonNumber)
 open import GeoAgda.Data.JSON.Print using (printNumber)
 open import GeoAgda.Model.GeoJSON.Types using (Position; pos; BBox; bbox)
+open import GeoAgda.Parsing.Invertible.Number using (signNatToℤ)
 
 ------------------------------------------------------------------------
 -- Number Formatting and Sign Manipulation
@@ -97,7 +99,7 @@ formatMultiPolygonD proj polys =
   fromList (concat (intersperse (' ' ∷ []) (map (toList ∘ formatPolygonD proj) polys)))
 
 ------------------------------------------------------------------------
--- ViewBox Formatting
+-- ViewBox Formatting & Dimension Calculations
 ------------------------------------------------------------------------
 
 -- Format standard SVG viewBox attribute "minX minY width height"
@@ -109,11 +111,41 @@ formatViewBox minX minY w h =
 defaultWorldViewBox : String
 defaultWorldViewBox = formatViewBox "-180" "-90" "360" "180"
 
+-- Convert JSONNumber to scaled integer (scaling fraction by factor of 10000)
+scaleFraction : List (Fin 10) → ℕ
+scaleFraction []                       = 0
+scaleFraction (d₁ ∷ [])                 = Fin.toℕ d₁ * 1000
+scaleFraction (d₁ ∷ d₂ ∷ [])             = (Fin.toℕ d₁ * 1000) +ℕ (Fin.toℕ d₂ * 100)
+scaleFraction (d₁ ∷ d₂ ∷ d₃ ∷ [])         = (Fin.toℕ d₁ * 1000) +ℕ (Fin.toℕ d₂ * 100) +ℕ (Fin.toℕ d₃ * 10)
+scaleFraction (d₁ ∷ d₂ ∷ d₃ ∷ d₄ ∷ _)     = (Fin.toℕ d₁ * 1000) +ℕ (Fin.toℕ d₂ * 100) +ℕ (Fin.toℕ d₃ * 10) +ℕ Fin.toℕ d₄
+
+jsonNumberToScaledℤ : JSONNumber → ℤ
+jsonNumberToScaledℤ (jsonNumber sign integral fraction _) =
+  signNatToℤ sign ((integral * 10000) +ℕ scaleFraction fraction)
+
+formatScaledDiff : ℕ → String
+formatScaledDiff diffℕ =
+  let intPart = diffℕ / 10000
+      fracPart = (diffℕ % 10000) / 100
+  in case fracPart of λ where
+       zero    → NatShow.show intPart
+       (suc _) → String._++_ (NatShow.show intPart) (String._++_ "." (NatShow.show fracPart))
+  where
+    case_of_ : ∀ {A B : Set} → A → (A → B) → B
+    case x of f = f x
+
+computePositiveDiff : JSONNumber → JSONNumber → String
+computePositiveDiff n₁ n₂ =
+  let v₁ = jsonNumberToScaledℤ n₁
+      v₂ = jsonNumberToScaledℤ n₂
+      diffℤ = v₂ ℤ.- v₁
+  in formatScaledDiff (ℤ.∣ diffℤ ∣)
+
 -- Format viewBox from a GeoJSON BBox under equirectangular projection
 viewBoxFromBBox : BBox → String
 viewBoxFromBBox (bbox minLon minLat maxLon maxLat) =
   formatViewBox
     (renderJSONNumber minLon)
     (renderJSONNumber (negateJSONNumber maxLat))
-    (renderJSONNumber maxLon)
-    (renderJSONNumber (negateJSONNumber minLat))
+    (computePositiveDiff minLon maxLon)
+    (computePositiveDiff minLat maxLat)

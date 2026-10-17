@@ -37,7 +37,7 @@ defaultLineStyle : SVGStyle
 defaultLineStyle = svgStyle (just "none") (just "#377eb8") (just "2") nothing "3"
 
 defaultPolygonStyle : SVGStyle
-defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "1") (just "0.8") "3"
+defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "0.05") (just "0.8") "3"
 
 styleToAttrs : SVGStyle → Attributes
 styleToAttrs (svgStyle f s sw op _) =
@@ -93,7 +93,7 @@ renderFeature proj s (feature (just fid) geom _) =
 renderFeatureCollection : Projection → SVGStyle → String → FeatureCollection → XMLDoc
 renderFeatureCollection proj s vBox (featureCollection features _) =
   svg
-    (("viewBox" , vBox) ∷ ("width" , "100%") ∷ ("height" , "100%") ∷ [])
+    (("viewBox" , vBox) ∷ ("width" , "800") ∷ ("height" , "400") ∷ [])
     (map (renderFeature proj s) features)
 
 -- Convenience top-level renderer using default equirectangular projection
