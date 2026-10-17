@@ -6,7 +6,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 
 ## Progress Overview
 
-- [ ] **Milestone 1: Container & Free Monad Formulations (JSON & XML/SVG ASTs)**
+- [x] **Milestone 1: Container & Free Monad Formulations (JSON & XML/SVG ASTs)**
 - [ ] **Milestone 2: Invertible Parsing Framework & Lexical Combinators**
 - [ ] **Milestone 3: Structural JSON Parser & LeftInverse Soundness**
 - [ ] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
@@ -20,29 +20,30 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 ### Milestone 1: Container & Free Monad Formulations (JSON & XML/SVG ASTs)
 Establish the core algebraic foundation modeling hierarchical document ASTs as free monads over signatures.
 
-- [ ] **1.1 Workspace & Library Structure Setup**
+- [x] **1.1 Workspace & Library Structure Setup**
   - [x] Configure `GeoAgda.agda-lib` linking `standard-library` and `agda-categories`.
   - [x] Establish `.agents/rules/guidelines.md` for hole-driven development and container conventions.
-  - [ ] Initialize `src/GeoAgda/` directory structure with base library index `src/GeoAgda.agda`.
-- [ ] **1.2 JSON Container Definition (`GeoAgda.Data.JSON.AST`)**
-  - [ ] Define `JSONShape` specifying the polynomial functor shapes:
+  - [x] Initialize `src/GeoAgda/` directory structure with base library index `src/GeoAgda.agda`.
+- [x] **1.2 JSON Container Definition (`GeoAgda.Data.JSON.AST`)**
+  - [x] Define `JSONShape` specifying the polynomial functor shapes:
     - Null, Boolean, Number (integral / rational representation), String literals.
     - Array node of length $n$ (`Fin n` positions).
     - Object node with field keys (`Fin n` positions indexed by key labels).
-  - [ ] Define `JSONPosition : JSONShape → Set` capturing arity and branching for each shape.
-  - [ ] Assemble `JSONContainer : Container 0ℓ 0ℓ`.
-  - [ ] Define `JSON : Set → Set` as `JSONContainer ⋆ X` using `Data.Container.FreeMonad`.
-  - [ ] Specialize `JSONValue = JSON ⊤` for standard closed JSON terms.
-- [ ] **1.3 JSON Catamorphisms & Serialization (`GeoAgda.Data.JSON.Print`)**
-  - [ ] Implement `foldJSON` via `Data.Container.FreeMonad.foldr`.
-  - [ ] Define `printJSON : JSONValue → List Char` as an algebra over `JSONContainer`.
-- [ ] **1.4 XML / SVG Container Definition (`GeoAgda.Data.XML.AST`)**
-  - [ ] Define `XMLShape` modeling text nodes, element tags, attributes (`List (String × String)`), and child arity $n$.
-  - [ ] Define `XMLPosition : XMLShape → Set` indexing child sub-elements.
-  - [ ] Form `XMLContainer : Container 0ℓ 0ℓ` and `XML = XMLContainer ⋆ X`.
-  - [ ] Define SVG element constructors (`svg`, `g`, `path`, `circle`, `polygon`, `polyline`, `rect`) as smart constructors over `XML ⊤`.
-- [ ] **1.5 XML / SVG Pretty Printing (`GeoAgda.Data.XML.Print`)**
-  - [ ] Define `printXML : XML ⊤ → List Char` using free monad catamorphism.
+  - [x] Define `JSONPosition : JSONShape → Set` capturing arity and branching for each shape.
+  - [x] Assemble `JSONContainer : Container 0ℓ 0ℓ`.
+  - [x] Define `JSON : Set → Set` as `JSONContainer ⋆ X` using `Data.Container.FreeMonad`.
+  - [x] Specialize `JSONValue = JSON ⊤` for standard closed JSON terms.
+- [x] **1.3 JSON Catamorphisms & Serialization (`GeoAgda.Data.JSON.Print`)**
+  - [x] Implement `foldJSON` via `Data.Container.FreeMonad.foldr`.
+  - [x] Define `printJSON : JSONValue → List Char` as an algebra over `JSONContainer`.
+- [x] **1.4 XML / SVG Container Definition (`GeoAgda.Data.XML.AST`)**
+  - [x] Define `XMLShape` modeling text nodes, element tags, attributes (`List (String × String)`), and child arity $n$.
+  - [x] Define `XMLPosition : XMLShape → Set` indexing child sub-elements.
+  - [x] Form `XMLContainer : Container 0ℓ 0ℓ` and `XML = XMLContainer ⋆ X`.
+  - [x] Define SVG element constructors (`svg`, `g`, `path`, `circle`, `polygon`, `polyline`, `rect`) as smart constructors over `XML ⊤`.
+- [x] **1.5 XML / SVG Pretty Printing (`GeoAgda.Data.XML.Print`)**
+  - [x] Define `printXML : XML ⊤ → List Char` using free monad catamorphism.
+
 
 ---
 
