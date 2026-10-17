@@ -35,6 +35,17 @@ data Geometry : Set where
   multiPolygonG       : List (List (List Position)) → Geometry
   geometryCollectionG : List Geometry → Geometry
 
+------------------------------------------------------------------------
+-- GeoJSON Bounding Box
+------------------------------------------------------------------------
+
+record BBox : Set where
+  constructor bbox
+  field
+    minLon : JSONNumber
+    minLat : JSONNumber
+    maxLon : JSONNumber
+    maxLat : JSONNumber
 
 ------------------------------------------------------------------------
 -- GeoJSON Properties, Features, and FeatureCollections
@@ -54,4 +65,5 @@ record Feature : Set where
 record FeatureCollection : Set where
   constructor featureCollection
   field
-    features : List Feature
+    features    : List Feature
+    boundingBox : Maybe BBox

@@ -1,6 +1,11 @@
 # Agda interface files and build artifacts
 *.agdai
 _build/
+bin/MAlonzo/
+bin/*.o
+bin/*.hi
+bin/*.svg
+bin/Main
 
 # macOS system files
 .DS_Store

@@ -73,29 +73,32 @@ mutual
     path (formatMultiPolygonD proj polys) (("fill-rule" , "evenodd") ∷ styleToAttrs s)
 
   renderGeometry proj s (geometryCollectionG geoms) =
-    g [] (map (renderGeometry proj s) geoms)
+    g [] (renderGeometryList proj s geoms)
+
+  renderGeometryList : Projection → SVGStyle → List Geometry → List XMLDoc
+  renderGeometryList proj s []             = []
+  renderGeometryList proj s (geom ∷ geoms) =
+    renderGeometry proj s geom ∷ renderGeometryList proj s geoms
 
 ------------------------------------------------------------------------
 -- Feature & FeatureCollection Rendering
 ------------------------------------------------------------------------
 
 renderFeature : Projection → SVGStyle → Feature → XMLDoc
-renderFeature proj s (feat nothing _ _) =
-  g [] []
-renderFeature proj s (feat (just geom) _ nothing) =
+renderFeature proj s (feature nothing geom _) =
   renderGeometry proj s geom
-renderFeature proj s (feat (just geom) _ (just fid)) =
+renderFeature proj s (feature (just fid) geom _) =
   g (("id" , fid) ∷ []) (renderGeometry proj s geom ∷ [])
 
 renderFeatureCollection : Projection → SVGStyle → String → FeatureCollection → XMLDoc
-renderFeatureCollection proj s vBox (featCol features _) =
+renderFeatureCollection proj s vBox (featureCollection features _) =
   svg
     (("viewBox" , vBox) ∷ ("width" , "100%") ∷ ("height" , "100%") ∷ [])
     (map (renderFeature proj s) features)
 
 -- Convenience top-level renderer using default equirectangular projection
 renderMapSVG : SVGStyle → FeatureCollection → XMLDoc
-renderMapSVG s fc@(featCol _ (just bb)) =
+renderMapSVG s fc@(featureCollection _ (just bb)) =
   renderFeatureCollection equirectangular s (viewBoxFromBBox bb) fc
-renderMapSVG s fc@(featCol _ nothing) =
+renderMapSVG s fc@(featureCollection _ nothing) =
   renderFeatureCollection equirectangular s defaultWorldViewBox fc

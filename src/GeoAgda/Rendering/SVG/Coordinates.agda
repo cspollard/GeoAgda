@@ -5,17 +5,17 @@ module GeoAgda.Rendering.SVG.Coordinates where
 open import Level using (0ℓ)
 open import Data.Bool.Base using (Bool; true; false)
 open import Data.Char.Base using (Char)
-open import Data.String.Base as String using (String; toList; fromList; _++_)
+open import Data.String.Base as String using (String; toList; fromList)
 open import Data.Nat.Base using (ℕ; zero; suc)
 open import Data.Integer.Base using (ℤ; +_; -[1+_])
 open import Data.Sign.Base using (Sign; +; -)
 open import Data.Fin.Base using (Fin)
-open import Data.List.Base as List using (List; []; _∷_; concat; map; intersperse)
+open import Data.List.Base as List using (List; []; _∷_; _++_; concat; map; intersperse)
 open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
 open import Data.Maybe.Base using (Maybe; just; nothing)
 open import Function.Base using (_∘_; _$_)
 
-open import GeoAgda.Data.JSON.AST using (JSONNumber; jsonNum)
+open import GeoAgda.Data.JSON.AST using (JSONNumber; jsonNumber)
 open import GeoAgda.Data.JSON.Print using (printNumber)
 open import GeoAgda.Model.GeoJSON.Types using (Position; pos; BBox; bbox)
 
@@ -28,8 +28,8 @@ oppositeSign + = -
 oppositeSign - = +
 
 negateJSONNumber : JSONNumber → JSONNumber
-negateJSONNumber (jsonNum sign integral fraction exponent) =
-  jsonNum (oppositeSign sign) integral fraction exponent
+negateJSONNumber (jsonNumber sign integral fraction exponent) =
+  jsonNumber (oppositeSign sign) integral fraction exponent
 
 renderJSONNumber : JSONNumber → String
 renderJSONNumber = fromList ∘ printNumber
@@ -51,7 +51,7 @@ Projection = Position → ProjectedPoint
 -- Longitude maps directly to x; Latitude is inverted (y = -lat)
 -- because SVG y-coordinates increase downwards.
 equirectangular : Projection
-equirectangular (pos lon lat _) =
+equirectangular (pos lon lat) =
   projPt (renderJSONNumber lon) (renderJSONNumber (negateJSONNumber lat))
 
 ------------------------------------------------------------------------
@@ -102,7 +102,8 @@ formatMultiPolygonD proj polys =
 
 -- Format standard SVG viewBox attribute "minX minY width height"
 formatViewBox : (minX minY width height : String) → String
-formatViewBox minX minY w h = minX ++ " " ++ minY ++ " " ++ w ++ " " ++ h
+formatViewBox minX minY w h =
+  String._++_ minX (String._++_ " " (String._++_ minY (String._++_ " " (String._++_ w (String._++_ " " h)))))
 
 -- Default world viewBox spanning -180 to 180 lon and -90 to 90 lat
 defaultWorldViewBox : String

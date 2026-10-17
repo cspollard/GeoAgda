@@ -10,7 +10,7 @@ open import Data.Sign.Base using (+; -)
 open import Data.Maybe.Base using (just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
-open import GeoAgda.Data.JSON.AST using (jsonNum)
+open import GeoAgda.Data.JSON.AST using (jsonNumber)
 open import GeoAgda.Data.XML.AST using (XMLDoc)
 open import GeoAgda.Data.XML.Print using (renderXML)
 open import GeoAgda.Model.GeoJSON.Types
@@ -23,11 +23,11 @@ open import GeoAgda.Rendering.SVG.Render
 
 -- London: Lon -0.12, Lat 51.5
 ptLondon : Position
-ptLondon = pos (jsonNum - 0 (1 ∷ 2 ∷ []) (+ 0)) (jsonNum + 51 (5 ∷ []) (+ 0)) nothing
+ptLondon = pos (jsonNumber - 0 (1 ∷ 2 ∷ []) (+ 0)) (jsonNumber + 51 (5 ∷ []) (+ 0))
 
 -- Paris: Lon 2.35, Lat 48.85
 ptParis : Position
-ptParis = pos (jsonNum + 2 (3 ∷ 5 ∷ []) (+ 0)) (jsonNum + 48 (8 ∷ 5 ∷ []) (+ 0)) nothing
+ptParis = pos (jsonNumber + 2 (3 ∷ 5 ∷ []) (+ 0)) (jsonNumber + 48 (8 ∷ 5 ∷ []) (+ 0))
 
 testGeomPoint : Geometry
 testGeomPoint = pointG ptLondon
@@ -39,10 +39,10 @@ testGeomPoly : Geometry
 testGeomPoly = polygonG ((ptLondon ∷ ptParis ∷ ptLondon ∷ []) ∷ [])
 
 testFeaturePoint : Feature
-testFeaturePoint = feat (just testGeomPoint) [] (just "london-pt")
+testFeaturePoint = feature (just "london-pt") testGeomPoint []
 
 testFeatureCollection : FeatureCollection
-testFeatureCollection = featCol (testFeaturePoint ∷ feat (just testGeomLine) [] nothing ∷ []) nothing
+testFeatureCollection = featureCollection (testFeaturePoint ∷ feature nothing testGeomLine [] ∷ []) nothing
 
 ------------------------------------------------------------------------
 -- Rendering Tests

@@ -3,14 +3,13 @@
 module GeoAgda.Model.GeoJSON.Extraction where
 
 open import Level using (0ℓ)
+open import Data.Bool.Base using (Bool; true; false; if_then_else_)
 open import Data.String.Base as String using (String)
-open import Data.String.Properties using (_≟_)
+open import Data.String.Properties using (_==_)
 open import Data.List.Base as List using (List; []; _∷_; map)
 open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
-open import Data.Maybe.Base as Maybe using (Maybe; just; nothing)
+open import Data.Maybe.Base as Maybe using (Maybe; just; nothing; _>>=_)
 open import Function.Base using (_∘_; _$_)
-open import Relation.Nullary.Decidable using (yes; no)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda.Data.JSON.AST using (JSONValue; JSONNumber)
 open import GeoAgda.Data.JSON.Schema using (asArray; asObject; asString; asNumber; lookupField)
@@ -30,15 +29,13 @@ extractPosition v with asArray v
 ... | just (lonV ∷ latV ∷ []) = mkPos (asNumber lonV) (asNumber latV)
 ... | _                       = nothing
 
-
 -- Helper: Map extraction across a list, failing if any element fails
 mapM : ∀ {A B : Set} → (A → Maybe B) → List A → Maybe (List B)
 mapM _ []       = just []
-mapM f (x ∷ xs) with f x
-... | nothing  = nothing
-... | just y   with mapM f xs
-...   | nothing  = nothing
-...   | just ys  = just (y ∷ ys)
+mapM f (x ∷ xs) = do
+  y  ← f x
+  ys ← mapM f xs
+  just (y ∷ ys)
 
 -- Extract a line or ring of positions
 extractPositions : JSONValue → Maybe (List Position)
@@ -57,24 +54,17 @@ extractRings v with asArray v
 ------------------------------------------------------------------------
 
 extractGeometryFromObject : List (String × JSONValue) → Maybe Geometry
-extractGeometryFromObject kvs with lookupField "type" kvs | lookupField "coordinates" kvs
-... | just typeVal | just coordsVal with asString typeVal
-...   | nothing       = nothing
-...   | just typeName with typeName ≟ "Point"
-...     | yes _ with extractPosition coordsVal
-...       | just p  = just (pointG p)
-...       | nothing = nothing
-...     | no  _ with typeName ≟ "LineString"
-...       | yes _ with extractPositions coordsVal
-...         | just ps = just (lineStringG ps)
-...         | nothing = nothing
-...       | no  _ with typeName ≟ "Polygon"
-...         | yes _ with extractRings coordsVal
-...           | just rings = just (polygonG rings)
-...           | nothing    = nothing
-...         | no  _ = nothing
-
-extractGeometryFromObject _ = nothing
+extractGeometryFromObject kvs = do
+  typeVal   ← lookupField "type" kvs
+  coordsVal ← lookupField "coordinates" kvs
+  typeName  ← asString typeVal
+  if typeName == "Point"
+    then Maybe.map pointG (extractPosition coordsVal)
+    else (if typeName == "LineString"
+          then Maybe.map lineStringG (extractPositions coordsVal)
+          else (if typeName == "Polygon"
+                then Maybe.map polygonG (extractRings coordsVal)
+                else nothing))
 
 extractGeometry : JSONValue → Maybe Geometry
 extractGeometry v with asObject v
@@ -86,20 +76,18 @@ extractGeometry v with asObject v
 ------------------------------------------------------------------------
 
 extractFeatureFromObject : List (String × JSONValue) → Maybe Feature
-extractFeatureFromObject kvs with lookupField "type" kvs | lookupField "geometry" kvs
-... | just typeVal | just geomVal with asString typeVal
-...   | nothing       = nothing
-...   | just typeName with typeName ≟ "Feature"
-...     | no  _ = nothing
-...     | yes _ with extractGeometry geomVal
-...       | nothing   = nothing
-...       | just geom =
-          let idVal = lookupField "id" kvs >>= asString
-              props = lookupField "properties" kvs >>= asObject
-              finalProps = Maybe.fromMaybe [] props
-          in just (feature idVal geom finalProps)
-          where open import Data.Maybe.Base using (_>>=_)
-extractFeatureFromObject _ = nothing
+extractFeatureFromObject kvs = do
+  typeVal  ← lookupField "type" kvs
+  geomVal  ← lookupField "geometry" kvs
+  typeName ← asString typeVal
+  if typeName == "Feature"
+    then (do
+      geom ← extractGeometry geomVal
+      let idVal = lookupField "id" kvs >>= asString
+          props = lookupField "properties" kvs >>= asObject
+          finalProps = Maybe.fromMaybe [] props
+      just (feature idVal geom finalProps))
+    else nothing
 
 extractFeature : JSONValue → Maybe Feature
 extractFeature v with asObject v
@@ -110,18 +98,28 @@ extractFeature v with asObject v
 -- FeatureCollection Extraction
 ------------------------------------------------------------------------
 
+extractBBox : JSONValue → Maybe BBox
+extractBBox v with asArray v
+... | just (minLonV ∷ minLatV ∷ maxLonV ∷ maxLatV ∷ []) = do
+        minLon ← asNumber minLonV
+        minLat ← asNumber minLatV
+        maxLon ← asNumber maxLonV
+        maxLat ← asNumber maxLatV
+        just (bbox minLon minLat maxLon maxLat)
+... | _ = nothing
+
 extractFeatureCollectionFromObject : List (String × JSONValue) → Maybe FeatureCollection
-extractFeatureCollectionFromObject kvs with lookupField "type" kvs | lookupField "features" kvs
-... | just typeVal | just featuresVal with asString typeVal
-...   | nothing       = nothing
-...   | just typeName with typeName ≟ "FeatureCollection"
-...     | no  _ = nothing
-...     | yes _ with asArray featuresVal
-...       | nothing       = nothing
-...       | just featArr  with mapM extractFeature featArr
-...         | nothing     = nothing
-...         | just feats  = just (featureCollection feats)
-extractFeatureCollectionFromObject _ = nothing
+extractFeatureCollectionFromObject kvs = do
+  typeVal     ← lookupField "type" kvs
+  featuresVal ← lookupField "features" kvs
+  typeName    ← asString typeVal
+  if typeName == "FeatureCollection"
+    then (do
+      featArr ← asArray featuresVal
+      feats   ← mapM extractFeature featArr
+      let mbBBox = lookupField "bbox" kvs >>= extractBBox
+      just (featureCollection feats mbBBox))
+    else nothing
 
 extractFeatureCollection : JSONValue → Maybe FeatureCollection
 extractFeatureCollection v with asObject v

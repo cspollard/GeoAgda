@@ -1,5 +1,7 @@
 name: GeoAgda
-include: src
+include:
+  src
+  exe
 depend:
   standard-library
   agda-categories
