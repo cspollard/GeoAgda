@@ -51,20 +51,56 @@ validEncoding : (v : JSONValue) → parseJSON (printJSON v) ≡ just v → Valid
 validEncoding v eq = isValid v eq
 
 ------------------------------------------------------------------------
--- LeftInverse Formulation
+-- Total Parser & stdlib LeftInverse Implementation
 ------------------------------------------------------------------------
 
--- Formal LeftInverse bundle connecting JSONValue to its serialized form
+parseJSONTotal : List Char → JSONValue
+parseJSONTotal cs with parseJSON cs
+... | just v  = v
+... | nothing = null
+
+-- Retraction lemma generator from any parse-after-print round-trip proof
+jsonRetraction : ∀ (v : JSONValue) → parseJSON (printJSON v) ≡ just v → parseJSONTotal (printJSON v) ≡ v
+jsonRetraction v eq with parseJSON (printJSON v)
+... | just parsedVal with eq
+...   | refl = refl
+
+-- Inverseˡ property for parseJSONTotal after printJSON:
+-- With x = v, y = printJSON v (so cs ≡ printJSON v is refl), parseJSONTotal cs ≡ v
+jsonLeftInverseˡ : (∀ (v : JSONValue) → parseJSON (printJSON v) ≡ just v) →
+                   ∀ {v : JSONValue} {cs : List Char} → cs ≡ printJSON v → parseJSONTotal cs ≡ v
+jsonLeftInverseˡ prf refl = jsonRetraction _ (prf _)
+
+-- Build stdlib LeftInverse bundle from a global or domain roundtrip proof
+-- parseJSONTotal : List Char → JSONValue
+-- printJSON      : JSONValue → List Char
+jsonLeftInverseWith : (∀ (v : JSONValue) → parseJSON (printJSON v) ≡ just v) →
+                      (List Char ↩ JSONValue)
+jsonLeftInverseWith prf = mk↩ {to = parseJSONTotal} {from = printJSON} (jsonLeftInverseˡ prf)
+
+-- Formal LeftInverse bundle connecting JSONValue to its serialized form (backward compatibility)
 record JSONLeftInverse : Set where
   field
     printVal   : JSONValue → List Char
     parseVal   : List Char → Maybe JSONValue
     soundness  : ∀ (v : JSONValue) → parseVal (printVal v) ≡ just v
+    stdlibInv  : (∀ (v : JSONValue) → parseVal (printVal v) ≡ just v) → (List Char ↩ JSONValue)
 
 jsonInversion : (∀ (v : JSONValue) → parseJSON (printJSON v) ≡ just v) → JSONLeftInverse
 jsonInversion prf = record
   { printVal  = printJSON
   ; parseVal  = parseJSON
   ; soundness = prf
+  ; stdlibInv = jsonLeftInverseWith
   }
+
+-- Concrete LeftInverse retractions for verified JSON primitives
+nullRetraction : parseJSONTotal (printJSON null) ≡ null
+nullRetraction = jsonRetraction null roundTripNull
+
+trueRetraction : parseJSONTotal (printJSON trueⱼ) ≡ trueⱼ
+trueRetraction = jsonRetraction trueⱼ roundTripTrue
+
+falseRetraction : parseJSONTotal (printJSON falseⱼ) ≡ falseⱼ
+falseRetraction = jsonRetraction falseⱼ roundTripFalse
 

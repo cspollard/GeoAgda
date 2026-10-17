@@ -4,8 +4,9 @@ module GeoAgda.Tests.Milestone5 where
 
 open import Level using (0ℓ)
 open import Data.List.Base using (List; []; _∷_)
-open import Data.String.Base as String using (String; _==_)
-open import Data.Integer.Base using (+_; -[1+_])
+open import Data.String.Base as String using (String)
+open import Data.String.Properties using (_==_)
+open import Data.Integer.Base using (ℤ; +_; -[1+_])
 open import Data.Sign.Base using (+; -)
 open import Data.Maybe.Base using (just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
@@ -23,11 +24,11 @@ open import GeoAgda.Rendering.SVG.Render
 
 -- London: Lon -0.12, Lat 51.5
 ptLondon : Position
-ptLondon = pos (jsonNumber - 0 (1 ∷ 2 ∷ []) (+ 0)) (jsonNumber + 51 (5 ∷ []) (+ 0))
+ptLondon = pos (jsonNumber - 0 (1 ∷ 2 ∷ []) (+_ 0)) (jsonNumber + 51 (5 ∷ []) (+_ 0))
 
 -- Paris: Lon 2.35, Lat 48.85
 ptParis : Position
-ptParis = pos (jsonNumber + 2 (3 ∷ 5 ∷ []) (+ 0)) (jsonNumber + 48 (8 ∷ 5 ∷ []) (+ 0))
+ptParis = pos (jsonNumber + 2 (3 ∷ 5 ∷ []) (+_ 0)) (jsonNumber + 48 (8 ∷ 5 ∷ []) (+_ 0))
 
 testGeomPoint : Geometry
 testGeomPoint = pointG ptLondon
@@ -78,7 +79,6 @@ renderedMapStr : String
 renderedMapStr = renderXML renderedMapDoc
 
 -- Non-empty output sanity check
-_ : String.length renderedMapStr ≢0
-_ = λ ()
-  where
-    open import Data.Nat.Base using (_≢0_)
+open import Data.Nat.Base using (NonZero)
+_ : NonZero (String.length renderedMapStr)
+_ = _

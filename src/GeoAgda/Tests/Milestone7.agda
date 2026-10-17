@@ -74,3 +74,32 @@ renderedMap = renderMapSVG defaultPolygonStyle testFeatureCollection
 
 testMapRoundTrip : parseXMLChars (printXML renderedMap) ≡ just renderedMap
 testMapRoundTrip = refl
+
+------------------------------------------------------------------------
+-- 3. Standard Library LeftInverse Bundle Verification
+------------------------------------------------------------------------
+
+-- Verify XML retraction through parseXMLTotal
+testXMLRetraction : parseXMLTotal (printXML renderedMap) ≡ renderedMap
+testXMLRetraction = xmlRetraction renderedMap testMapRoundTrip
+
+-- Verify JSON retraction through parseJSONTotal
+testJSONRetraction : parseJSONTotal (printJSON testObjVal) ≡ testObjVal
+testJSONRetraction = jsonRetraction testObjVal testObjRoundTrip
+
+-- Verify base value LeftInverse instances from XML Soundness
+_ : circleRetraction ≡ refl
+_ = refl
+
+_ : pathRetraction ≡ refl
+_ = refl
+
+-- Verify base value LeftInverse instances from JSON Soundness
+_ : nullRetraction ≡ refl
+_ = refl
+
+_ : trueRetraction ≡ refl
+_ = refl
+
+_ : falseRetraction ≡ refl
+_ = refl

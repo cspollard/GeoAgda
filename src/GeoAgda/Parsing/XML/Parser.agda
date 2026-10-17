@@ -6,7 +6,8 @@ open import Level using (0ℓ)
 open import Data.Bool.Base using (Bool; true; false; if_then_else_)
 open import Data.Char.Base using (Char)
 open import Data.Char.Properties using (_≟_)
-open import Data.String.Base as String using (String; toList; fromList; _==_)
+open import Data.String.Base as String using (String; toList; fromList)
+open import Data.String.Properties using (_==_)
 open import Data.Nat.Base using (ℕ; zero; suc)
 open import Data.List.Base as List using (List; []; _∷_; _++_; reverse; length)
 open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
@@ -16,7 +17,7 @@ open import Function.Base using (_∘_; _$_)
 open import Relation.Nullary.Decidable using (yes; no)
 
 open import GeoAgda.Data.XML.AST
-open import GeoAgda.Parsing.Invertible.Char using (isWhitespace)
+open import GeoAgda.Parsing.JSON.Lexer using (isWhitespace)
 
 ------------------------------------------------------------------------
 -- Whitespace & Character Helpers
@@ -92,49 +93,54 @@ parseAttributes cs = parseAttributesLoop (length cs) cs
 -- Recursive XML Tree Parser
 ------------------------------------------------------------------------
 
+case_of_ : ∀ {A B : Set} → A → (A → B) → B
+case x of f = f x
+
 mutual
   parseChildren : ℕ → String → List Char → Maybe (List XMLDoc × List Char)
   parseChildren zero _ _ = nothing
   parseChildren (suc fuel) tag cs with stripLeadingWS cs
-  ... | ('<' ∷ '/' ∷ rest) with takeWhileTag rest
-    ... | (closeTagChars , rest2) with stripLeadingWS rest2
-      ... | ('>' ∷ rest3) =
-            if fromList closeTagChars == tag
-            then just ([] , rest3)
-            else nothing
-      ... | _ = nothing
-  ... | (c ∷ csRest) with parseElement fuel (c ∷ csRest)
-    ... | nothing = nothing
-    ... | just (child , rest2) with parseChildren fuel tag rest2
-      ... | nothing = nothing
-      ... | just (children , rest3) = just (child ∷ children , rest3)
+  ... | ('<' ∷ '/' ∷ rest) =
+        let (closeTagChars , rest2) = takeWhileTag rest
+        in case (stripLeadingWS rest2) of λ where
+             ('>' ∷ rest3) →
+               if fromList closeTagChars == tag
+               then just ([] , rest3)
+               else nothing
+             _ → nothing
+  ... | (c ∷ csRest) =
+        case (parseElement fuel (c ∷ csRest)) of λ where
+          nothing → nothing
+          (just (child , rest2)) →
+            case (parseChildren fuel tag rest2) of λ where
+              nothing → nothing
+              (just (children , rest3)) → just (child ∷ children , rest3)
   ... | [] = nothing
 
   parseElement : ℕ → List Char → Maybe (XMLDoc × List Char)
   parseElement zero _ = nothing
   parseElement (suc fuel) cs with stripLeadingWS cs
-  ... | ('<' ∷ rest) with takeWhileTag rest
-    ... | ([] , _) = nothing
-    ... | (tagChars , rest2) =
-          let tag = fromList tagChars
-              (attrs , rest3) = parseAttributes rest2
-          in case (stripLeadingWS rest3) of λ where
-               ('/' ∷ '>' ∷ rest4) →
-                 just (leafElement tag attrs , rest4)
-               ('>' ∷ rest4) →
-                 case (parseChildren fuel tag rest4) of λ where
-                   (just (children , rest5)) →
-                     just (elementList tag attrs children , rest5)
-                   nothing → nothing
-               _ → nothing
-  ... | (c ∷ csRest) with takeWhileTag (c ∷ csRest)
-    ... | ([] , _) = nothing
-    ... | (textChars , rest2) =
-          just (text (fromList (unescapeXMLChars textChars)) , rest2)
+  ... | ('<' ∷ rest) =
+        case (takeWhileTag rest) of λ where
+          ([] , _) → nothing
+          (tagChars , rest2) →
+            let tag = fromList tagChars
+                (attrs , rest3) = parseAttributes rest2
+            in case (stripLeadingWS rest3) of λ where
+                 ('/' ∷ '>' ∷ rest4) →
+                   just (leafElement tag attrs , rest4)
+                 ('>' ∷ rest4) →
+                   case (parseChildren fuel tag rest4) of λ where
+                     (just (children , rest5)) →
+                       just (elementList tag attrs children , rest5)
+                     nothing → nothing
+                 _ → nothing
+  ... | (c ∷ csRest) =
+        case (takeWhileTag (c ∷ csRest)) of λ where
+          ([] , _) → nothing
+          (textChars , rest2) →
+            just (text (fromList (unescapeXMLChars textChars)) , rest2)
   ... | [] = nothing
-  where
-    case_of_ : ∀ {A B : Set} → A → (A → B) → B
-    case x of f = f x
 
 ------------------------------------------------------------------------
 -- Top-Level XML Parser
@@ -147,9 +153,6 @@ parseXMLChars cs with parseElement (length cs) (stripLeadingWS cs)
         [] → just doc
         _  → nothing
 ... | nothing = nothing
-  where
-    case_of_ : ∀ {A B : Set} → A → (A → B) → B
-    case x of f = f x
 
 parseXML : String → Maybe XMLDoc
 parseXML = parseXMLChars ∘ toList

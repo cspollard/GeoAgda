@@ -11,6 +11,7 @@ open import Data.List.Base as List using (List; []; _∷_; map)
 open import Data.List.Relation.Unary.All as All using (All; []; _∷_)
 open import Data.Product.Base using (_×_; _,_; ∃; ∃₂; proj₁; proj₂)
 open import Data.Maybe.Base as Maybe using (Maybe; just; nothing)
+open import Data.Maybe.Properties using (just-injective)
 open import Data.Unit.Base using (⊤; tt)
 open import Data.Empty using (⊥; ⊥-elim)
 open import Data.Fin.Base using (Fin; zero; suc)
@@ -144,9 +145,9 @@ decTuple2 : ∀ {s₁ s₂} →
             ((v : JSONValue) → Dec (v ⊨ s₂)) →
             (v : JSONValue) → Dec (v ⊨ sTuple2 s₁ s₂)
 decTuple2 check₁ check₂ v with asArray v in eqArr
-... | nothing                      = no (λ where (evTuple2 eq _ _) → Maybe.just-injective eq)
+... | nothing                      = no (λ where (evTuple2 eq _ _) → contradiction eq (λ ()))
   where
-    open import Data.Maybe.Properties using (just-injective)
+    open import Relation.Nullary.Negation using (contradiction)
 ... | just []                      = no (λ where (evTuple2 eq _ _) → contradiction eq λ ())
   where
     open import Relation.Nullary.Negation using (contradiction)
