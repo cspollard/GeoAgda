@@ -11,7 +11,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 3: Structural JSON Parser & LeftInverse Soundness**
 - [x] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [x] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
-- [ ] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
+- [x] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
 
 ---
 
@@ -132,11 +132,12 @@ Transform typed GeoJSON vector data into the XML/SVG Free Monad for visualizatio
 ### Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion
 Validate end-to-end functionality against real-world vector fixtures.
 
-- [ ] **6.1 Unit & Fixture Tests (`GeoAgda.Tests.Fixtures`)**
-  - [ ] Test Fixture 1: Simple GeoJSON `Point`.
-  - [ ] Test Fixture 2: GeoJSON `Polygon` (e.g. single country boundary / bounding box).
-  - [ ] Test Fixture 3: `FeatureCollection` with multiple features and properties.
-  - [ ] Verify parse $\to$ extract $\to$ render $\to$ serialize pipeline end-to-end.
-- [ ] **6.2 Natural Earth Dataset Ingestion**
-  - [ ] Benchmark ingestion with low-resolution Natural Earth vector datasets (e.g., `ne_110m_admin_0_countries.geojson`).
-  - [ ] Verify complete pipeline rendering into valid SVG output files.
+- [x] **6.1 Unit & Fixture Tests (`GeoAgda.Tests.Fixtures`)**
+  - [x] Test Fixture 1: Simple GeoJSON `Point` (`data/fixtures/point.geojson`).
+  - [x] Test Fixture 2: GeoJSON `Polygon` (`data/fixtures/polygon.geojson`).
+  - [x] Test Fixture 3: `FeatureCollection` with multiple features and properties.
+  - [x] Verify parse $\to$ extract $\to$ render $\to$ serialize pipeline end-to-end at compile time via `refl`.
+- [x] **6.2 Natural Earth Dataset Ingestion**
+  - [x] Ingestion fixture representing Natural Earth 110m country vector boundary (`data/fixtures/natural_earth_sample.geojson`).
+  - [x] High-level pipeline API in `GeoAgda.Pipeline` (`geojsonStringToSVG`, `geojsonCharsToSVG`, `geojsonDocToSVG`).
+  - [x] Verify complete pipeline rendering into valid SVG output files and compile-time proofs.

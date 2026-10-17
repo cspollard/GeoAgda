@@ -29,3 +29,6 @@ open import GeoAgda.Model.GeoJSON.Extraction public
 -- SVG Map Rendering Pipeline
 open import GeoAgda.Rendering.SVG.Coordinates public
 open import GeoAgda.Rendering.SVG.Render public
+
+-- End-to-End Ingestion & Rendering Pipeline
+open import GeoAgda.Pipeline public
