@@ -42,6 +42,10 @@ This document establishes the architecture principles, design patterns, coding s
 - **Search Before Authoring:** Before introducing custom types, helper predicates, or arithmetic/relational lemmas, thoroughly search `agda-stdlib` and `agda-categories`.
 - **Reuse Standard Concepts:** Rely on standard equality (`Relation.Binary.PropositionalEquality`), decidability (`Relation.Nullary.Decidable`), products/sums (`Data.Product`, `Data.Sum`), lists/vectors (`Data.List`, `Data.Vec`), and function constructions (`Function.*`).
 
+### 1.6 Literature Review & Mathematical Grounding
+- **Always Check Literature Before Writing Code:** Before implementing non-trivial algorithms, verified parsers, domain models, or categorical structures, agents must search and review relevant computer science and mathematical literature (e.g., papers on invertible syntax descriptions, biparsers, type-directed parsing, semantic subtyping, container algebras, and constructive geometry).
+- **Leverage Established Foundations:** Utilize existing theoretical insights, formalization techniques, and published best practices rather than designing ad-hoc or unverified formulations from scratch. Ground definitions in proven mathematical paradigms (e.g., Martin-Löf universes for schemas, retraction pairs for parsing, free monads over polynomial functors for ASTs).
+
 ---
 
 ## 2. Directory Structure & Module Layout
