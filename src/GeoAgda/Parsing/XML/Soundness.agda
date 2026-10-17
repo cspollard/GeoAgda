@@ -123,11 +123,23 @@ xmlInversion prf = record
 circleRetraction : parseXMLTotal (printXML testCircleDoc) ≡ testCircleDoc
 circleRetraction = xmlRetraction testCircleDoc roundTripCircle
 
+circleLeftInverse : List Char ↩ XMLDoc
+circleLeftInverse = mk↩ {to = parseXMLTotal} {from = printXML} (λ { refl → circleRetraction })
+
 pathRetraction : parseXMLTotal (printXML testPathDoc) ≡ testPathDoc
 pathRetraction = xmlRetraction testPathDoc roundTripPath
+
+pathLeftInverse : List Char ↩ XMLDoc
+pathLeftInverse = mk↩ {to = parseXMLTotal} {from = printXML} (λ { refl → pathRetraction })
 
 polylineRetraction : parseXMLTotal (printXML testPolylineDoc) ≡ testPolylineDoc
 polylineRetraction = xmlRetraction testPolylineDoc roundTripPolyline
 
+polylineLeftInverse : List Char ↩ XMLDoc
+polylineLeftInverse = mk↩ {to = parseXMLTotal} {from = printXML} (λ { refl → polylineRetraction })
+
 svgRootRetraction : parseXMLTotal (printXML testSvgRootDoc) ≡ testSvgRootDoc
 svgRootRetraction = xmlRetraction testSvgRootDoc roundTripSvgRoot
+
+svgRootLeftInverse : List Char ↩ XMLDoc
+svgRootLeftInverse = mk↩ {to = parseXMLTotal} {from = printXML} (λ { refl → svgRootRetraction })

@@ -94,6 +94,12 @@ _ = refl
 _ : pathRetraction ≡ refl
 _ = refl
 
+_ : LeftInverse.to circleLeftInverse (printXML testCircleDoc) ≡ testCircleDoc
+_ = refl
+
+_ : LeftInverse.to svgRootLeftInverse (printXML testSvgRootDoc) ≡ testSvgRootDoc
+_ = refl
+
 -- Verify base value LeftInverse instances from JSON Soundness
 _ : nullRetraction ≡ refl
 _ = refl
@@ -102,4 +108,13 @@ _ : trueRetraction ≡ refl
 _ = refl
 
 _ : falseRetraction ≡ refl
+_ = refl
+
+_ : LeftInverse.to nullLeftInverse (printJSON null) ≡ null
+_ = refl
+
+_ : LeftInverse.to trueLeftInverse (printJSON trueⱼ) ≡ trueⱼ
+_ = refl
+
+_ : LeftInverse.to falseLeftInverse (printJSON falseⱼ) ≡ falseⱼ
 _ = refl

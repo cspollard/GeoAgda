@@ -146,25 +146,51 @@ Validate end-to-end functionality against real-world vector fixtures.
 
 ---
 
-### Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG
-Construct formal, mechanized left inverse proofs ($\text{parse} \circ \text{print} \equiv \text{just}$) for the full recursive free-monad ASTs of JSON, XML, and SVG.
+### Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG via Composition
+Construct formal, mechanized left inverse objects (`List Char ↩ XMLDoc` and `List Char ↩ JSONValue` from `Function.Bundles.LeftInverse`) using hierarchical, stage-by-stage composition over $\Sigma$-types and container inductive algebras.
 
-- [x] **7.1 Theoretical Foundations (Literature & Formal Framework)**
-  - [x] Grounded in Rendel & Ostermann (2010) (*Invertible Syntax Descriptions: Unifying Parsing and Pretty Printing*), Xie, Schrijvers & Hu (*Biparsers: Exact Printing for Data Synchronisation* in Agda), and Danielsson (*Total Parser Combinators*).
-  - [x] Formulate invertible parsing as an algebra over container free monads ($F^\star X$), demonstrating that when the polynomial functor $F$ admits an invertible signature algebra, the free monad $F^\star \top$ admits a canonical invertible printer/parser pair.
-  - [x] Model left inverses formally using `Function.Bundles.LeftInverse` (`_↩_`) from `agda-stdlib`.
-- [x] **7.2 Inductive Inversion for JSON (`GeoAgda.Parsing.JSON.InvertibleProof`)**
-  - [x] Structural round-trip properties for the polynomial container `JSONContainer ⋆ ⊤`.
-  - [x] Verification of compound structures: numbers, arrays, and canonical key-value objects under print and parse.
-  - [x] Package into `JSONLeftInverse` and verified compile-time round-trip theorems (`GeoAgda.Tests.Milestone7`).
-- [x] **7.3 Invertible Parsing for XML & SVG (`GeoAgda.Parsing.XML.Parser`, `GeoAgda.Parsing.XML.Soundness`)**
-  - [x] Invertible lexical and structural parser for `XMLDoc = XMLContainer ⋆ ⊤`:
-    - Opening tags `<tag attrs>`, closing tags `</tag>`, empty-element tags `<tag attrs />`.
-    - Attribute lists `key="value"` with proper XML entity escaping and unescaping.
-    - Text node content.
-  - [x] Establish `XMLLeftInverse` theorem:
-    $$\forall (doc : \text{XMLDoc}) \to \text{parseXML} (\text{printXML } doc) \equiv \text{just } doc$$
-  - [x] Specialization to SVG elements (circle, rect, path, polygon, polyline, root svg) and rendered map round-trip tests (`GeoAgda.Tests.Milestone7`).
+- [ ] **7.1 Theoretical Foundations & Literature Review**
+  - [ ] **Literature Grounding:**
+    - Rendel & Ostermann (2010), *Invertible Syntax Descriptions: Unifying Parsing and Pretty Printing*.
+    - Xie, Schrijvers, & Hu, *Biparsers: Exact Printing for Data Synchronisation* (mechanized in Agda).
+    - Danielsson (2010), *Total Parser Combinators*.
+    - Abbott, Altenkirch, & Ghani (2005), *Containers: Constructing strictly positive types*.
+    - Jansson & Jeuring (1997), *PolyP - a polytypic programming language extension*.
+  - [ ] **Mathematical Architectural Insights:**
+    - Rather than asserting global round-tripping directly on a recursive monolithic parser, every stage of lexing and parsing forms a local `LeftInverse` (or `Inverse` isomorphism).
+    - Composition is carried out categorically: if $A \hookleftarrow B$ and $B \hookleftarrow C$, their composite is $A \hookleftarrow C$ via `Function.Construct.Composition.leftInverse`.
+    - Pairs and sequential combinators map over dependent products via `Data.Product.Function.Dependent.Propositional.Σ-↩` or `Data.Product.Function.NonDependent.Propositional.×-↩`.
+    - Inductive AST terms $C \star \top$ are inverted by container catamorphism / induction (`Data.Container.FreeMonad.induction`), composing the node-level inversions.
+
+- [ ] **7.2 Primitive & Lexical Left Inverses**
+  - [ ] Character & Digit bundles: `Char ↩ Fin 10` and `List Char ↩ ℕ`.
+  - [ ] Escaping & String literal bundles: unescaping and delimiter matching as `List Char ↩ String`.
+  - [ ] Whitespace handling: canonical token spacing as a retraction pair between raw character streams and token lists `List Char ↩ List Token`.
+
+- [ ] **7.3 Combinators for Left Inverses over Sequences & $\Sigma$-types**
+  - [ ] Invertible sequence / list combinator: `(List Char ↩ A) → (List Char ↩ List A)` for delimited and separated elements (commas in JSON, attributes/children in XML).
+  - [ ] Invertible $\Sigma$-type combinator: `(A ↩ B) → (∀ {x} → C x ↩ D (to x)) → Σ A C ↩ Σ B D`.
+  - [ ] Invertible key-value mapping: `List Char ↩ (String × JSONValue)` and attribute pairs `List Char ↩ (String × String)`.
+
+- [ ] **7.4 Inductive Free Monad Left Inverse for JSON (`List Char ↩ JSONValue`)**
+  - [ ] Base cases: null, bool (`trueⱼ`, `falseⱼ`), number, string.
+  - [ ] Inductive steps: array elements and object fields via free monad induction over `JSONShape` and `JSONPosition`.
+  - [ ] Package into the final closed theorem:
+    $$\text{jsonLeftInverse} : \text{List Char} \hookleftarrow \text{JSONValue}$$
+    where `to = parseJSONTotal` and `from = printJSON` without premise hypotheses.
+
+- [ ] **7.5 Inductive Free Monad Left Inverse for XML & SVG (`List Char ↩ XMLDoc`)**
+  - [ ] Attribute list invertible parsing: `List Char ↩ Attributes`.
+  - [ ] Single tag and leaf element inverse: `List Char ↩ (Tag × Attributes)`.
+  - [ ] Recursive child element list inversion using container induction over `XMLShape` and `XMLPosition`.
+  - [ ] Package into the final closed theorem:
+    $$\text{xmlLeftInverse} : \text{List Char} \hookleftarrow \text{XMLDoc}$$
+    where `to = parseXMLTotal` and `from = printXML` without premise hypotheses.
+
+- [ ] **7.6 Full Verification & Regression Testing**
+  - [ ] Verify both `jsonLeftInverse` and `xmlLeftInverse` with 0 holes, 0 warnings, and 0 errors via the Agda MCP server (`agda_load_and_goals`).
+  - [ ] Retain compile-time sanity proofs asserting on the identity retraction on real fixtures in `GeoAgda.Tests.Milestone7`.
+  - [ ] Git commit all changes upon milestone completion.
 
 ---
 

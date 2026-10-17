@@ -98,9 +98,18 @@ jsonInversion prf = record
 nullRetraction : parseJSONTotal (printJSON null) ≡ null
 nullRetraction = jsonRetraction null roundTripNull
 
+nullLeftInverse : List Char ↩ JSONValue
+nullLeftInverse = mk↩ {to = parseJSONTotal} {from = printJSON} (λ { refl → nullRetraction })
+
 trueRetraction : parseJSONTotal (printJSON trueⱼ) ≡ trueⱼ
 trueRetraction = jsonRetraction trueⱼ roundTripTrue
 
+trueLeftInverse : List Char ↩ JSONValue
+trueLeftInverse = mk↩ {to = parseJSONTotal} {from = printJSON} (λ { refl → trueRetraction })
+
 falseRetraction : parseJSONTotal (printJSON falseⱼ) ≡ falseⱼ
 falseRetraction = jsonRetraction falseⱼ roundTripFalse
+
+falseLeftInverse : List Char ↩ JSONValue
+falseLeftInverse = mk↩ {to = parseJSONTotal} {from = printJSON} (λ { refl → falseRetraction })
 
