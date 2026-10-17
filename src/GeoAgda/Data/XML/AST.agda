@@ -1,4 +1,6 @@
-{-# OPTIONS --safe --cubical-compatible #-}
+{-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
+
+
 
 module GeoAgda.Data.XML.AST where
 

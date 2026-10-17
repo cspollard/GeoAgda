@@ -1,6 +1,8 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
 
+
+
 module GeoAgda.Data.JSON.AST where
 
 open import Level using (0ℓ)

@@ -1,4 +1,6 @@
-{-# OPTIONS --safe --cubical-compatible #-}
+{-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
+
+
 
 module GeoAgda.Data.JSON.Print where
 
@@ -68,9 +70,8 @@ printExponent (+_ zero) = []
 printExponent e         = 'e' ∷ toList (IntShow.show e)
 
 
-printSign : Sign → List Char
-printSign + = []
-printSign - = '-' ∷ []
+open import GeoAgda.Parsing.Invertible.Number using (printSign)
+
 
 printNumber : JSONNumber → List Char
 printNumber n =

@@ -7,7 +7,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 ## Progress Overview
 
 - [x] **Milestone 1: Container & Free Monad Formulations (JSON & XML/SVG ASTs)**
-- [ ] **Milestone 2: Invertible Parsing Framework & Lexical Combinators**
+- [x] **Milestone 2: Invertible Parsing Framework & Lexical Combinators**
 - [ ] **Milestone 3: Structural JSON Parser & LeftInverse Soundness**
 - [ ] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [ ] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
@@ -50,17 +50,18 @@ Establish the core algebraic foundation modeling hierarchical document ASTs as f
 ### Milestone 2: Invertible Parsing Framework & Lexical Combinators
 Develop verified invertible parsing primitives modeled as explicit left inverses from `agda-stdlib`.
 
-- [ ] **2.1 Invertible Parsing Primitives (`GeoAgda.Parsing.Invertible.Core`)**
-  - [ ] Define the `InvertibleParser` record encapsulating `parse : I → Maybe (O × I)` and `print : O → I`, paired with left-inverse proofs.
-  - [ ] Formulate parsing as `LeftInverse` (`Function.LeftInverse`) on successful prefixes.
-  - [ ] Implement identity, sequential composition (`_⨂_`), and alternative choice (`_⊕_`) with stdlib preservation lemmas.
-- [ ] **2.2 Character & Digit Inverses (`GeoAgda.Parsing.Invertible.Char`)**
-  - [ ] Character classification and predicate filters (`Char.IsDigit`, `Char.IsWhitespace`).
-  - [ ] Prove `Fin 10 ↔ DigitChar` bijection.
-- [ ] **2.3 Numeric Invertible Conversions (`GeoAgda.Parsing.Invertible.Number`)**
-  - [ ] Natural number parsing `List (Fin 10) ↔ ℕ` with base-10 positional arithmetic lemmas.
-  - [ ] Integer parsing `Sign × ℕ ↔ ℤ`.
-  - [ ] Fixed-point / decimal fraction parsing for geographic coordinates (latitude / longitude).
+- [x] **2.1 Invertible Parsing Primitives (`GeoAgda.Parsing.Invertible.Core`)**
+  - [x] Define the `InvertibleParser` record encapsulating `parse : I → Maybe (O × I)` and `print : O → I`, paired with left-inverse proofs.
+  - [x] Formulate parsing as `LeftInverse` (`Function.Bundles.LeftInverse`) on successful prefixes.
+  - [x] Implement identity, sequential composition (`_⨂_`), and alternative choice with stdlib preservation lemmas.
+- [x] **2.2 Character & Digit Inverses (`GeoAgda.Parsing.Invertible.Char`)**
+  - [x] Character classification and predicate filters (`Char.IsDigit`, `Char.IsWhitespace`).
+  - [x] Prove `Fin 10 ↔ DigitChar` bijection.
+- [x] **2.3 Numeric Invertible Conversions (`GeoAgda.Parsing.Invertible.Number`)**
+  - [x] Natural number parsing `List (Fin 10) ↔ ℕ` with base-10 positional arithmetic lemmas.
+  - [x] Integer parsing `Sign × ℕ ↔ ℤ`.
+  - [x] Fixed-point / decimal fraction parsing for geographic coordinates (latitude / longitude).
+
 
 ---
 
