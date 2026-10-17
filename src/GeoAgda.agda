@@ -21,10 +21,12 @@ open import GeoAgda.Parsing.JSON.Lexer public
 open import GeoAgda.Parsing.JSON.Parser public
 open import GeoAgda.Parsing.JSON.Soundness public
 
--- Schema Validation & GeoJSON Models
+-- Schema Validation, Conformance & Typed GeoJSON Models
 open import GeoAgda.Data.JSON.Schema public
+open import GeoAgda.Data.JSON.Conformance public
 open import GeoAgda.Model.GeoJSON.Types public
 open import GeoAgda.Model.GeoJSON.Extraction public
+open import GeoAgda.Model.GeoJSON.Conformance public
 
 -- SVG Map Rendering Pipeline
 open import GeoAgda.Rendering.SVG.Coordinates public

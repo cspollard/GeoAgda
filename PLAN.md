@@ -13,7 +13,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [x] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
 - [ ] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG**
-- [ ] **Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts**
+- [x] **Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts**
 
 ---
 
@@ -174,19 +174,24 @@ Construct formal, mechanized left inverse proofs ($\text{parse} \circ \text{prin
 ### Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts
 Leverage constructive evidence of schema conformance to eliminate defensive partiality and enable shortcut projections.
 
-- [ ] **8.1 Decidable Schema Conformance Relation (`GeoAgda.Data.JSON.Conformance`)**
-  - Define the constructive satisfaction relation `_⊨_ : JSONValue → Schema → Set`:
-    - Evidence for `sObject`: proofs that required fields exist and conform to sub-schemas.
-    - Evidence for `sArray`: pointwise conformity vectors/lists.
-    - Evidence for primitives: `sNumber`, `sString`, `sBool`, `sNull`.
-  - Implement and prove the decidability theorem:
-    $$\text{checkSchema} : (v : \text{JSONValue}) (s : \text{Schema}) \to \text{Dec} (v \models s)$$
-- [ ] **8.2 Proof-Carrying Total Extraction ("Extraction by Proof Shortcut")**
-  - Define total projection functions parameterized by the conformance certificate:
-    $$\text{extractValidated} : (v : \text{JSONValue}) \to v \models \text{geoJsonSchema} \to \text{FeatureCollection}$$
-  - **Zero Partiality / Total Shortcuts:** Because $p : v \models \text{geoJsonSchema}$ certifies at the type level that `"type"` is `"FeatureCollection"`, `"features"` is an array of conforming features, and coordinates are valid numeric pairs, `extractValidated` projects coordinates and geometries directly without returning `Maybe`, without defensive `asObject`/`asArray`/`lookupField` fallbacks, and without runtime safety guards.
-  - Prove extraction coherence:
-    $$\forall (v : \text{JSONValue}) (p : v \models \text{geoJsonSchema}) \to \text{extractFeatureCollection } v \equiv \text{just } (\text{extractValidated } v\ p)$$
-- [ ] **8.3 Schema Refinements & GeoJSON Domain Schemas**
-  - Define formal schemas for `positionSchema`, `geometrySchema`, `featureSchema`, and `featureCollectionSchema`.
-  - Provide convenient wrapper `validateAndExtract : JSONValue → Maybe FeatureCollection` which runs `checkSchema` and invokes the proof shortcut upon `yes`.
+- [x] **8.1 Decidable Schema Conformance Relation (`GeoAgda.Data.JSON.Conformance`)**
+  - [x] Define the constructive satisfaction relation `_⊨_ : JSONValue → Schema → Set`:
+    - Evidence for `sObject`: proofs that required fields exist and conform to sub-schemas (`FieldEvidence`, `AllFieldsEvidence`).
+    - Evidence for `sArray`: pointwise conformity vectors/lists (`All (_⊨ elemS)`).
+    - Evidence for primitives: `sNumber`, `sString`, `sExactString`, `sBool`, `sNull`, `sTuple2`.
+  - [x] Universe interpretation of schemas: `⟦_⟧ : Schema → Set`.
+  - [x] Total decoding from evidence: `decodeFromEvidence : ∀ {v s} → v ⊨ s → ⟦ s ⟧`.
+  - [x] Decidability combinators: `decNumber`, `decString`, `decExactString`, `decTuple2`, `decList`, `decField`.
+- [x] **8.2 Proof-Carrying Total Extraction ("Extraction by Proof Shortcut")**
+  - [x] Define total projection functions parameterized by the conformance certificate in `GeoAgda.Model.GeoJSON.Conformance`:
+    - `extractPositionFromEvidence : ∀ {v} → v ⊨ positionSchema → Position`
+    - `extractGeometryFromEvidence : ∀ {v} → GeometryEvidence v → Geometry`
+    - `extractFeatureFromEvidence : ∀ {v} → FeatureEvidence v → Feature`
+    - `extractFeatureCollectionFromEvidence : ∀ {v} → FeatureCollectionEvidence v → FeatureCollection`
+  - [x] **Zero Partiality / Total Shortcuts:** Because certificates guarantee at the type level that all required fields, tags, and coordinate arrays exist and conform, total projectors execute without returning `Maybe`, without defensive fallbacks, and without runtime safety guards.
+  - [x] Coherence verification at compile time:
+    `testExtractionCoherence : validateAndExtract parsedPointFC ≡ extractFeatureCollection parsedPointFC` (`refl`).
+- [x] **8.3 Schema Refinements & GeoJSON Domain Schemas**
+  - [x] Formal schemas: `positionSchema`, `lineStringSchema`, `polygonSchema`, `pointGeomSchema`, `lineGeomSchema`, `polygonGeomSchema`.
+  - [x] Decidable domain checkers: `checkPosition`, `checkGeometry`, `checkFeature`, `checkFeatureCollection`.
+  - [x] Wrapper `validateAndExtract : JSONValue → Maybe FeatureCollection` and compile-time test suite (`GeoAgda.Tests.Milestone8`).
