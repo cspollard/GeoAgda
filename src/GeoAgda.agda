@@ -16,10 +16,14 @@ open import GeoAgda.Parsing.Invertible.Char public
 open import GeoAgda.Parsing.Invertible.Number public
 open import GeoAgda.Parsing.Invertible.Combinators public
 
--- JSON Lexer and Parser
+-- JSON Lexer, Parser, and Invertible Soundness
 open import GeoAgda.Parsing.JSON.Lexer public
 open import GeoAgda.Parsing.JSON.Parser public
 open import GeoAgda.Parsing.JSON.Soundness public
+
+-- XML & SVG Lexer, Parser, and Invertible Soundness
+open import GeoAgda.Parsing.XML.Parser public
+open import GeoAgda.Parsing.XML.Soundness public
 
 -- Schema Validation, Conformance & Typed GeoJSON Models
 open import GeoAgda.Data.JSON.Schema public

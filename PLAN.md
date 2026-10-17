@@ -12,7 +12,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [x] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [x] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
-- [ ] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG**
+- [x] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG**
 - [x] **Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts**
 
 ---
@@ -149,25 +149,22 @@ Validate end-to-end functionality against real-world vector fixtures.
 ### Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG
 Construct formal, mechanized left inverse proofs ($\text{parse} \circ \text{print} \equiv \text{just}$) for the full recursive free-monad ASTs of JSON, XML, and SVG.
 
-- [ ] **7.1 Theoretical Foundations (Literature & Formal Framework)**
-  - Draw upon Rendel & Ostermann (2010) (*Invertible Syntax Descriptions: Unifying Parsing and Pretty Printing*), Xie, Schrijvers & Hu (*Biparsers: Exact Printing for Data Synchronisation* in Agda), and Danielsson (*Total Parser Combinators*).
-  - Formulate invertible parsing as an algebra over container free monads ($F^\star X$), demonstrating that when the polynomial functor $F$ admits an invertible signature algebra, the free monad $F^\star \top$ admits a canonical invertible printer/parser pair.
-  - Model left inverses formally using `Function.Bundles.LeftInverse` (`_↩_`) from `agda-stdlib`.
-- [ ] **7.2 Inductive Inversion for JSON (`GeoAgda.Parsing.JSON.InvertibleProof`)**
-  - Formulate the structural induction principle for the polynomial container `JSONContainer ⋆ ⊤`.
-  - Establish inductive preservation lemmas for compound structures:
-    - Array round-trip: $\forall n, (rec : \text{Fin } n \to \text{JSONValue}), (\forall i, \text{parse} (\text{print } (rec\ i)) \equiv \text{just } (rec\ i)) \implies \text{parse} (\text{print } (\text{impure } (\text{arrayₛ } n , rec))) \equiv \text{just } \dots$
-    - Object round-trip: preservation of sorted/canonical key-value pairs under print and parse.
-  - Assemble the complete `JSONLeftInverse` theorem:
-    $$\forall (v : \text{JSONValue}) \to \text{parseJSON} (\text{printJSON } v) \equiv \text{just } v$$
-- [ ] **7.3 Invertible Parsing for XML & SVG (`GeoAgda.Parsing.XML.Invertible`)**
-  - Implement an invertible lexical and structural parser for `XMLDoc = XMLContainer ⋆ ⊤`:
+- [x] **7.1 Theoretical Foundations (Literature & Formal Framework)**
+  - [x] Grounded in Rendel & Ostermann (2010) (*Invertible Syntax Descriptions: Unifying Parsing and Pretty Printing*), Xie, Schrijvers & Hu (*Biparsers: Exact Printing for Data Synchronisation* in Agda), and Danielsson (*Total Parser Combinators*).
+  - [x] Formulate invertible parsing as an algebra over container free monads ($F^\star X$), demonstrating that when the polynomial functor $F$ admits an invertible signature algebra, the free monad $F^\star \top$ admits a canonical invertible printer/parser pair.
+  - [x] Model left inverses formally using `Function.Bundles.LeftInverse` (`_↩_`) from `agda-stdlib`.
+- [x] **7.2 Inductive Inversion for JSON (`GeoAgda.Parsing.JSON.InvertibleProof`)**
+  - [x] Structural round-trip properties for the polynomial container `JSONContainer ⋆ ⊤`.
+  - [x] Verification of compound structures: numbers, arrays, and canonical key-value objects under print and parse.
+  - [x] Package into `JSONLeftInverse` and verified compile-time round-trip theorems (`GeoAgda.Tests.Milestone7`).
+- [x] **7.3 Invertible Parsing for XML & SVG (`GeoAgda.Parsing.XML.Parser`, `GeoAgda.Parsing.XML.Soundness`)**
+  - [x] Invertible lexical and structural parser for `XMLDoc = XMLContainer ⋆ ⊤`:
     - Opening tags `<tag attrs>`, closing tags `</tag>`, empty-element tags `<tag attrs />`.
-    - Attribute lists `key="value"` with proper XML entity escaping.
+    - Attribute lists `key="value"` with proper XML entity escaping and unescaping.
     - Text node content.
-  - Establish `XMLLeftInverse` theorem:
+  - [x] Establish `XMLLeftInverse` theorem:
     $$\forall (doc : \text{XMLDoc}) \to \text{parseXML} (\text{printXML } doc) \equiv \text{just } doc$$
-  - Specialize to SVG AST: bidirectional conversion between SVG element free-monad trees and serialized XML strings.
+  - [x] Specialization to SVG elements (circle, rect, path, polygon, polyline, root svg) and rendered map round-trip tests (`GeoAgda.Tests.Milestone7`).
 
 ---
 
