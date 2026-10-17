@@ -12,6 +12,8 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [x] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [x] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
+- [ ] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG**
+- [ ] **Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts**
 
 ---
 
@@ -141,3 +143,50 @@ Validate end-to-end functionality against real-world vector fixtures.
   - [x] Ingestion fixture representing Natural Earth 110m country vector boundary (`data/fixtures/natural_earth_sample.geojson`).
   - [x] High-level pipeline API in `GeoAgda.Pipeline` (`geojsonStringToSVG`, `geojsonCharsToSVG`, `geojsonDocToSVG`).
   - [x] Verify complete pipeline rendering into valid SVG output files and compile-time proofs.
+
+---
+
+### Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG
+Construct formal, mechanized left inverse proofs ($\text{parse} \circ \text{print} \equiv \text{just}$) for the full recursive free-monad ASTs of JSON, XML, and SVG.
+
+- [ ] **7.1 Theoretical Foundations (Literature & Formal Framework)**
+  - Draw upon Rendel & Ostermann (2010) (*Invertible Syntax Descriptions: Unifying Parsing and Pretty Printing*), Xie, Schrijvers & Hu (*Biparsers: Exact Printing for Data Synchronisation* in Agda), and Danielsson (*Total Parser Combinators*).
+  - Formulate invertible parsing as an algebra over container free monads ($F^\star X$), demonstrating that when the polynomial functor $F$ admits an invertible signature algebra, the free monad $F^\star \top$ admits a canonical invertible printer/parser pair.
+  - Model left inverses formally using `Function.Bundles.LeftInverse` (`_↩_`) from `agda-stdlib`.
+- [ ] **7.2 Inductive Inversion for JSON (`GeoAgda.Parsing.JSON.InvertibleProof`)**
+  - Formulate the structural induction principle for the polynomial container `JSONContainer ⋆ ⊤`.
+  - Establish inductive preservation lemmas for compound structures:
+    - Array round-trip: $\forall n, (rec : \text{Fin } n \to \text{JSONValue}), (\forall i, \text{parse} (\text{print } (rec\ i)) \equiv \text{just } (rec\ i)) \implies \text{parse} (\text{print } (\text{impure } (\text{arrayₛ } n , rec))) \equiv \text{just } \dots$
+    - Object round-trip: preservation of sorted/canonical key-value pairs under print and parse.
+  - Assemble the complete `JSONLeftInverse` theorem:
+    $$\forall (v : \text{JSONValue}) \to \text{parseJSON} (\text{printJSON } v) \equiv \text{just } v$$
+- [ ] **7.3 Invertible Parsing for XML & SVG (`GeoAgda.Parsing.XML.Invertible`)**
+  - Implement an invertible lexical and structural parser for `XMLDoc = XMLContainer ⋆ ⊤`:
+    - Opening tags `<tag attrs>`, closing tags `</tag>`, empty-element tags `<tag attrs />`.
+    - Attribute lists `key="value"` with proper XML entity escaping.
+    - Text node content.
+  - Establish `XMLLeftInverse` theorem:
+    $$\forall (doc : \text{XMLDoc}) \to \text{parseXML} (\text{printXML } doc) \equiv \text{just } doc$$
+  - Specialize to SVG AST: bidirectional conversion between SVG element free-monad trees and serialized XML strings.
+
+---
+
+### Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts
+Leverage constructive evidence of schema conformance to eliminate defensive partiality and enable shortcut projections.
+
+- [ ] **8.1 Decidable Schema Conformance Relation (`GeoAgda.Data.JSON.Conformance`)**
+  - Define the constructive satisfaction relation `_⊨_ : JSONValue → Schema → Set`:
+    - Evidence for `sObject`: proofs that required fields exist and conform to sub-schemas.
+    - Evidence for `sArray`: pointwise conformity vectors/lists.
+    - Evidence for primitives: `sNumber`, `sString`, `sBool`, `sNull`.
+  - Implement and prove the decidability theorem:
+    $$\text{checkSchema} : (v : \text{JSONValue}) (s : \text{Schema}) \to \text{Dec} (v \models s)$$
+- [ ] **8.2 Proof-Carrying Total Extraction ("Extraction by Proof Shortcut")**
+  - Define total projection functions parameterized by the conformance certificate:
+    $$\text{extractValidated} : (v : \text{JSONValue}) \to v \models \text{geoJsonSchema} \to \text{FeatureCollection}$$
+  - **Zero Partiality / Total Shortcuts:** Because $p : v \models \text{geoJsonSchema}$ certifies at the type level that `"type"` is `"FeatureCollection"`, `"features"` is an array of conforming features, and coordinates are valid numeric pairs, `extractValidated` projects coordinates and geometries directly without returning `Maybe`, without defensive `asObject`/`asArray`/`lookupField` fallbacks, and without runtime safety guards.
+  - Prove extraction coherence:
+    $$\forall (v : \text{JSONValue}) (p : v \models \text{geoJsonSchema}) \to \text{extractFeatureCollection } v \equiv \text{just } (\text{extractValidated } v\ p)$$
+- [ ] **8.3 Schema Refinements & GeoJSON Domain Schemas**
+  - Define formal schemas for `positionSchema`, `geometrySchema`, `featureSchema`, and `featureCollectionSchema`.
+  - Provide convenient wrapper `validateAndExtract : JSONValue → Maybe FeatureCollection` which runs `checkSchema` and invokes the proof shortcut upon `yes`.
