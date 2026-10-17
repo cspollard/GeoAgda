@@ -16,8 +16,9 @@ open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
 open import Data.Empty using (⊥)
 open import Data.Unit.Base using (⊤; tt)
 open import Data.Fin.Base using (Fin; zero; suc)
-open import Data.Container.Core using (Container; _▷_; ⟦_⟧)
-open import Data.Container.FreeMonad using (_⋆_; pure; impure)
+open import Data.Container.Core public using (Container; _▷_; ⟦_⟧)
+open import Data.Container.FreeMonad public using (_⋆_; pure; impure)
+
 
 ------------------------------------------------------------------------
 -- JSON Numbers

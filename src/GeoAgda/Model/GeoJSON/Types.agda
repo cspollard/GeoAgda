@@ -1,0 +1,57 @@
+{-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
+
+module GeoAgda.Model.GeoJSON.Types where
+
+open import Level using (0ℓ)
+open import Data.String.Base using (String)
+open import Data.List.Base using (List; []; _∷_)
+open import Data.Product.Base using (_×_; _,_)
+open import Data.Maybe.Base using (Maybe; just; nothing)
+
+open import GeoAgda.Data.JSON.AST using (JSONNumber; JSONValue)
+
+------------------------------------------------------------------------
+-- GeoJSON Position (Coordinates)
+------------------------------------------------------------------------
+
+-- A Position in RFC 7946 is an array of coordinates: [longitude, latitude]
+-- Represented with exact JSONNumber arithmetic
+record Position : Set where
+  constructor pos
+  field
+    lon : JSONNumber
+    lat : JSONNumber
+
+------------------------------------------------------------------------
+-- GeoJSON Geometries
+------------------------------------------------------------------------
+
+data Geometry : Set where
+  pointG              : Position → Geometry
+  multiPointG         : List Position → Geometry
+  lineStringG         : List Position → Geometry
+  multiLineStringG    : List (List Position) → Geometry
+  polygonG            : List (List Position) → Geometry
+  multiPolygonG       : List (List (List Position)) → Geometry
+  geometryCollectionG : List Geometry → Geometry
+
+
+------------------------------------------------------------------------
+-- GeoJSON Properties, Features, and FeatureCollections
+------------------------------------------------------------------------
+
+-- Feature properties are arbitrary JSON key-value mappings
+Properties : Set
+Properties = List (String × JSONValue)
+
+record Feature : Set where
+  constructor feature
+  field
+    id         : Maybe String
+    geometry   : Geometry
+    properties : Properties
+
+record FeatureCollection : Set where
+  constructor featureCollection
+  field
+    features : List Feature

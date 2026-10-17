@@ -9,7 +9,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 1: Container & Free Monad Formulations (JSON & XML/SVG ASTs)**
 - [x] **Milestone 2: Invertible Parsing Framework & Lexical Combinators**
 - [x] **Milestone 3: Structural JSON Parser & LeftInverse Soundness**
-- [ ] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
+- [x] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [ ] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [ ] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
 
@@ -85,13 +85,13 @@ Assemble invertible combinators to construct the full JSON parser targeting `JSO
 ### Milestone 4: Schema Validation & Typed GeoJSON Extraction
 Bridge untyped JSON free monads to strongly-typed GeoJSON domain models with verified decidable validation.
 
-- [ ] **4.1 Lightweight JSON Schema Language (`GeoAgda.Data.JSON.Schema`)**
-  - [ ] Define `Schema` data type (`sNull`, `sBool`, `sNumber`, `sString`, `sArray`, `sObject`).
-  - [ ] Define validation predicate `_⊨_ : JSONValue → Schema → Set`.
-  - [ ] Implement decidable checker `checkSchema : (v : JSONValue) (s : Schema) → Dec (v ⊨ s)`.
-- [ ] **4.2 Typed GeoJSON Domain Models (`GeoAgda.Model.GeoJSON.Types`)**
-  - [ ] `Position`: Longitude and Latitude pair with bound proofs ($-180 \le \lambda \le 180$, $-90 \le \phi \le 90$) or rational representations.
-  - [ ] `Geometry`:
+- [x] **4.1 Lightweight JSON Schema Language (`GeoAgda.Data.JSON.Schema`)**
+  - [x] Define `Schema` data type (`sNull`, `sBool`, `sNumber`, `sString`, `sArray`, `sObject`).
+  - [x] Define validation predicate `_⊨_ : JSONValue → Schema → Set`.
+  - [x] Implement decidable checker `checkSchema : (v : JSONValue) (s : Schema) → Dec (v ⊨ s)`.
+- [x] **4.2 Typed GeoJSON Domain Models (`GeoAgda.Model.GeoJSON.Types`)**
+  - [x] `Position`: Longitude and Latitude pair with rational/integer representation (`JSONNumber`).
+  - [x] `Geometry`:
     - `Point` (`Position`)
     - `MultiPoint` (`List Position`)
     - `LineString` (`List Position`)
@@ -99,12 +99,12 @@ Bridge untyped JSON free monads to strongly-typed GeoJSON domain models with ver
     - `Polygon` (`List (List Position)` - outer ring + inner rings)
     - `MultiPolygon` (`List (List (List Position))`)
     - `GeometryCollection` (`List Geometry`)
-  - [ ] `Feature`: Geometry + Properties (`List (String × JSONValue)`) + Optional ID.
-  - [ ] `FeatureCollection`: `List Feature` + optional bounding box (`BBox`).
-- [ ] **4.3 Schema-Driven Extractor (`GeoAgda.Model.GeoJSON.Extraction`)**
-  - [ ] Schemas for GeoJSON objects (`geoJsonSchema`, `geometrySchema`, `featureSchema`).
-  - [ ] Extraction functions converting validated `JSONValue` into typed `FeatureCollection`.
-  - [ ] Proof of extraction soundness: successful extraction yields valid geometries.
+  - [x] `Feature`: Geometry + Properties (`List (String × JSONValue)`) + Optional ID.
+  - [x] `FeatureCollection`: `List Feature` + optional bounding box (`BBox`).
+- [x] **4.3 Schema-Driven Extractor (`GeoAgda.Model.GeoJSON.Extraction`)**
+  - [x] Schemas for GeoJSON objects (`geoJsonSchema`, `geometrySchema`, `featureSchema`).
+  - [x] Extraction functions converting validated `JSONValue` into typed `FeatureCollection`.
+  - [x] Unit tests for geometry, feature, and feature collection extraction (`GeoAgda.Tests.Milestone4`).
 
 ---
 

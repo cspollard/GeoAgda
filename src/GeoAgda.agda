@@ -16,9 +16,17 @@ open import GeoAgda.Data.XML.Print public
 open import GeoAgda.Parsing.Invertible.Core public
 open import GeoAgda.Parsing.Invertible.Char public
 open import GeoAgda.Parsing.Invertible.Number public
+open import GeoAgda.Parsing.Invertible.Combinators public
 
 -- JSON Lexer and Parser
 open import GeoAgda.Parsing.JSON.Lexer public
 open import GeoAgda.Parsing.JSON.Parser public
+open import GeoAgda.Parsing.JSON.Soundness public
+
+-- Schema Validation & GeoJSON Models
+open import GeoAgda.Data.JSON.Schema public
+open import GeoAgda.Model.GeoJSON.Types public
+open import GeoAgda.Model.GeoJSON.Extraction public
+
 
 
