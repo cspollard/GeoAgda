@@ -1,0 +1,5 @@
+name: GeoAgda
+include: src
+depend:
+  standard-library
+  agda-categories

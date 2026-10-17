@@ -1,0 +1,11 @@
+# Agda interface files and build artifacts
+*.agdai
+_build/
+
+# macOS system files
+.DS_Store
+
+# Editor backup/swap files
+*~
+*.swp
+*.swo
