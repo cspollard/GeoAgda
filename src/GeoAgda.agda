@@ -17,3 +17,8 @@ open import GeoAgda.Parsing.Invertible.Core public
 open import GeoAgda.Parsing.Invertible.Char public
 open import GeoAgda.Parsing.Invertible.Number public
 
+-- JSON Lexer and Parser
+open import GeoAgda.Parsing.JSON.Lexer public
+open import GeoAgda.Parsing.JSON.Parser public
+
+

@@ -8,7 +8,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 
 - [x] **Milestone 1: Container & Free Monad Formulations (JSON & XML/SVG ASTs)**
 - [x] **Milestone 2: Invertible Parsing Framework & Lexical Combinators**
-- [ ] **Milestone 3: Structural JSON Parser & LeftInverse Soundness**
+- [x] **Milestone 3: Structural JSON Parser & LeftInverse Soundness**
 - [ ] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [ ] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [ ] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
@@ -68,16 +68,17 @@ Develop verified invertible parsing primitives modeled as explicit left inverses
 ### Milestone 3: Structural JSON Parser & LeftInverse Soundness
 Assemble invertible combinators to construct the full JSON parser targeting `JSONContainer ⋆ ⊤`.
 
-- [ ] **3.1 Lexical Tokenizer (`GeoAgda.Parsing.JSON.Lexer`)**
-  - [ ] Define `JSONToken` (delimiters `{`, `}`, `[`, `]`, `:`, `,`, literals).
-  - [ ] Implement invertible whitespace stripping and tokenization.
-- [ ] **3.2 Recursive Tree Parser (`GeoAgda.Parsing.JSON.Parser`)**
-  - [ ] Define grammar for literals, arrays, and key-value objects using container shapes.
-  - [ ] Termination-checked recursive descent using fuel / sized types or list-length induction.
-  - [ ] Produce `parseJSON : List Char → Maybe JSONValue`.
-- [ ] **3.3 Soundness & Left-Inverse Round-Trip Verification**
-  - [ ] Prove `parseJSON (printJSON v) ≡ just v` for literals and flat structures.
-  - [ ] Formulate structural induction principle for `JSONContainer ⋆ ⊤` to extend round-trip proofs.
+- [x] **3.1 Lexical Tokenizer (`GeoAgda.Parsing.JSON.Lexer`)**
+  - [x] Define `JSONToken` (delimiters `{`, `}`, `[`, `]`, `:`, `,`, literals).
+  - [x] Implement invertible whitespace stripping and tokenization.
+- [x] **3.2 Recursive Tree Parser (`GeoAgda.Parsing.JSON.Parser`)**
+  - [x] Define grammar for literals, arrays, and key-value objects using container shapes.
+  - [x] Termination-checked recursive descent using fuel / sized types or list-length induction.
+  - [x] Produce `parseJSON : List Char → Maybe JSONValue`.
+- [x] **3.3 Soundness & Left-Inverse Round-Trip Verification**
+  - [x] Prove `parseJSON (printJSON v) ≡ just v` for literals and flat structures.
+  - [x] Formulate structural induction principle for `JSONContainer ⋆ ⊤` to extend round-trip proofs.
+
 
 ---
 
