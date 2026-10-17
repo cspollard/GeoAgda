@@ -1,7 +1,5 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-
-
 module GeoAgda where
 
 -- JSON AST, Container signature, Free Monad, and Serialization
@@ -28,5 +26,6 @@ open import GeoAgda.Data.JSON.Schema public
 open import GeoAgda.Model.GeoJSON.Types public
 open import GeoAgda.Model.GeoJSON.Extraction public
 
-
-
+-- SVG Map Rendering Pipeline
+open import GeoAgda.Rendering.SVG.Coordinates public
+open import GeoAgda.Rendering.SVG.Render public

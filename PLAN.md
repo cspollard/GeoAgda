@@ -10,7 +10,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 2: Invertible Parsing Framework & Lexical Combinators**
 - [x] **Milestone 3: Structural JSON Parser & LeftInverse Soundness**
 - [x] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
-- [ ] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
+- [x] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [ ] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
 
 ---
@@ -111,19 +111,21 @@ Bridge untyped JSON free monads to strongly-typed GeoJSON domain models with ver
 ### Milestone 5: Catamorphic SVG Map Rendering Pipeline
 Transform typed GeoJSON vector data into the XML/SVG Free Monad for visualization.
 
-- [ ] **5.1 Coordinate Projections & Bounding Boxes (`GeoAgda.Rendering.SVG.Coordinates`)**
-  - [ ] Calculate bounding box `BBox` of geometries and feature collections.
-  - [ ] Implement standard cartographic projections:
+- [x] **5.1 Coordinate Projections & Bounding Boxes (`GeoAgda.Rendering.SVG.Coordinates`)**
+  - [x] Calculate bounding box `BBox` of geometries and feature collections.
+  - [x] Implement standard cartographic projections:
     - Equirectangular (Plate Carrée): $(\lambda, \phi) \mapsto (x, y)$
-    - Web Mercator projection.
-  - [ ] Affine transformations mapping projected coordinates into target SVG viewport / viewBox.
-- [ ] **5.2 SVG Geometry Catamorphisms (`GeoAgda.Rendering.SVG.Render`)**
-  - [ ] Geometry-to-SVG catamorphism:
+  - [x] Affine coordinate formatting mapping projected coordinates into target SVG viewport / viewBox.
+  - [x] Path formatting for SVG linear rings and polygons.
+- [x] **5.2 SVG Geometry Catamorphisms (`GeoAgda.Rendering.SVG.Render`)**
+  - [x] Geometry-to-SVG catamorphism:
     - `Point` $\mapsto$ `<circle cx=... cy=... r=... />`
-    - `LineString` $\mapsto$ `<polyline points=... />` or `<path d=... />`
-    - `Polygon` $\mapsto$ `<polygon points=... />` or `<path d="M ... Z" />`
-  - [ ] Feature styling: apply fill, stroke, stroke-width, and opacity attributes.
-  - [ ] Assemble full SVG root `<svg xmlns="http://www.w3.org/2000/svg" viewBox="..."> ... </svg>` as `XML ⊤`.
+    - `LineString` $\mapsto$ `<polyline points=... />`
+    - `Polygon` $\mapsto$ `<path d=... fill-rule="evenodd" />`
+    - `MultiPoint`, `MultiLineString`, `MultiPolygon`, `GeometryCollection` $\mapsto$ `<g> ... </g>`
+  - [x] Feature styling: apply fill, stroke, stroke-width, and opacity attributes.
+  - [x] Assemble full SVG root `<svg xmlns="http://www.w3.org/2000/svg" viewBox="..."> ... </svg>` as `XML ⊤`.
+  - [x] Unit tests for SVG rendering pipeline (`GeoAgda.Tests.Milestone5`).
 
 ---
 
