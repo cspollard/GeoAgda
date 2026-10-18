@@ -15,7 +15,7 @@ open import GeoAgda.Data.XML.Print using (renderXML)
 open import GeoAgda.Parsing.JSON.Parser using (parseJSON)
 open import GeoAgda.Model.GeoJSON.Types using (FeatureCollection)
 open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
-open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; defaultPolygonStyle; SVGStyle)
+open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; defaultPolygonStyle; defaultTerrainStyle; SVGStyle)
 
 ------------------------------------------------------------------------
 -- Complete End-to-End Ingestion & Rendering Pipeline
@@ -29,7 +29,10 @@ geojsonDocToSVGWithStyle style input = do
   just (renderMapSVG style fc)
 
 geojsonDocToSVG : List Char → Maybe XMLDoc
-geojsonDocToSVG = geojsonDocToSVGWithStyle defaultPolygonStyle
+geojsonDocToSVG = geojsonDocToSVGWithStyle defaultTerrainStyle
+
+geojsonDocToPlainSVG : List Char → Maybe XMLDoc
+geojsonDocToPlainSVG = geojsonDocToSVGWithStyle defaultPolygonStyle
 
 -- Ingest GeoJSON character stream to rendered SVG XML string
 geojsonCharsToSVG : List Char → Maybe String

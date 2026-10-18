@@ -1,0 +1,3 @@
+[submodule "natural-earth-geojson"]
+	path = natural-earth-geojson
+	url = https://github.com/martynafford/natural-earth-geojson
