@@ -55,7 +55,7 @@ defaultPolygonStyle : SVGStyle
 defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "0.05") (just "0.8") "3" nothing false false false "2.8" "#2b231d"
 
 defaultTerrainStyle : SVGStyle
-defaultTerrainStyle = svgStyle (just "#cad3ab") (just "#7d7565") (just "0.08") (just "0.95") "3" (just "#bfe3eb") true true true "2.8" "#2b231d"
+defaultTerrainStyle = svgStyle (just "#ded8c7") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#092244") true true true "1.2" "#222222"
 
 terrainStyle : SVGStyle
 terrainStyle = defaultTerrainStyle
@@ -128,14 +128,11 @@ defaultTerrainFeatureStyle : SVGStyle → Properties → SVGStyle
 defaultTerrainFeatureStyle s props with lookupField "elevation" props >>= asNumber
 ... | just (jsonNumber _ elev _ _) =
   record s { fill = just (elevationColor elev) ; stroke = just "#6d5843" ; strokeWidth = just "0.08" }
-... | nothing with lookupField "MAPCOLOR7" props >>= asNumber
-...   | just (jsonNumber _ integral _ _) =
-    record s { fill = just (terrainColorByMapIndex integral) ; stroke = just "#7d7565" ; strokeWidth = just "0.08" }
-...   | nothing with lookupField "CONTINENT" props >>= asString
-...     | just cont =
+... | nothing with lookupField "CONTINENT" props >>= asString
+...   | just cont =
       record s { fill = just (terrainColorByContinent cont) ; stroke = just "#7d7565" ; strokeWidth = just "0.08" }
-...     | nothing   =
-      record s { fill = just "#cad3ab" ; stroke = just "#7d7565" ; strokeWidth = just "0.08" }
+...   | nothing   =
+      record s { fill = just "#ded8c7" ; stroke = just "#7d7565" ; strokeWidth = just "0.08" }
 
 private
   _∈?_ : String → List String → Bool
@@ -150,6 +147,14 @@ terrainStyleByFeatureClass s cla props =
                       nothing → 0
             c = bathymetryColor depth
         in record s { fill = just c ; stroke = just c ; strokeWidth = just "0.02" ; opacity = just "1.0" })
+  else if (cla ∈? ("Land" ∷ "land" ∷ []))
+  then record s { fill = just "#ded8c7" ; stroke = just "#baa896" ; strokeWidth = just "0.1" }
+  else if (cla ∈? ("Admin-0 country" ∷ "Admin-0 sovereignty" ∷ "Admin-0 map unit" ∷ "Country" ∷ []))
+  then record s { fill = just "#ded8c7" ; stroke = just "#8c827a" ; strokeWidth = just "0.2" }
+  else if (cla ∈? ("Admin-0 boundary lines" ∷ "International boundary (real)" ∷ []))
+  then record s { fill = just "none" ; stroke = just "#777065" ; strokeWidth = just "0.2" }
+  else if cla == "CountryLabel"
+  then record s { fill = just "none" ; stroke = just "none" ; strokeWidth = just "0" ; pointRadius = "0" }
   else if (cla ∈? ("Glaciated areas" ∷ "Antarctic Ice Shelf" ∷ "glacier" ∷ []))
   then record s { fill = just "#f4f9fa" ; stroke = just "#c8dde6" ; strokeWidth = just "0.05" }
   else if cla == "Antarctic Ice Shelf Edge"
@@ -161,13 +166,13 @@ terrainStyleByFeatureClass s cla props =
   else if (cla ∈? ("Plateau" ∷ "Highland" ∷ []))
   then record s { fill = just "#c89b53" ; stroke = just "#a67832" ; strokeWidth = just "0.06" }
   else if (cla ∈? ("Desert" ∷ "Playa" ∷ []))
-  then record s { fill = just "#ebd79b" ; stroke = just "#d2ba77" ; strokeWidth = just "0.05" }
+  then record s { fill = just "#e8ca85" ; stroke = just "#d2ba77" ; strokeWidth = just "0.05" }
   else if (cla ∈? ("Plain" ∷ "Lowland" ∷ "Valley" ∷ []))
-  then record s { fill = just "#c8d6af" ; stroke = just "#a6b68a" ; strokeWidth = just "0.05" }
+  then record s { fill = just "#bccb96" ; stroke = just "#a6b68a" ; strokeWidth = just "0.05" }
   else if cla == "Basin"
-  then record s { fill = just "#c2cca0" ; stroke = just "#9fa97d" ; strokeWidth = just "0.05" }
+  then record s { fill = just "#8fae78" ; stroke = just "#6f8d59" ; strokeWidth = just "0.05" }
   else if cla == "Tundra"
-  then record s { fill = just "#b4c29c" ; stroke = just "#96a47e" ; strokeWidth = just "0.05" }
+  then record s { fill = just "#b0c0a0" ; stroke = just "#8fa080" ; strokeWidth = just "0.05" }
   else if (cla ∈? ("Lake" ∷ "Reservoir" ∷ "Pluvial lake" ∷ []))
   then record s { fill = just "#7baecb" ; stroke = just "#568dae" ; strokeWidth = just "0.08" }
   else if cla == "Alkaline Lake"
@@ -239,7 +244,7 @@ isTopLevelFeature : Properties → Bool
 isTopLevelFeature props =
   case lookupField "featurecla" props >>= asString of λ where
     (just cla) →
-      if (cla ∈? ("Bathymetry" ∷ "Coastline" ∷ "Minor coastline" ∷ "Reefs" ∷ []))
+      if (cla ∈? ("Bathymetry" ∷ "Coastline" ∷ "Minor coastline" ∷ "Reefs" ∷ "River" ∷ "Lake Centerline" ∷ "River (Intermittent)" ∷ "Admin-0 boundary lines" ∷ "Land" ∷ "land" ∷ "Glaciated areas" ∷ []))
       then false
       else checkRanks
     nothing → checkRanks
@@ -247,9 +252,9 @@ isTopLevelFeature props =
     checkRanks : Bool
     checkRanks =
       case lookupField "LABELRANK" props >>= asNumber of λ where
-        (just (jsonNumber _ rank _ _)) → rank ≤ᵇ 3
+        (just (jsonNumber _ rank _ _)) → rank ≤ᵇ 2
         nothing → case lookupField "scalerank" props >>= asNumber of λ where
-          (just (jsonNumber _ srank _ _)) → srank ≤ᵇ 2
+          (just (jsonNumber _ srank _ _)) → srank ≤ᵇ 1
           nothing → true
 
 

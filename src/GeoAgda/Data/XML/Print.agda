@@ -112,3 +112,41 @@ printXML = foldXMLM (λ ()) printText printElem
 -- Render XML document to String
 renderXML : XMLDoc → String
 renderXML = fromList ∘ printXML
+
+------------------------------------------------------------------------
+-- Direct SVG Document Rendering (Compliant & Fast Serialization)
+------------------------------------------------------------------------
+
+escapeSVGChar : Char → List Char
+escapeSVGChar '&' = '&' ∷ 'a' ∷ 'm' ∷ 'p' ∷ ';' ∷ []
+escapeSVGChar '<' = '&' ∷ 'l' ∷ 't' ∷ ';' ∷ []
+escapeSVGChar '>' = '&' ∷ 'g' ∷ 't' ∷ ';' ∷ []
+escapeSVGChar '"' = '&' ∷ 'q' ∷ 'u' ∷ 'o' ∷ 't' ∷ ';' ∷ []
+escapeSVGChar c   = c ∷ []
+
+escapeSVGChars : List Char → List Char
+escapeSVGChars []       = []
+escapeSVGChars (c ∷ cs) = escapeSVGChar c ++ escapeSVGChars cs
+
+printSVGTextContent : String → List Char
+printSVGTextContent s = escapeSVGChars (toList s)
+
+printSVGAttribute : Attribute → List Char
+printSVGAttribute (k , v) =
+  ' ' ∷ toList k ++ ('=' ∷ '"' ∷ escapeSVGChars (toList v) ++ ('"' ∷ []))
+
+printSVGAttributes : Attributes → List Char
+printSVGAttributes []       = []
+printSVGAttributes (a ∷ as) = printSVGAttribute a ++ printSVGAttributes as
+
+printSVGDoc : XMLDoc → List Char
+printSVGDoc = foldXMLM (λ ()) printSVGTextContent printSVGElem
+  where
+    printSVGElem : String → Attributes → List (List Char) → List Char
+    printSVGElem tag attrs [] =
+      '<' ∷ toList tag ++ printSVGAttributes attrs ++ (' ' ∷ '/' ∷ '>' ∷ [])
+    printSVGElem tag attrs (c ∷ cs) =
+      '<' ∷ toList tag ++ printSVGAttributes attrs ++ ('>' ∷ concat (c ∷ cs) ++ ('<' ∷ '/' ∷ toList tag ++ ('>' ∷ [])))
+
+renderSVG : XMLDoc → String
+renderSVG = fromList ∘ printSVGDoc
