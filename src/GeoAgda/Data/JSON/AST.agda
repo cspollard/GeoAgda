@@ -55,19 +55,19 @@ module JSONCont where
   ListC : Container 0ℓ 0ℓ
   ListC = ℕ ▷ Fin
 
-  foldListC : (B → A → B) → B → ⟦ ListC ⟧ A → B
-  foldListC {B = B} {A = A} f b (n , lookup) = go n b lookup
+  foldListC : (A → B → B) → B → ⟦ ListC ⟧ A → B
+  foldListC f b (n , lookup) = go n lookup
     where
-    go : ∀ n → B → (Fin n → A) → B
-    go zero acc _ = acc
-    go (suc k) acc pos = go k (f acc (pos zero)) (pos ∘ suc)
+    go : ∀ n → (Fin n → _) → _
+    go zero _ = b
+    go (suc k) pos = f (pos zero) (go k (pos ∘ suc))
 
   module SO = GeoAgda.Data.JSON.ObjectC stringDecSetoid
   StringObjectC : Container 0ℓ 0ℓ
   StringObjectC = SO.ObjectC
 
   listCToList : ⟦ ListC ⟧ A → List A
-  listCToList = foldListC (flip _∷_) []
+  listCToList = foldListC _∷_ []
 
   listToListC : List A → ⟦ ListC ⟧ A
   listToListC = L.foldr add (zero , λ ())

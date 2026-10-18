@@ -1,3 +1,7 @@
+# images
+*.svg
+*.png
+
 # Agda interface files and build artifacts
 *.agdai
 _build/

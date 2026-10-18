@@ -10,7 +10,9 @@ MAIN_SRC := exe/Main.agda
 
 all: $(TARGET)
 
-$(TARGET): $(MAIN_SRC)
+SRC_FILES := $(shell find src -name "*.agda" 2>/dev/null)
+
+$(TARGET): $(MAIN_SRC) $(SRC_FILES)
 	@mkdir -p $(BUILD_DIR) $(BIN_DIR)
 	$(AGDA) --compile --compile-dir=$(BUILD_DIR) --ghc-flag=-o --ghc-flag=$(TARGET) $(MAIN_SRC)
 
