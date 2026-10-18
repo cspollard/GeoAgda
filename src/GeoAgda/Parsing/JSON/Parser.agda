@@ -8,14 +8,14 @@ open import Data.Char.Base using (Char)
 open import Data.String.Base as String using (String)
 open import Data.Nat.Base as ℕ using (ℕ; zero; suc)
 open import Data.List.Base as List using (List; []; _∷_; length)
-open import Data.Product.Base using (_×_; _,_)
-open import Data.Maybe.Base using (Maybe; just; nothing)
+open import Data.Product.Base using (_×_; _,_; map₁)
+open import Data.Maybe.Base as Maybe using (Maybe; just; nothing; map)
 open import Data.Unit.Base using (⊤; tt)
 open import Function.Base using (_∘_; _$_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda.Data.JSON.AST
-  using (JSON; null; bool; number; string; arrayFromList; objectFromKVs)
+  using (JSON; nullⱼ; boolⱼ; numberⱼ; stringⱼ; arrayⱼ; objectFromList)
 open import GeoAgda.Parsing.JSON.Lexer
   using (JSONToken; lbraceT; rbraceT; lbracketT; rbracketT; colonT; commaT; nullT; boolT; numberT; stringT; tokenize)
 
@@ -26,23 +26,20 @@ open import GeoAgda.Parsing.JSON.Lexer
 mutual
   parseValue : ℕ → List JSONToken → Maybe (JSON × List JSONToken)
   parseValue zero _ = nothing
-  parseValue (suc fuel) (nullT ∷ rest)      = just (null , rest)
-  parseValue (suc fuel) (boolT b ∷ rest)    = just (bool b , rest)
-  parseValue (suc fuel) (numberT n ∷ rest)  = just (number n , rest)
-  parseValue (suc fuel) (stringT s ∷ rest)  = just (string s , rest)
-  parseValue (suc fuel) (lbracketT ∷ rest) with parseArrayElements fuel rest
-  ... | nothing          = nothing
-  ... | just (arr , rem) = just (arrayFromList arr , rem)
-  parseValue (suc fuel) (lbraceT ∷ rest) with parseObjectEntries fuel rest
-  ... | nothing          = nothing
-  ... | just (kvs , rem) = just (objectFromKVs kvs , rem)
+  parseValue (suc fuel) (nullT ∷ rest)      = just (nullⱼ , rest)
+  parseValue (suc fuel) (boolT b ∷ rest)    = just (boolⱼ b , rest)
+  parseValue (suc fuel) (numberT n ∷ rest)  = just (numberⱼ n , rest)
+  parseValue (suc fuel) (stringT s ∷ rest)  = just (stringⱼ s , rest)
+  parseValue (suc fuel) (lbracketT ∷ rest)  =
+    map (map₁ arrayⱼ) (parseArrayElements fuel rest)
+  parseValue (suc fuel) (lbraceT ∷ rest)    =
+    map (map₁ objectFromList) (parseObjectEntries fuel rest)
   parseValue (suc fuel) _                   = nothing
 
   continueArray : ℕ → JSON → List JSONToken → Maybe (List JSON × List JSONToken)
   continueArray fuel v (rbracketT ∷ rest) = just (v ∷ [] , rest)
-  continueArray fuel v (commaT ∷ rest) with parseArrayElements fuel rest
-  ... | just (vs , rem') = just (v ∷ vs , rem')
-  ... | nothing          = nothing
+  continueArray fuel v (commaT ∷ rest)    =
+    map (map₁ (v ∷_)) (parseArrayElements fuel rest)
   continueArray _ _ _ = nothing
 
   parseArrayElements : ℕ → List JSONToken → Maybe (List JSON × List JSONToken)
@@ -55,9 +52,8 @@ mutual
 
   continueObject : ℕ → String → JSON → List JSONToken → Maybe (List (String × JSON) × List JSONToken)
   continueObject fuel k v (rbraceT ∷ rem') = just ((k , v) ∷ [] , rem')
-  continueObject fuel k v (commaT ∷ rem') with parseObjectEntries fuel rem'
-  ... | just (kvs , rem'') = just ((k , v) ∷ kvs , rem'')
-  ... | nothing            = nothing
+  continueObject fuel k v (commaT ∷ rem')  =
+    map (map₁ ((k , v) ∷_)) (parseObjectEntries fuel rem')
   continueObject _ _ _ _ = nothing
 
   parseObjectEntries : ℕ → List JSONToken → Maybe (List (String × JSON) × List JSONToken)
@@ -68,8 +64,6 @@ mutual
   ... | just (v , rem) = continueObject fuel k v rem
   ... | nothing        = nothing
   parseObjectEntries (suc fuel) _ = nothing
-
-
 
 ------------------------------------------------------------------------
 -- Top-level JSON Parser

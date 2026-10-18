@@ -177,11 +177,20 @@ module JSONCont where
   stringⱼ : String → JSON
   stringⱼ = jsoninj primstring
 
+  numberⱼ : JSONNumber → JSON
+  numberⱼ = jsoninj primnumber
+
   arrayⱼ : List (JSONM A) → JSONM A
   arrayⱼ = lift array ∘ listToListC
 
   objectⱼ : ⟦ StringObjectC ⟧ (JSONM A) → JSONM A
   objectⱼ = lift object
 
+  objectFromList : List (String × JSONM A) → JSONM A
+  objectFromList = objectⱼ ∘ ObjectC.toObjectC stringDecSetoid
+
+  objectFromKVs : List (String × JSONM A) → JSONM A
+  objectFromKVs = objectFromList
+
 open JSONCont public using
-  (JSONM; JSON; nullⱼ; boolⱼ; trueⱼ; falseⱼ; stringⱼ; arrayⱼ; objectⱼ)
+  (JSONM; JSON; nullⱼ; boolⱼ; trueⱼ; falseⱼ; stringⱼ; numberⱼ; arrayⱼ; objectⱼ; objectFromList; objectFromKVs)
