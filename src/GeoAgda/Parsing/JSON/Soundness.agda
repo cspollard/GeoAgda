@@ -25,7 +25,7 @@ open import Relation.Binary.PropositionalEquality as ≡
   using (_≡_; refl; sym; trans; cong; module ≡-Reasoning)
 
 open import GeoAgda.Data.JSON.AST
-  using (JSON; JSON; JSONNumber; jsonNumber; pure; null; bool; trueⱼ; falseⱼ; number; string; arrayFromList; objectFromKVs)
+  using (JSON; JSON; JSONNumber; jsonNumber; pure; null; bool; trueⱼ; falseⱼ; number; string; arrayFromList; objectFromList)
 open import GeoAgda.Data.JSON.Print
   using (escapeString; printStringLiteral; printJSON; printArrayBody; printObjectBody;
          printNumber; printSign; printNat; printFraction; printExponent)
@@ -79,7 +79,7 @@ mutual
   printTokens (number n)          = numberT n ∷ []
   printTokens (string s)          = stringT s ∷ []
   printTokens (arrayFromList xs)  = lbracketT ∷ printArrayTokens xs
-  printTokens (objectFromKVs kvs) = lbraceT ∷ printObjectTokens kvs
+  printTokens (objectFromlist kvs) = lbraceT ∷ printObjectTokens kvs
 
   printArrayTokens : List JSON → List JSONToken
   printArrayTokens []             = rbracketT ∷ []
@@ -99,7 +99,7 @@ mutual
   printJSON-tokens (number n)   = sym (++-identityʳ (printNumber n))
   printJSON-tokens (string s)   = sym (++-identityʳ (printStringLiteral s))
   printJSON-tokens (arrayFromList xs)  = cong ('[' ∷_) (printArrayBody-tokens xs)
-  printJSON-tokens (objectFromKVs kvs) = cong ('{' ∷_) (printObjectBody-tokens kvs)
+  printJSON-tokens (objectFromlist kvs) = cong ('{' ∷_) (printObjectBody-tokens kvs)
 
   printArrayBody-tokens : ∀ (xs : List JSON) → printArrayBody xs ≡ printTokenList (printArrayTokens xs)
   printArrayBody-tokens [] = refl
@@ -205,7 +205,7 @@ mutual
   validPrintTokens (number _)          = tt , tt
   validPrintTokens (string _)          = tt
   validPrintTokens (arrayFromList xs)  = validPrintArrayTokens xs
-  validPrintTokens (objectFromKVs kvs) = validPrintObjectTokens kvs
+  validPrintTokens (objectFromlist kvs) = validPrintObjectTokens kvs
 
   validPrintArrayTokens : ∀ (xs : List JSON) → ValidTokenSeq (printArrayTokens xs)
   validPrintArrayTokens []             = tt
@@ -351,7 +351,7 @@ parseElemAndContinue fuel (bool _)            tailToks eq rewrite eq = refl
 parseElemAndContinue fuel (number _)          tailToks eq rewrite eq = refl
 parseElemAndContinue fuel (string _)          tailToks eq rewrite eq = refl
 parseElemAndContinue fuel (arrayFromList _)   tailToks eq rewrite eq = refl
-parseElemAndContinue fuel (objectFromKVs _)   tailToks eq rewrite eq = refl
+parseElemAndContinue fuel (objectFromlist _)   tailToks eq rewrite eq = refl
 
 continueArrayCons : ∀ (fuel : ℕ) (v : JSON) (tailToks : List JSONToken) {vs rem'} →
   parseArrayElements fuel tailToks ≡ just (vs , rem') →
@@ -372,7 +372,7 @@ mutual
   correctParseValue (string s) extra rest = refl
   correctParseValue (arrayFromList xs) extra rest
     rewrite correctParseArray xs extra rest = refl
-  correctParseValue (objectFromKVs kvs) extra rest
+  correctParseValue (objectFromlist kvs) extra rest
     rewrite correctParseObject kvs extra rest = refl
 
   correctParseArray : ∀ (xs : List JSON) (extra : ℕ) (rest : List JSONToken) →

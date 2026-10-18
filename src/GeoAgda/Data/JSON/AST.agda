@@ -190,8 +190,7 @@ module JSONCont where
   objectFromList : List (String × JSONM A) → JSONM A
   objectFromList = objectⱼ ∘ SO.toObjectC
 
-  objectFromKVs : List (String × JSONM A) → JSONM A
-  objectFromKVs = objectFromList
-
 open JSONCont public using
-  (JSONM; JSON; nullⱼ; boolⱼ; trueⱼ; falseⱼ; stringⱼ; numberⱼ; arrayⱼ; objectⱼ; objectFromList; objectFromKVs)
+  ( JSONM; JSON; nullⱼ; boolⱼ; trueⱼ; falseⱼ; stringⱼ; numberⱼ; arrayⱼ; objectⱼ
+  ; objectFromList
+  )

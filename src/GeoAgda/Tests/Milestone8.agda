@@ -45,7 +45,7 @@ testPosShortcut with checkPosition posJson
 ------------------------------------------------------------------------
 
 pointGeomJson : JSON
-pointGeomJson = objectFromKVs
+pointGeomJson = objectFromlist
   ( ("type" , string "Point")
   ∷ ("coordinates" , posJson)
   ∷ []

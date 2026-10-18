@@ -17,7 +17,7 @@ open import GeoAgda
 ------------------------------------------------------------------------
 
 samplePointJSON : JSON
-samplePointJSON = objectFromKVs
+samplePointJSON = objectFromlist
   ( ("type" , string "Point")
   ∷ ("coordinates" , arrayFromList
       ( number (jsonNumber + 10 [] 0ℤ)

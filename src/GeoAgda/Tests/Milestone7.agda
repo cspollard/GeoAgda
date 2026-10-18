@@ -46,7 +46,7 @@ testArrRoundTrip = refl
 
 -- Test object round-trip
 testObjVal : JSON
-testObjVal = objectFromKVs (("active" , trueⱼ) ∷ ("count" , testNumVal) ∷ [])
+testObjVal = objectFromlist (("active" , trueⱼ) ∷ ("count" , testNumVal) ∷ [])
 
 testObjRoundTrip : parseJSON (printJSON testObjVal) ≡ just testObjVal
 testObjRoundTrip = refl

@@ -121,7 +121,7 @@ module GeoAgda.Data.JSON.Conformance where
 -- decNumber (bool _)          = no (λ where (evNumber _ ()))
 -- decNumber (string _)        = no (λ where (evNumber _ ()))
 -- decNumber (arrayFromList _) = no (λ where (evNumber _ ()))
--- decNumber (objectFromKVs _) = no (λ where (evNumber _ ()))
+-- decNumber (objectFromlist _) = no (λ where (evNumber _ ()))
 
 -- decString : (v : JSON) → Dec (v ⊨ sString)
 -- decString (string s)        = yes (evString s refl)
@@ -129,7 +129,7 @@ module GeoAgda.Data.JSON.Conformance where
 -- decString (bool _)          = no (λ where (evString _ ()))
 -- decString (number _)        = no (λ where (evString _ ()))
 -- decString (arrayFromList _) = no (λ where (evString _ ()))
--- decString (objectFromKVs _) = no (λ where (evString _ ()))
+-- decString (objectFromlist _) = no (λ where (evString _ ()))
 
 -- decExactString : (expected : String) → (v : JSON) → Dec (v ⊨ sExactString expected)
 -- decExactString expected (string s) with s ≟ expected
@@ -139,7 +139,7 @@ module GeoAgda.Data.JSON.Conformance where
 -- decExactString expected (bool _)          = no (λ where (evExactString ()))
 -- decExactString expected (number _)        = no (λ where (evExactString ()))
 -- decExactString expected (arrayFromList _) = no (λ where (evExactString ()))
--- decExactString expected (objectFromKVs _) = no (λ where (evExactString ()))
+-- decExactString expected (objectFromlist _) = no (λ where (evExactString ()))
 
 -- decTuple2 : ∀ {s₁ s₂} →
 --             ((v : JSON) → Dec (v ⊨ s₁)) →

@@ -32,7 +32,7 @@ _ = refl
 
 -- Test 2: Point geometry fixture round-trip
 pointFixture : JSON
-pointFixture = objectFromKVs
+pointFixture = objectFromlist
   ( ("type" , string "Point")
   ∷ ("coordinates" , arrayFromList
       ( number (jsonNumber + 10 [] 0ℤ)
