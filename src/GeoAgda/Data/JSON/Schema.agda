@@ -2,109 +2,110 @@
 
 module GeoAgda.Data.JSON.Schema where
 
--- This needs to be updated for the new JSON type.
+open import Level using (0ℓ)
+open import Data.Bool.Base using (Bool; true; false)
+open import Data.Char.Base using (Char)
+open import Data.String.Base as String using (String)
+open import Data.String.Properties using (_≟_) renaming (≡-decSetoid to stringDecSetoid)
+open import Data.Nat.Base using (ℕ; zero; suc)
+open import Data.List.Base as List using (List; []; _∷_; map)
+open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
+open import Data.Maybe.Base as Maybe using (Maybe; just; nothing)
+open import Data.Unit.Base using (⊤; tt)
+open import Data.Empty using (⊥; ⊥-elim)
+open import Data.Container.FreeMonad using (pure; impure)
+open import Relation.Nullary.Decidable using (Dec; yes; no)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
--- open import Level using (0ℓ)
--- open import Data.Bool.Base using (Bool; true; false)
--- open import Data.Char.Base using (Char)
--- open import Data.String.Base as String using (String)
--- open import Data.String.Properties using (_≟_)
--- open import Data.Nat.Base using (ℕ; zero; suc)
--- open import Data.List.Base as List using (List; []; _∷_; map)
--- open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
--- open import Data.Maybe.Base as Maybe using (Maybe; just; nothing)
--- open import Data.Unit.Base using (⊤; tt)
--- open import Data.Empty using (⊥; ⊥-elim)
--- open import Data.Fin.Base using (Fin; zero; suc)
--- open import Relation.Nullary.Decidable using (Dec; yes; no)
--- open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import GeoAgda.Data.JSON.AST
+open JSONCont
+  using (listCToList; pstring; pnumber; pbool; pnull; object; array; primnull; primbool; primnumber; primstring; prim)
+open import GeoAgda.Data.JSON.ObjectC stringDecSetoid using (objectToList)
 
--- open import GeoAgda.Data.JSON.AST
+------------------------------------------------------------------------
+-- JSON Unpacking / Projections
+------------------------------------------------------------------------
 
--- ------------------------------------------------------------------------
--- -- JSON Unpacking / Projections
--- ------------------------------------------------------------------------
+asNull : JSON → Maybe ⊤
+asNull (impure ((pnull , _) , _)) = just tt
+asNull _                          = nothing
 
--- asNull : JSON → Maybe ⊤
--- asNull (pure tt) = just tt
--- asNull _         = nothing
+asBool : JSON → Maybe Bool
+asBool (impure ((pbool , b) , _)) = just b
+asBool _                          = nothing
 
--- asBool : JSON → Maybe Bool
--- asBool (bool b) = just b
--- asBool _        = nothing
+asNumber : JSON → Maybe JSONNumber
+asNumber (impure ((pnumber , n) , _)) = just n
+asNumber _                            = nothing
 
--- asNumber : JSON → Maybe JSONNumber
--- asNumber (number n) = just n
--- asNumber _          = nothing
+asString : JSON → Maybe String
+asString (impure ((pstring , s) , _)) = just s
+asString _                            = nothing
 
--- asString : JSON → Maybe String
--- asString (string s) = just s
--- asString _          = nothing
+asArray : JSON → Maybe (List JSON)
+asArray (impure ((array , shp) , pos)) = just (listCToList (shp , pos))
+asArray _                              = nothing
 
--- asArray : JSON → Maybe (List JSON)
--- asArray (arrayFromList xs) = just xs
--- asArray _                  = nothing
+asObject : JSON → Maybe (List (String × JSON))
+asObject (impure ((object , shp) , pos)) = just (objectToList (shp , pos))
+asObject _                               = nothing
 
--- asObject : JSON → Maybe (List (String × JSON))
--- asObject (objectFromKVs kvs) = just kvs
--- asObject _                   = nothing
+------------------------------------------------------------------------
+-- Field Lookup in Association Lists
+------------------------------------------------------------------------
 
--- ------------------------------------------------------------------------
--- -- Field Lookup in Association Lists
--- ------------------------------------------------------------------------
+lookupField : String → List (String × JSON) → Maybe JSON
+lookupField _ [] = nothing
+lookupField key ((k , v) ∷ kvs) with key ≟ k
+... | yes _ = just v
+... | no  _ = lookupField key kvs
 
--- lookupField : String → List (String × JSON) → Maybe JSON
--- lookupField _ [] = nothing
--- lookupField key ((k , v) ∷ kvs) with key ≟ k
--- ... | yes _ = just v
--- ... | no  _ = lookupField key kvs
+------------------------------------------------------------------------
+-- Lightweight Schema Definitions
+------------------------------------------------------------------------
 
--- ------------------------------------------------------------------------
--- -- Lightweight Schema Definitions
--- ------------------------------------------------------------------------
+data Schema : Set where
+  sAny    : Schema
+  sNull   : Schema
+  sBool   : Schema
+  sNumber : Schema
+  sString : Schema
+  sArray  : Schema → Schema
+  sObject : List (String × Schema) → Schema
 
--- data Schema : Set where
---   sAny    : Schema
---   sNull   : Schema
---   sBool   : Schema
---   sNumber : Schema
---   sString : Schema
---   sArray  : Schema → Schema
---   sObject : List (String × Schema) → Schema
+-- Decidable schema check procedure
+mutual
+  checkSchema : JSON → Schema → Bool
+  checkSchema _ sAny    = true
+  checkSchema v sNull   with asNull v
+  ... | just _  = true
+  ... | nothing = false
+  checkSchema v sBool   with asBool v
+  ... | just _  = true
+  ... | nothing = false
+  checkSchema v sNumber with asNumber v
+  ... | just _  = true
+  ... | nothing = false
+  checkSchema v sString with asString v
+  ... | just _  = true
+  ... | nothing = false
+  checkSchema v (sArray elemS) with asArray v
+  ... | nothing    = false
+  ... | just elems = checkArrayElements elems elemS
+  checkSchema v (sObject reqs) with asObject v
+  ... | nothing  = false
+  ... | just kvs = checkObjectFields kvs reqs
 
--- -- Decidable schema check procedure
--- mutual
---   checkSchema : JSON → Schema → Bool
---   checkSchema _ sAny    = true
---   checkSchema v sNull   with asNull v
---   ... | just _  = true
---   ... | nothing = false
---   checkSchema v sBool   with asBool v
---   ... | just _  = true
---   ... | nothing = false
---   checkSchema v sNumber with asNumber v
---   ... | just _  = true
---   ... | nothing = false
---   checkSchema v sString with asString v
---   ... | just _  = true
---   ... | nothing = false
---   checkSchema v (sArray elemS) with asArray v
---   ... | nothing    = false
---   ... | just elems = checkArrayElements elems elemS
---   checkSchema v (sObject reqs) with asObject v
---   ... | nothing  = false
---   ... | just kvs = checkObjectFields kvs reqs
+  checkArrayElements : List JSON → Schema → Bool
+  checkArrayElements [] _ = true
+  checkArrayElements (x ∷ xs) s with checkSchema x s
+  ... | true  = checkArrayElements xs s
+  ... | false = false
 
---   checkArrayElements : List JSON → Schema → Bool
---   checkArrayElements [] _ = true
---   checkArrayElements (x ∷ xs) s with checkSchema x s
---   ... | true  = checkArrayElements xs s
---   ... | false = false
-
---   checkObjectFields : List (String × JSON) → List (String × Schema) → Bool
---   checkObjectFields _ [] = true
---   checkObjectFields kvs ((k , s) ∷ reqs) with lookupField k kvs
---   ... | nothing = false
---   ... | just v  with checkSchema v s
---   ...   | true  = checkObjectFields kvs reqs
---   ...   | false = false
+  checkObjectFields : List (String × JSON) → List (String × Schema) → Bool
+  checkObjectFields _ [] = true
+  checkObjectFields kvs ((k , s) ∷ reqs) with lookupField k kvs
+  ... | nothing = false
+  ... | just v  with checkSchema v s
+  ...   | true  = checkObjectFields kvs reqs
+  ...   | false = false

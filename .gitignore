@@ -6,6 +6,10 @@ bin/*.o
 bin/*.hi
 bin/*.svg
 bin/Main
+exe/MAlonzo/
+exe/*.o
+exe/*.hi
+exe/Main
 
 # macOS system files
 .DS_Store

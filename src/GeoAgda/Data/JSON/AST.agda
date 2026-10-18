@@ -62,8 +62,9 @@ module JSONCont where
     go zero acc _ = acc
     go (suc k) acc pos = go k (f acc (pos zero)) (pos ∘ suc)
 
+  module SO = GeoAgda.Data.JSON.ObjectC stringDecSetoid
   StringObjectC : Container 0ℓ 0ℓ
-  StringObjectC = ObjectC stringDecSetoid
+  StringObjectC = SO.ObjectC
 
   listCToList : ⟦ ListC ⟧ A → List A
   listCToList = foldListC (flip _∷_) []
@@ -187,7 +188,7 @@ module JSONCont where
   objectⱼ = lift object
 
   objectFromList : List (String × JSONM A) → JSONM A
-  objectFromList = objectⱼ ∘ ObjectC.toObjectC stringDecSetoid
+  objectFromList = objectⱼ ∘ SO.toObjectC
 
   objectFromKVs : List (String × JSONM A) → JSONM A
   objectFromKVs = objectFromList
