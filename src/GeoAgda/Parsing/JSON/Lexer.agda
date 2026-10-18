@@ -4,7 +4,7 @@ module GeoAgda.Parsing.JSON.Lexer where
 
 open import Level using (0ℓ)
 open import Data.Bool.Base using (Bool; true; false; if_then_else_)
-open import Data.Char.Base using (Char)
+open import Data.Char.Base using (Char; isSpace)
 open import Data.Char.Properties using (_≟_)
 open import Data.String.Base as String using (String; fromList; toList)
 open import Data.Nat.Base as ℕ using (ℕ; zero; suc; _*_) renaming (_+_ to _+ℕ_)
@@ -44,16 +44,9 @@ data JSONToken : Set where
 -- Whitespace Handling
 ------------------------------------------------------------------------
 
-isWhitespace : Char → Bool
-isWhitespace ' '  = true
-isWhitespace '\t' = true
-isWhitespace '\n' = true
-isWhitespace '\r' = true
-isWhitespace _    = false
-
 stripLeadingWhitespace : List Char → List Char
 stripLeadingWhitespace [] = []
-stripLeadingWhitespace (c ∷ cs) with isWhitespace c
+stripLeadingWhitespace (c ∷ cs) with isSpace c
 ... | true  = stripLeadingWhitespace cs
 ... | false = c ∷ cs
 

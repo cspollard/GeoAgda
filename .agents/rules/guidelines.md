@@ -127,3 +127,10 @@ GeoAgda embraces idiomatic Agda notation:
 2. **Descriptive Commit Messages:** Commits should follow conventional, structured messages summarizing the verified progress (e.g., `feat(json): define JSON container and free monad AST`).
 3. **Clean Working Tree:** Unnecessary artifacts (such as `.agdai` interface files) must be excluded via `.gitignore`.
 
+
+## 6. Style
+
+1. Use standard induction/recursion functions wherever possible (foldr, foldl,
+   etc.)
+2. Avoid very long pattern matches; use stdlib-defined patterns (e.g.
+   Data.Fin.Patterns) or induction.
