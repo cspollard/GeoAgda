@@ -1,22 +1,14 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-
-
 module GeoAgda.Data.XML.AST where
 
-open import Level using (0ℓ)
-open import Data.Nat.Base using (ℕ; zero; suc)
 open import Data.String.Base using (String)
-open import Data.List.Base using (List; []; _∷_; length; lookup)
+open import Data.List.Base using (List; []; _∷_)
 open import Data.Product.Base using (_×_; _,_)
-open import Data.Empty using (⊥)
 open import Data.Unit.Base using (⊤; tt)
-open import Data.Fin.Base using (Fin; zero; suc)
-open import Data.Container.Core using (Container; _▷_; ⟦_⟧)
-open import Data.Container.FreeMonad using (_⋆_; pure; impure)
 
 ------------------------------------------------------------------------
--- XML / SVG Container Signature
+-- XML / SVG AST
 ------------------------------------------------------------------------
 
 -- XML attributes as key-value pairs
@@ -26,31 +18,11 @@ Attribute = String × String
 Attributes : Set
 Attributes = List Attribute
 
--- Shapes for XML/SVG AST:
--- - textₛ content: raw character data / text node
--- - elementₛ tag attrs n: element with tag, attributes, and n children
-data XMLShape : Set where
-  textₛ    : String → XMLShape
-  elementₛ : (tag : String) (attrs : Attributes) (n : ℕ) → XMLShape
-
--- Positions identify child element branches:
--- - textₛ has no children (Position = ⊥)
--- - elementₛ tag attrs n has n children indexed by Fin n
-XMLPosition : XMLShape → Set
-XMLPosition (textₛ _)         = ⊥
-XMLPosition (elementₛ _ _ n)  = Fin n
-
--- The XML container at level 0ℓ
-XMLContainer : Container 0ℓ 0ℓ
-XMLContainer = XMLShape ▷ XMLPosition
-
-------------------------------------------------------------------------
--- The Free Monad XML Type
-------------------------------------------------------------------------
-
--- XML tree parameterized over leaf/variable type X
-XML : Set → Set
-XML X = XMLContainer ⋆ X
+-- Inductive XML tree parameterized over leaf/variable type X
+data XML (X : Set) : Set where
+  pure        : X → XML X
+  text        : String → XML X
+  elementList : (tag : String) (attrs : Attributes) (children : List (XML X)) → XML X
 
 -- Standard closed XML document/element
 XMLDoc : Set
@@ -60,17 +32,8 @@ XMLDoc = XML ⊤
 -- Generic XML Smart Constructors
 ------------------------------------------------------------------------
 
-text : ∀ {X} → String → XML X
-text s = impure (textₛ s , λ ())
-
-element : ∀ {X} (tag : String) (attrs : Attributes) (n : ℕ) → (Fin n → XML X) → XML X
-element tag attrs n children = impure (elementₛ tag attrs n , children)
-
-elementList : ∀ {X} (tag : String) (attrs : Attributes) (children : List (XML X)) → XML X
-elementList tag attrs children = impure (elementₛ tag attrs (length children) , lookup children)
-
 leafElement : ∀ {X} (tag : String) (attrs : Attributes) → XML X
-leafElement tag attrs = impure (elementₛ tag attrs 0 , λ ())
+leafElement tag attrs = elementList tag attrs []
 
 ------------------------------------------------------------------------
 -- SVG Smart Constructors

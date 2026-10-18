@@ -8,6 +8,7 @@ open import Data.String.Base as String using (String; toList)
 open import Data.Integer.Base using (+_; -[1+_])
 open import Data.Sign.Base using (+; -)
 open import Data.Maybe.Base using (Maybe; just; nothing)
+open import Function.Bundles using (LeftInverse)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product.Base using (_×_; _,_; ∃)
 
@@ -51,7 +52,7 @@ testObjRoundTrip : parseJSON (printJSON testObjVal) ≡ just testObjVal
 testObjRoundTrip = refl
 
 ------------------------------------------------------------------------
--- 2. XML & SVG Free Monad Inversion Tests
+-- 2. XML & SVG Inversion Tests
 ------------------------------------------------------------------------
 
 -- Test SVG rect round-trip
@@ -76,45 +77,56 @@ testMapRoundTrip : parseXMLChars (printXML renderedMap) ≡ just renderedMap
 testMapRoundTrip = refl
 
 ------------------------------------------------------------------------
--- 3. Standard Library LeftInverse Bundle Verification
+-- 3. Universal Round-Trip, Retraction & Standard Library LeftInverse
 ------------------------------------------------------------------------
 
--- Verify XML retraction through parseXMLTotal
+-- Verify universal XML round-trip and retraction for ANY XMLDoc
+testUniversalXMLRoundTrip : ∀ (doc : XMLDoc) → parseXMLChars (printXML doc) ≡ just doc
+testUniversalXMLRoundTrip = roundTripXML
+
+testUniversalXMLRetraction : ∀ (doc : XMLDoc) → parseXMLTotal (printXML doc) ≡ doc
+testUniversalXMLRetraction = xmlRetraction
+
+-- Verify XML retraction on rendered map via universal xmlRetraction
 testXMLRetraction : parseXMLTotal (printXML renderedMap) ≡ renderedMap
-testXMLRetraction = xmlRetraction renderedMap testMapRoundTrip
+testXMLRetraction = xmlRetraction renderedMap
 
--- Verify JSON retraction through parseJSONTotal
+-- Verify universal JSON round-trip and retraction for ANY JSONValue
+testUniversalRoundTrip : ∀ (v : JSONValue) → parseJSON (printJSON v) ≡ just v
+testUniversalRoundTrip = roundTripJSON
+
+testUniversalRetraction : ∀ (v : JSONValue) → parseJSONTotal (printJSON v) ≡ v
+testUniversalRetraction = jsonRetraction
+
+-- Verify JSON retraction on concrete object via universal jsonRetraction
 testJSONRetraction : parseJSONTotal (printJSON testObjVal) ≡ testObjVal
-testJSONRetraction = jsonRetraction testObjVal testObjRoundTrip
+testJSONRetraction = jsonRetraction testObjVal
 
--- Verify base value LeftInverse instances from XML Soundness
+-- Verify universal LeftInverse bundle from XML Soundness
 _ : circleRetraction ≡ refl
 _ = refl
 
 _ : pathRetraction ≡ refl
 _ = refl
 
-_ : LeftInverse.to circleLeftInverse (printXML testCircleDoc) ≡ testCircleDoc
+_ : LeftInverse.to xmlLeftInverse (printXML testCircleDoc) ≡ testCircleDoc
 _ = refl
 
-_ : LeftInverse.to svgRootLeftInverse (printXML testSvgRootDoc) ≡ testSvgRootDoc
+_ : LeftInverse.to xmlLeftInverse (printXML testSvgRootDoc) ≡ testSvgRootDoc
 _ = refl
 
--- Verify base value LeftInverse instances from JSON Soundness
-_ : nullRetraction ≡ refl
+_ : LeftInverse.to xmlLeftInverse (printXML renderedMap) ≡ renderedMap
 _ = refl
 
-_ : trueRetraction ≡ refl
+-- Verify universal LeftInverse bundle from JSON Soundness
+_ : LeftInverse.to jsonLeftInverse (printJSON null) ≡ null
 _ = refl
 
-_ : falseRetraction ≡ refl
+_ : LeftInverse.to jsonLeftInverse (printJSON trueⱼ) ≡ trueⱼ
 _ = refl
 
-_ : LeftInverse.to nullLeftInverse (printJSON null) ≡ null
+_ : LeftInverse.to jsonLeftInverse (printJSON falseⱼ) ≡ falseⱼ
 _ = refl
 
-_ : LeftInverse.to trueLeftInverse (printJSON trueⱼ) ≡ trueⱼ
-_ = refl
-
-_ : LeftInverse.to falseLeftInverse (printJSON falseⱼ) ≡ falseⱼ
+_ : LeftInverse.to jsonLeftInverse (printJSON testObjVal) ≡ testObjVal
 _ = refl

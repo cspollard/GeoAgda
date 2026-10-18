@@ -1,82 +1,93 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-
-
 module GeoAgda.Data.XML.Print where
 
-open import Level using (0ℓ)
 open import Data.Char.Base using (Char)
+open import Data.Char.Properties using (_≟_)
 open import Data.String.Base as String using (String; toList; fromList)
-open import Data.Nat.Base using (ℕ; zero; suc)
-open import Data.List.Base as List using (List; []; _∷_; _++_; concat; map)
-open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
+open import Data.List.Base as List using (List; []; _∷_; _++_)
+open import Data.Product.Base using (_×_; _,_)
 open import Data.Unit.Base using (⊤; tt)
-open import Data.Fin.Base using (Fin; zero; suc)
-open import Data.Container.Core using (⟦_⟧)
-open import Data.Container.FreeMonad using (foldr)
-open import Function.Base using (_∘_; _$_)
+open import Function.Base using (_∘_)
+open import Relation.Nullary.Decidable using (yes; no)
 
 open import GeoAgda.Data.XML.AST
 
 ------------------------------------------------------------------------
--- XML Catamorphism
+-- Helpers: Tag Name, Attribute, & Text Escaping
 ------------------------------------------------------------------------
 
--- General fold / catamorphism over the XML free monad
-foldXML : ∀ {X P : Set} → (X → P) → (⟦ XMLContainer ⟧ P → P) → XML X → P
-foldXML algP algI = foldr algP algI
+escapeName : List Char → List Char
+escapeName [] = []
+escapeName (c ∷ cs) with c ≟ '\\' | c ≟ ' ' | c ≟ '\t' | c ≟ '\n' | c ≟ '\r' | c ≟ '>' | c ≟ '/' | c ≟ '=' | c ≟ '<' | c ≟ '!'
+... | yes _ | _     | _     | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ '\\' ∷ escapeName cs
+... | no  _ | yes _ | _     | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ 's'  ∷ escapeName cs
+... | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ 't'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     | _     = '\\' ∷ 'n'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     = '\\' ∷ 'r'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     = '\\' ∷ 'g'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     = '\\' ∷ 'f'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     = '\\' ∷ 'e'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     = '\\' ∷ 'l'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ = '\\' ∷ 'b'  ∷ escapeName cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ = c ∷ escapeName cs
 
-------------------------------------------------------------------------
--- Helpers: Attribute & Text Escaping
-------------------------------------------------------------------------
-
-open import GeoAgda.Container.Combinators using (tabulateFin)
-
-
--- Escape XML special characters in text content
-escapeCharText : Char → List Char
-escapeCharText '<' = '&' ∷ 'l' ∷ 't' ∷ ';' ∷ []
-escapeCharText '>' = '&' ∷ 'g' ∷ 't' ∷ ';' ∷ []
-escapeCharText '&' = '&' ∷ 'a' ∷ 'm' ∷ 'p' ∷ ';' ∷ []
-escapeCharText c   = c ∷ []
-
-escapeText : List Char → List Char
-escapeText cs = concat (map escapeCharText cs)
-
--- Escape XML special characters in attribute values
-escapeCharAttr : Char → List Char
-escapeCharAttr '"' = '&' ∷ 'q' ∷ 'u' ∷ 'o' ∷ 't' ∷ ';' ∷ []
-escapeCharAttr '<' = '&' ∷ 'l' ∷ 't' ∷ ';' ∷ []
-escapeCharAttr '&' = '&' ∷ 'a' ∷ 'm' ∷ 'p' ∷ ';' ∷ []
-escapeCharAttr c   = c ∷ []
+printName : String → List Char
+printName s with toList s
+... | []     = '\\' ∷ '0' ∷ []
+... | c ∷ cs = escapeName (c ∷ cs)
 
 escapeAttr : List Char → List Char
-escapeAttr cs = concat (map escapeCharAttr cs)
+escapeAttr [] = []
+escapeAttr (c ∷ cs) with c ≟ '\\' | c ≟ '"' | c ≟ '<' | c ≟ '>' | c ≟ '&'
+... | yes _ | _     | _     | _     | _     = '\\' ∷ '\\' ∷ escapeAttr cs
+... | no  _ | yes _ | _     | _     | _     = '\\' ∷ '"'  ∷ escapeAttr cs
+... | no  _ | no  _ | yes _ | _     | _     = '\\' ∷ 'l'  ∷ escapeAttr cs
+... | no  _ | no  _ | no  _ | yes _ | _     = '\\' ∷ 'g'  ∷ escapeAttr cs
+... | no  _ | no  _ | no  _ | no  _ | yes _ = '\\' ∷ 'a'  ∷ escapeAttr cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ = c ∷ escapeAttr cs
 
 -- Format a single attribute: ` key="val"`
 printAttribute : Attribute → List Char
 printAttribute (k , v) =
-  ' ' ∷ toList k ++ ('=' ∷ '"' ∷ escapeAttr (toList v) ++ ('"' ∷ []))
+  ' ' ∷ printName k ++ ('=' ∷ '"' ∷ escapeAttr (toList v) ++ ('"' ∷ []))
 
 printAttributes : Attributes → List Char
-printAttributes attrs = concat (map printAttribute attrs)
+printAttributes []       = []
+printAttributes (a ∷ as) = printAttribute a ++ printAttributes as
+
+escapeText : List Char → List Char
+escapeText [] = []
+escapeText (c ∷ cs) with c ≟ '\\' | c ≟ '<' | c ≟ '>' | c ≟ '&' | c ≟ ' ' | c ≟ '\t' | c ≟ '\n' | c ≟ '\r'
+... | yes _ | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ '\\' ∷ escapeText cs
+... | no  _ | yes _ | _     | _     | _     | _     | _     | _     = '\\' ∷ 'l'  ∷ escapeText cs
+... | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     = '\\' ∷ 'g'  ∷ escapeText cs
+... | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     = '\\' ∷ 'a'  ∷ escapeText cs
+... | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     = '\\' ∷ 's'  ∷ escapeText cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     = '\\' ∷ 't'  ∷ escapeText cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     = '\\' ∷ 'n'  ∷ escapeText cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ = '\\' ∷ 'r'  ∷ escapeText cs
+... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ = c ∷ escapeText cs
+
+printTextContent : String → List Char
+printTextContent s = escapeText (toList s) ++ ('\\' ∷ 'e' ∷ [])
 
 ------------------------------------------------------------------------
--- XML Serialization Algebra
+-- XML Serialization
 ------------------------------------------------------------------------
 
-xmlPrintAlgebra : ⟦ XMLContainer ⟧ (List Char) → List Char
-xmlPrintAlgebra (textₛ content , _) = escapeText (toList content)
-xmlPrintAlgebra (elementₛ tag attrs zero , _) =
-  '<' ∷ toList tag ++ printAttributes attrs ++ (' ' ∷ '/' ∷ '>' ∷ [])
-xmlPrintAlgebra (elementₛ tag attrs (suc n) , rec) =
-  ('<' ∷ toList tag ++ printAttributes attrs ++ ('>' ∷ [])) ++
-  concat (tabulateFin (suc n) rec) ++
-  ('<' ∷ '/' ∷ toList tag ++ ('>' ∷ []))
+mutual
+  printXML : XMLDoc → List Char
+  printXML (pure tt) = '<' ∷ '!' ∷ '>' ∷ []
+  printXML (text s)  = printTextContent s
+  printXML (elementList tag attrs []) =
+    '<' ∷ printName tag ++ printAttributes attrs ++ (' ' ∷ '/' ∷ '>' ∷ [])
+  printXML (elementList tag attrs (c ∷ cs)) =
+    '<' ∷ printName tag ++ printAttributes attrs ++ ('>' ∷ printXMLChildren tag (c ∷ cs))
 
--- Serialize XML document to List Char
-printXML : XMLDoc → List Char
-printXML = foldXML (λ _ → []) xmlPrintAlgebra
+  printXMLChildren : String → List XMLDoc → List Char
+  printXMLChildren tag []       = '<' ∷ '/' ∷ printName tag ++ ('>' ∷ [])
+  printXMLChildren tag (c ∷ cs) = printXML c ++ printXMLChildren tag cs
 
 -- Render XML document to String
 renderXML : XMLDoc → String
