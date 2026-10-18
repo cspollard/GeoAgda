@@ -1,6 +1,7 @@
 # Agda interface files and build artifacts
 *.agdai
 _build/
+build/
 bin/MAlonzo/
 bin/*.o
 bin/*.hi
