@@ -34,10 +34,10 @@ Establish the core algebraic foundation modeling hierarchical document ASTs as f
   - [x] Define `JSONPosition : JSONShape → Set` capturing arity and branching for each shape.
   - [x] Assemble `JSONContainer : Container 0ℓ 0ℓ`.
   - [x] Define `JSON : Set → Set` as `JSONContainer ⋆ X` using `Data.Container.FreeMonad`.
-  - [x] Specialize `JSONValue = JSON ⊤` for standard closed JSON terms.
+  - [x] Specialize `JSON = JSON ⊤` for standard closed JSON terms.
 - [x] **1.3 JSON Catamorphisms & Serialization (`GeoAgda.Data.JSON.Print`)**
   - [x] Implement `foldJSON` via `Data.Container.FreeMonad.foldr`.
-  - [x] Define `printJSON : JSONValue → List Char` as an algebra over `JSONContainer`.
+  - [x] Define `printJSON : JSON → List Char` as an algebra over `JSONContainer`.
 - [x] **1.4 XML / SVG Container Definition (`GeoAgda.Data.XML.AST`)**
   - [x] Define `XMLShape` modeling text nodes, element tags, attributes (`List (String × String)`), and child arity $n$.
   - [x] Define `XMLPosition : XMLShape → Set` indexing child sub-elements.
@@ -76,7 +76,7 @@ Assemble invertible combinators to construct the full JSON parser targeting `JSO
 - [x] **3.2 Recursive Tree Parser (`GeoAgda.Parsing.JSON.Parser`)**
   - [x] Define grammar for literals, arrays, and key-value objects using container shapes.
   - [x] Termination-checked recursive descent using fuel / sized types or list-length induction.
-  - [x] Produce `parseJSON : List Char → Maybe JSONValue`.
+  - [x] Produce `parseJSON : List Char → Maybe JSON`.
 - [x] **3.3 Soundness & Left-Inverse Round-Trip Verification**
   - [x] Prove `parseJSON (printJSON v) ≡ just v` for literals and flat structures.
   - [x] Formulate structural induction principle for `JSONContainer ⋆ ⊤` to extend round-trip proofs.
@@ -89,8 +89,8 @@ Bridge untyped JSON free monads to strongly-typed GeoJSON domain models with ver
 
 - [x] **4.1 Lightweight JSON Schema Language (`GeoAgda.Data.JSON.Schema`)**
   - [x] Define `Schema` data type (`sNull`, `sBool`, `sNumber`, `sString`, `sArray`, `sObject`).
-  - [x] Define validation predicate `_⊨_ : JSONValue → Schema → Set`.
-  - [x] Implement decidable checker `checkSchema : (v : JSONValue) (s : Schema) → Dec (v ⊨ s)`.
+  - [x] Define validation predicate `_⊨_ : JSON → Schema → Set`.
+  - [x] Implement decidable checker `checkSchema : (v : JSON) (s : Schema) → Dec (v ⊨ s)`.
 - [x] **4.2 Typed GeoJSON Domain Models (`GeoAgda.Model.GeoJSON.Types`)**
   - [x] `Position`: Longitude and Latitude pair with rational/integer representation (`JSONNumber`).
   - [x] `Geometry`:
@@ -101,11 +101,11 @@ Bridge untyped JSON free monads to strongly-typed GeoJSON domain models with ver
     - `Polygon` (`List (List Position)` - outer ring + inner rings)
     - `MultiPolygon` (`List (List (List Position))`)
     - `GeometryCollection` (`List Geometry`)
-  - [x] `Feature`: Geometry + Properties (`List (String × JSONValue)`) + Optional ID.
+  - [x] `Feature`: Geometry + Properties (`List (String × JSON)`) + Optional ID.
   - [x] `FeatureCollection`: `List Feature` + optional bounding box (`BBox`).
 - [x] **4.3 Schema-Driven Extractor (`GeoAgda.Model.GeoJSON.Extraction`)**
   - [x] Schemas for GeoJSON objects (`geoJsonSchema`, `geometrySchema`, `featureSchema`).
-  - [x] Extraction functions converting validated `JSONValue` into typed `FeatureCollection`.
+  - [x] Extraction functions converting validated `JSON` into typed `FeatureCollection`.
   - [x] Unit tests for geometry, feature, and feature collection extraction (`GeoAgda.Tests.Milestone4`).
 
 ---
@@ -147,7 +147,7 @@ Validate end-to-end functionality against real-world vector fixtures.
 ---
 
 ### Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG via Composition
-Construct formal, mechanized left inverse objects (`List Char ↩ XMLDoc` and `List Char ↩ JSONValue` from `Function.Bundles.LeftInverse`) using hierarchical, stage-by-stage composition over $\Sigma$-types and container inductive algebras.
+Construct formal, mechanized left inverse objects (`List Char ↩ XMLDoc` and `List Char ↩ JSON` from `Function.Bundles.LeftInverse`) using hierarchical, stage-by-stage composition over $\Sigma$-types and container inductive algebras.
 
 - [ ] **7.1 Theoretical Foundations & Literature Review**
   - [ ] **Literature Grounding:**
@@ -170,13 +170,13 @@ Construct formal, mechanized left inverse objects (`List Char ↩ XMLDoc` and `L
 - [ ] **7.3 Combinators for Left Inverses over Sequences & $\Sigma$-types**
   - [ ] Invertible sequence / list combinator: `(List Char ↩ A) → (List Char ↩ List A)` for delimited and separated elements (commas in JSON, attributes/children in XML).
   - [ ] Invertible $\Sigma$-type combinator: `(A ↩ B) → (∀ {x} → C x ↩ D (to x)) → Σ A C ↩ Σ B D`.
-  - [ ] Invertible key-value mapping: `List Char ↩ (String × JSONValue)` and attribute pairs `List Char ↩ (String × String)`.
+  - [ ] Invertible key-value mapping: `List Char ↩ (String × JSON)` and attribute pairs `List Char ↩ (String × String)`.
 
-- [ ] **7.4 Inductive Free Monad Left Inverse for JSON (`List Char ↩ JSONValue`)**
+- [ ] **7.4 Inductive Free Monad Left Inverse for JSON (`List Char ↩ JSON`)**
   - [ ] Base cases: null, bool (`trueⱼ`, `falseⱼ`), number, string.
   - [ ] Inductive steps: array elements and object fields via free monad induction over `JSONShape` and `JSONPosition`.
   - [ ] Package into the final closed theorem:
-    $$\text{jsonLeftInverse} : \text{List Char} \hookleftarrow \text{JSONValue}$$
+    $$\text{jsonLeftInverse} : \text{List Char} \hookleftarrow \text{JSON}$$
     where `to = parseJSONTotal` and `from = printJSON` without premise hypotheses.
 
 - [ ] **7.5 Inductive Free Monad Left Inverse for XML & SVG (`List Char ↩ XMLDoc`)**
@@ -198,7 +198,7 @@ Construct formal, mechanized left inverse objects (`List Char ↩ XMLDoc` and `L
 Leverage constructive evidence of schema conformance to eliminate defensive partiality and enable shortcut projections.
 
 - [x] **8.1 Decidable Schema Conformance Relation (`GeoAgda.Data.JSON.Conformance`)**
-  - [x] Define the constructive satisfaction relation `_⊨_ : JSONValue → Schema → Set`:
+  - [x] Define the constructive satisfaction relation `_⊨_ : JSON → Schema → Set`:
     - Evidence for `sObject`: proofs that required fields exist and conform to sub-schemas (`FieldEvidence`, `AllFieldsEvidence`).
     - Evidence for `sArray`: pointwise conformity vectors/lists (`All (_⊨ elemS)`).
     - Evidence for primitives: `sNumber`, `sString`, `sExactString`, `sBool`, `sNull`, `sTuple2`.
@@ -217,4 +217,4 @@ Leverage constructive evidence of schema conformance to eliminate defensive part
 - [x] **8.3 Schema Refinements & GeoJSON Domain Schemas**
   - [x] Formal schemas: `positionSchema`, `lineStringSchema`, `polygonSchema`, `pointGeomSchema`, `lineGeomSchema`, `polygonGeomSchema`.
   - [x] Decidable domain checkers: `checkPosition`, `checkGeometry`, `checkFeature`, `checkFeatureCollection`.
-  - [x] Wrapper `validateAndExtract : JSONValue → Maybe FeatureCollection` and compile-time test suite (`GeoAgda.Tests.Milestone8`).
+  - [x] Wrapper `validateAndExtract : JSON → Maybe FeatureCollection` and compile-time test suite (`GeoAgda.Tests.Milestone8`).

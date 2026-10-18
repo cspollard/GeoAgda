@@ -17,7 +17,7 @@ open import Relation.Nullary.Negation using (¬_; contradiction)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Function.Base using (_∘_; _$_)
 
-open import GeoAgda.Data.JSON.AST using (JSONValue; JSONNumber)
+open import GeoAgda.Data.JSON.AST using (JSON; JSONNumber)
 open import GeoAgda.Data.JSON.Schema using (asArray; asObject; asString; lookupField)
 open import GeoAgda.Data.JSON.Conformance
 open import GeoAgda.Model.GeoJSON.Types
@@ -51,12 +51,12 @@ polygonGeomSchema =
 -- Compound Evidence Types
 ------------------------------------------------------------------------
 
-data GeometryEvidence (v : JSONValue) : Set where
+data GeometryEvidence (v : JSON) : Set where
   pointEv   : v ⊨ pointGeomSchema   → GeometryEvidence v
   lineEv    : v ⊨ lineGeomSchema    → GeometryEvidence v
   polygonEv : v ⊨ polygonGeomSchema → GeometryEvidence v
 
-data FeatureEvidence (v : JSONValue) : Set where
+data FeatureEvidence (v : JSON) : Set where
   featureEv : ∀ {kvs geomVal} →
               asObject v ≡ just kvs →
               (evType : FieldEvidence kvs "type" (sExactString "Feature")) →
@@ -64,7 +64,7 @@ data FeatureEvidence (v : JSONValue) : Set where
               GeometryEvidence geomVal →
               FeatureEvidence v
 
-data FeatureCollectionEvidence (v : JSONValue) : Set where
+data FeatureCollectionEvidence (v : JSON) : Set where
   featureCollectionEv : ∀ {kvs featVals xs} →
                         asObject v ≡ just kvs →
                         (evType : FieldEvidence kvs "type" (sExactString "FeatureCollection")) →
@@ -127,16 +127,16 @@ extractFeatureCollectionFromEvidence (featureCollectionEv {kvs = kvs} _ _ _ _ al
 -- Decidable Verification & Shortcut Extraction Driver
 ------------------------------------------------------------------------
 
-checkPosition : (v : JSONValue) → Dec (v ⊨ positionSchema)
+checkPosition : (v : JSON) → Dec (v ⊨ positionSchema)
 checkPosition = decTuple2 decNumber decNumber
 
-checkLineString : (v : JSONValue) → Dec (v ⊨ lineStringSchema)
+checkLineString : (v : JSON) → Dec (v ⊨ lineStringSchema)
 checkLineString = decList checkPosition
 
-checkPolygon : (v : JSONValue) → Dec (v ⊨ polygonSchema)
+checkPolygon : (v : JSON) → Dec (v ⊨ polygonSchema)
 checkPolygon = decList checkLineString
 
-checkPointGeom : (v : JSONValue) → Dec (v ⊨ pointGeomSchema)
+checkPointGeom : (v : JSON) → Dec (v ⊨ pointGeomSchema)
 checkPointGeom v with asObject v in eqObj
 ... | nothing  = no (λ where (evObject eq _) → contradiction eq λ ())
 ... | just kvs with decField (decExactString "Point") "type" kvs
@@ -145,7 +145,7 @@ checkPointGeom v with asObject v in eqObj
 ...     | no ¬c  = no (λ where (evObject _ (consFields _ (consFields fc _))) → ¬c fc)
 ...     | yes fc = yes (evObject eqObj (consFields ft (consFields fc nilFields)))
 
-checkLineGeom : (v : JSONValue) → Dec (v ⊨ lineGeomSchema)
+checkLineGeom : (v : JSON) → Dec (v ⊨ lineGeomSchema)
 checkLineGeom v with asObject v in eqObj
 ... | nothing  = no (λ where (evObject eq _) → contradiction eq λ ())
 ... | just kvs with decField (decExactString "LineString") "type" kvs
@@ -154,7 +154,7 @@ checkLineGeom v with asObject v in eqObj
 ...     | no ¬c  = no (λ where (evObject _ (consFields _ (consFields fc _))) → ¬c fc)
 ...     | yes fc = yes (evObject eqObj (consFields ft (consFields fc nilFields)))
 
-checkPolygonGeom : (v : JSONValue) → Dec (v ⊨ polygonGeomSchema)
+checkPolygonGeom : (v : JSON) → Dec (v ⊨ polygonGeomSchema)
 checkPolygonGeom v with asObject v in eqObj
 ... | nothing  = no (λ where (evObject eq _) → contradiction eq λ ())
 ... | just kvs with decField (decExactString "Polygon") "type" kvs
@@ -163,7 +163,7 @@ checkPolygonGeom v with asObject v in eqObj
 ...     | no ¬c  = no (λ where (evObject _ (consFields _ (consFields fc _))) → ¬c fc)
 ...     | yes fc = yes (evObject eqObj (consFields ft (consFields fc nilFields)))
 
-checkGeometry : (v : JSONValue) → Dec (GeometryEvidence v)
+checkGeometry : (v : JSON) → Dec (GeometryEvidence v)
 checkGeometry v with checkPointGeom v
 ... | yes p = yes (pointEv p)
 ... | no ¬p with checkLineGeom v
@@ -175,7 +175,7 @@ checkGeometry v with checkPointGeom v
             (lineEv l)    → ¬l l
             (polygonEv q) → ¬poly q)
 
-checkFeature : (v : JSONValue) → Dec (FeatureEvidence v)
+checkFeature : (v : JSON) → Dec (FeatureEvidence v)
 checkFeature v with asObject v in eqObj
 ... | nothing  = no (λ where (featureEv eq _ _ _) → contradiction eq λ ())
 ... | just kvs with decField (decExactString "Feature") "type" kvs
@@ -186,7 +186,7 @@ checkFeature v with asObject v in eqObj
 ...       | no ¬g  = no (λ where (featureEv _ _ _ gEv) → ¬g gEv)
 ...       | yes gEv = yes (featureEv eqObj ft eqGeom gEv)
 
-checkFeatureCollection : (v : JSONValue) → Dec (FeatureCollectionEvidence v)
+checkFeatureCollection : (v : JSON) → Dec (FeatureCollectionEvidence v)
 checkFeatureCollection v with asObject v in eqObj
 ... | nothing  = no (λ where (featureCollectionEv eq _ _ _ _) → contradiction eq λ ())
 ... | just kvs with decField (decExactString "FeatureCollection") "type" kvs
@@ -200,7 +200,7 @@ checkFeatureCollection v with asObject v in eqObj
 ...         | yes allEv = yes (featureCollectionEv eqObj ft eqFeats eqArr allEv)
 
 -- Type-directed extraction: validates schema once, then executes total proof-shortcut extraction
-validateAndExtract : JSONValue → Maybe FeatureCollection
+validateAndExtract : JSON → Maybe FeatureCollection
 validateAndExtract v with checkFeatureCollection v
 ... | yes ev = just (extractFeatureCollectionFromEvidence ev)
 ... | no  _  = nothing

@@ -16,7 +16,7 @@ open import GeoAgda
 -- JSON Unit Test: Construct and serialize a Point fixture
 ------------------------------------------------------------------------
 
-samplePointJSON : JSONValue
+samplePointJSON : JSON
 samplePointJSON = objectFromKVs
   ( ("type" , string "Point")
   ∷ ("coordinates" , arrayFromList

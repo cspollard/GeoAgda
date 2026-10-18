@@ -8,7 +8,7 @@ open import Data.List.Base using (List; []; _∷_)
 open import Data.Product.Base using (_×_; _,_)
 open import Data.Maybe.Base using (Maybe; just; nothing)
 
-open import GeoAgda.Data.JSON.AST using (JSONNumber; JSONValue)
+open import GeoAgda.Data.JSON.AST using (JSONNumber; JSON)
 
 ------------------------------------------------------------------------
 -- GeoJSON Position (Coordinates)
@@ -53,7 +53,7 @@ record BBox : Set where
 
 -- Feature properties are arbitrary JSON key-value mappings
 Properties : Set
-Properties = List (String × JSONValue)
+Properties = List (String × JSON)
 
 record Feature : Set where
   constructor feature

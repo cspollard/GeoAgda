@@ -24,7 +24,7 @@ open import GeoAgda.Tests.Fixtures using (pointGeoJSON; polygonGeoJSON; naturalE
 -- 1. Position Conformance & Proof Shortcut Test
 ------------------------------------------------------------------------
 
-posJson : JSONValue
+posJson : JSON
 posJson = arrayFromList
   ( number (jsonNumber - 0 (1 ∷ 2 ∷ []) (+ 0))
   ∷ number (jsonNumber + 51 (5 ∷ []) (+ 0))
@@ -44,7 +44,7 @@ testPosShortcut with checkPosition posJson
 -- 2. Geometry Conformance & Proof Shortcut Test
 ------------------------------------------------------------------------
 
-pointGeomJson : JSONValue
+pointGeomJson : JSON
 pointGeomJson = objectFromKVs
   ( ("type" , string "Point")
   ∷ ("coordinates" , posJson)
@@ -62,7 +62,7 @@ testGeomShortcut with checkGeometry pointGeomJson
 -- 3. FeatureCollection Conformance & End-to-End Validation
 ------------------------------------------------------------------------
 
-parsedPointFC : JSONValue
+parsedPointFC : JSON
 parsedPointFC with parseJSON (toList pointGeoJSON)
 ... | just v = v
 ... | nothing = null

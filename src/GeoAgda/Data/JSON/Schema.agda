@@ -23,27 +23,27 @@ open import GeoAgda.Data.JSON.AST
 -- JSON Unpacking / Projections
 ------------------------------------------------------------------------
 
-asNull : JSONValue → Maybe ⊤
+asNull : JSON → Maybe ⊤
 asNull (pure tt) = just tt
 asNull _         = nothing
 
-asBool : JSONValue → Maybe Bool
+asBool : JSON → Maybe Bool
 asBool (bool b) = just b
 asBool _        = nothing
 
-asNumber : JSONValue → Maybe JSONNumber
+asNumber : JSON → Maybe JSONNumber
 asNumber (number n) = just n
 asNumber _          = nothing
 
-asString : JSONValue → Maybe String
+asString : JSON → Maybe String
 asString (string s) = just s
 asString _          = nothing
 
-asArray : JSONValue → Maybe (List JSONValue)
+asArray : JSON → Maybe (List JSON)
 asArray (arrayFromList xs) = just xs
 asArray _                  = nothing
 
-asObject : JSONValue → Maybe (List (String × JSONValue))
+asObject : JSON → Maybe (List (String × JSON))
 asObject (objectFromKVs kvs) = just kvs
 asObject _                   = nothing
 
@@ -51,7 +51,7 @@ asObject _                   = nothing
 -- Field Lookup in Association Lists
 ------------------------------------------------------------------------
 
-lookupField : String → List (String × JSONValue) → Maybe JSONValue
+lookupField : String → List (String × JSON) → Maybe JSON
 lookupField _ [] = nothing
 lookupField key ((k , v) ∷ kvs) with key ≟ k
 ... | yes _ = just v
@@ -72,7 +72,7 @@ data Schema : Set where
 
 -- Decidable schema check procedure
 mutual
-  checkSchema : JSONValue → Schema → Bool
+  checkSchema : JSON → Schema → Bool
   checkSchema _ sAny    = true
   checkSchema v sNull   with asNull v
   ... | just _  = true
@@ -93,13 +93,13 @@ mutual
   ... | nothing  = false
   ... | just kvs = checkObjectFields kvs reqs
 
-  checkArrayElements : List JSONValue → Schema → Bool
+  checkArrayElements : List JSON → Schema → Bool
   checkArrayElements [] _ = true
   checkArrayElements (x ∷ xs) s with checkSchema x s
   ... | true  = checkArrayElements xs s
   ... | false = false
 
-  checkObjectFields : List (String × JSONValue) → List (String × Schema) → Bool
+  checkObjectFields : List (String × JSON) → List (String × Schema) → Bool
   checkObjectFields _ [] = true
   checkObjectFields kvs ((k , s) ∷ reqs) with lookupField k kvs
   ... | nothing = false

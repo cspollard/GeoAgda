@@ -15,7 +15,7 @@ open import Function.Base using (_∘_; _$_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda.Data.JSON.AST
-  using (JSONValue; null; bool; number; string; arrayFromList; objectFromKVs)
+  using (JSON; null; bool; number; string; arrayFromList; objectFromKVs)
 open import GeoAgda.Parsing.JSON.Lexer
   using (JSONToken; lbraceT; rbraceT; lbracketT; rbracketT; colonT; commaT; nullT; boolT; numberT; stringT; tokenize)
 
@@ -24,7 +24,7 @@ open import GeoAgda.Parsing.JSON.Lexer
 ------------------------------------------------------------------------
 
 mutual
-  parseValue : ℕ → List JSONToken → Maybe (JSONValue × List JSONToken)
+  parseValue : ℕ → List JSONToken → Maybe (JSON × List JSONToken)
   parseValue zero _ = nothing
   parseValue (suc fuel) (nullT ∷ rest)      = just (null , rest)
   parseValue (suc fuel) (boolT b ∷ rest)    = just (bool b , rest)
@@ -38,14 +38,14 @@ mutual
   ... | just (kvs , rem) = just (objectFromKVs kvs , rem)
   parseValue (suc fuel) _                   = nothing
 
-  continueArray : ℕ → JSONValue → List JSONToken → Maybe (List JSONValue × List JSONToken)
+  continueArray : ℕ → JSON → List JSONToken → Maybe (List JSON × List JSONToken)
   continueArray fuel v (rbracketT ∷ rest) = just (v ∷ [] , rest)
   continueArray fuel v (commaT ∷ rest) with parseArrayElements fuel rest
   ... | just (vs , rem') = just (v ∷ vs , rem')
   ... | nothing          = nothing
   continueArray _ _ _ = nothing
 
-  parseArrayElements : ℕ → List JSONToken → Maybe (List JSONValue × List JSONToken)
+  parseArrayElements : ℕ → List JSONToken → Maybe (List JSON × List JSONToken)
   parseArrayElements zero _ = nothing
   parseArrayElements (suc fuel) [] = nothing
   parseArrayElements (suc fuel) (rbracketT ∷ rest) = just ([] , rest)
@@ -53,14 +53,14 @@ mutual
   ... | just (v , rem) = continueArray fuel v rem
   ... | nothing        = nothing
 
-  continueObject : ℕ → String → JSONValue → List JSONToken → Maybe (List (String × JSONValue) × List JSONToken)
+  continueObject : ℕ → String → JSON → List JSONToken → Maybe (List (String × JSON) × List JSONToken)
   continueObject fuel k v (rbraceT ∷ rem') = just ((k , v) ∷ [] , rem')
   continueObject fuel k v (commaT ∷ rem') with parseObjectEntries fuel rem'
   ... | just (kvs , rem'') = just ((k , v) ∷ kvs , rem'')
   ... | nothing            = nothing
   continueObject _ _ _ _ = nothing
 
-  parseObjectEntries : ℕ → List JSONToken → Maybe (List (String × JSONValue) × List JSONToken)
+  parseObjectEntries : ℕ → List JSONToken → Maybe (List (String × JSON) × List JSONToken)
   parseObjectEntries zero _ = nothing
   parseObjectEntries (suc fuel) [] = nothing
   parseObjectEntries (suc fuel) (rbraceT ∷ rest) = just ([] , rest)
@@ -75,7 +75,7 @@ mutual
 -- Top-level JSON Parser
 ------------------------------------------------------------------------
 
-parseJSON : List Char → Maybe JSONValue
+parseJSON : List Char → Maybe JSON
 parseJSON cs with tokenize cs
 ... | nothing   = nothing
 ... | just toks with parseValue (suc (length toks)) toks

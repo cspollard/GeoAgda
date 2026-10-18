@@ -42,7 +42,7 @@ data Schema : Set where
 ------------------------------------------------------------------------
 
 mutual
-  data _⊨_ : JSONValue → Schema → Set where
+  data _⊨_ : JSON → Schema → Set where
     evAny         : ∀ {v} → v ⊨ sAny
 
     evNull        : ∀ {v} →
@@ -81,13 +81,13 @@ mutual
                     AllFieldsEvidence kvs reqs →
                     v ⊨ sObjectReq reqs
 
-  data FieldEvidence (kvs : List (String × JSONValue)) (k : String) (s : Schema) : Set where
-    fieldEv : (val : JSONValue) →
+  data FieldEvidence (kvs : List (String × JSON)) (k : String) (s : Schema) : Set where
+    fieldEv : (val : JSON) →
               lookupField k kvs ≡ just val →
               val ⊨ s →
               FieldEvidence kvs k s
 
-  data AllFieldsEvidence (kvs : List (String × JSONValue)) : List (String × Schema) → Set where
+  data AllFieldsEvidence (kvs : List (String × JSON)) : List (String × Schema) → Set where
     nilFields  : AllFieldsEvidence kvs []
     consFields : ∀ {k s reqs} →
                  FieldEvidence kvs k s →
@@ -111,7 +111,7 @@ extractExactStringEvidence {expected = expected} _ = expected
 -- Decidable Verification Combinators
 ------------------------------------------------------------------------
 
-decNumber : (v : JSONValue) → Dec (v ⊨ sNumber)
+decNumber : (v : JSON) → Dec (v ⊨ sNumber)
 decNumber (number n)        = yes (evNumber n refl)
 decNumber (pure _)          = no (λ where (evNumber _ ()))
 decNumber (bool _)          = no (λ where (evNumber _ ()))
@@ -119,7 +119,7 @@ decNumber (string _)        = no (λ where (evNumber _ ()))
 decNumber (arrayFromList _) = no (λ where (evNumber _ ()))
 decNumber (objectFromKVs _) = no (λ where (evNumber _ ()))
 
-decString : (v : JSONValue) → Dec (v ⊨ sString)
+decString : (v : JSON) → Dec (v ⊨ sString)
 decString (string s)        = yes (evString s refl)
 decString (pure _)          = no (λ where (evString _ ()))
 decString (bool _)          = no (λ where (evString _ ()))
@@ -127,7 +127,7 @@ decString (number _)        = no (λ where (evString _ ()))
 decString (arrayFromList _) = no (λ where (evString _ ()))
 decString (objectFromKVs _) = no (λ where (evString _ ()))
 
-decExactString : (expected : String) → (v : JSONValue) → Dec (v ⊨ sExactString expected)
+decExactString : (expected : String) → (v : JSON) → Dec (v ⊨ sExactString expected)
 decExactString expected (string s) with s ≟ expected
 ... | yes refl = yes (evExactString refl)
 ... | no  ¬eq  = no (λ where (evExactString refl) → ¬eq refl)
@@ -138,9 +138,9 @@ decExactString expected (arrayFromList _) = no (λ where (evExactString ()))
 decExactString expected (objectFromKVs _) = no (λ where (evExactString ()))
 
 decTuple2 : ∀ {s₁ s₂} →
-            ((v : JSONValue) → Dec (v ⊨ s₁)) →
-            ((v : JSONValue) → Dec (v ⊨ s₂)) →
-            (v : JSONValue) → Dec (v ⊨ sTuple2 s₁ s₂)
+            ((v : JSON) → Dec (v ⊨ s₁)) →
+            ((v : JSON) → Dec (v ⊨ s₂)) →
+            (v : JSON) → Dec (v ⊨ sTuple2 s₁ s₂)
 decTuple2 check₁ check₂ v with asArray v in eqArr
 ... | nothing               = no (λ where (evTuple2 eq _ _) → contradiction eq (λ ()))
 ... | just []               = no (λ where (evTuple2 eq _ _) → contradiction eq (λ ()))
@@ -153,9 +153,9 @@ decTuple2 check₁ check₂ v with asArray v in eqArr
 ...     | yes p₂  = yes (evTuple2 eqArr p₁ p₂)
 
 decField : ∀ {s} →
-           ((v : JSONValue) → Dec (v ⊨ s)) →
+           ((v : JSON) → Dec (v ⊨ s)) →
            (k : String) →
-           (kvs : List (String × JSONValue)) →
+           (kvs : List (String × JSON)) →
            Dec (FieldEvidence kvs k s)
 decField check k kvs with lookupField k kvs in eqLook
 ... | nothing  = no (λ where (fieldEv _ eq _) → contradiction eq (λ ()))
@@ -164,8 +164,8 @@ decField check k kvs with lookupField k kvs in eqLook
 ...   | no ¬p = no (λ where (fieldEv .val refl p) → ¬p p)
 
 decList : ∀ {elemS} →
-          ((v : JSONValue) → Dec (v ⊨ elemS)) →
-          (v : JSONValue) → Dec (v ⊨ sList elemS)
+          ((v : JSON) → Dec (v ⊨ elemS)) →
+          (v : JSON) → Dec (v ⊨ sList elemS)
 decList checkElem v with asArray v in eqArr
 ... | nothing = no (λ where (evList eq _) → contradiction eq (λ ()))
 ... | just xs with All.all? checkElem xs
@@ -177,7 +177,7 @@ decList checkElem v with asArray v in eqArr
 ------------------------------------------------------------------------
 
 ⟦_⟧ : Schema → Set
-⟦ sAny ⟧                        = JSONValue
+⟦ sAny ⟧                        = JSON
 ⟦ sNull ⟧                       = ⊤
 ⟦ sBool ⟧                       = Bool
 ⟦ sNumber ⟧                     = JSONNumber

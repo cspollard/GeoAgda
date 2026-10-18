@@ -31,7 +31,7 @@ _ : parseJSON (toList "\"hello world\"") ≡ just (string "hello world")
 _ = refl
 
 -- Test 2: Point geometry fixture round-trip
-pointFixture : JSONValue
+pointFixture : JSON
 pointFixture = objectFromKVs
   ( ("type" , string "Point")
   ∷ ("coordinates" , arrayFromList

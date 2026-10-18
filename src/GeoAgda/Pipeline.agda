@@ -9,7 +9,7 @@ open import Data.List.Base using (List)
 open import Data.Maybe.Base using (Maybe; just; nothing; _>>=_)
 open import Function.Base using (_∘_; _$_)
 
-open import GeoAgda.Data.JSON.AST using (JSONValue)
+open import GeoAgda.Data.JSON.AST using (JSON)
 open import GeoAgda.Data.XML.AST using (XMLDoc)
 open import GeoAgda.Data.XML.Print using (renderXML)
 open import GeoAgda.Parsing.JSON.Parser using (parseJSON)

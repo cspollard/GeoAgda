@@ -25,7 +25,7 @@ open import Relation.Binary.PropositionalEquality as ≡
   using (_≡_; refl; sym; trans; cong; module ≡-Reasoning)
 
 open import GeoAgda.Data.JSON.AST
-  using (JSON; JSONValue; JSONNumber; jsonNumber; pure; null; bool; trueⱼ; falseⱼ; number; string; arrayFromList; objectFromKVs)
+  using (JSON; JSON; JSONNumber; jsonNumber; pure; null; bool; trueⱼ; falseⱼ; number; string; arrayFromList; objectFromKVs)
 open import GeoAgda.Data.JSON.Print
   using (escapeString; printStringLiteral; printJSON; printArrayBody; printObjectBody;
          printNumber; printSign; printNat; printFraction; printExponent)
@@ -73,7 +73,7 @@ printTokenList-++ (t ∷ xs) ys = begin
   where open ≡-Reasoning
 
 mutual
-  printTokens : JSONValue → List JSONToken
+  printTokens : JSON → List JSONToken
   printTokens (pure tt)           = nullT ∷ []
   printTokens (bool b)            = boolT b ∷ []
   printTokens (number n)          = numberT n ∷ []
@@ -81,18 +81,18 @@ mutual
   printTokens (arrayFromList xs)  = lbracketT ∷ printArrayTokens xs
   printTokens (objectFromKVs kvs) = lbraceT ∷ printObjectTokens kvs
 
-  printArrayTokens : List JSONValue → List JSONToken
+  printArrayTokens : List JSON → List JSONToken
   printArrayTokens []             = rbracketT ∷ []
   printArrayTokens (v ∷ [])       = printTokens v ++ (rbracketT ∷ [])
   printArrayTokens (v ∷ v₂ ∷ vs)  = printTokens v ++ (commaT ∷ printArrayTokens (v₂ ∷ vs))
 
-  printObjectTokens : List (String × JSONValue) → List JSONToken
+  printObjectTokens : List (String × JSON) → List JSONToken
   printObjectTokens []                     = rbraceT ∷ []
   printObjectTokens ((k , v) ∷ [])         = stringT k ∷ colonT ∷ printTokens v ++ (rbraceT ∷ [])
   printObjectTokens ((k , v) ∷ kv₂ ∷ kvs)  = stringT k ∷ colonT ∷ printTokens v ++ (commaT ∷ printObjectTokens (kv₂ ∷ kvs))
 
 mutual
-  printJSON-tokens : ∀ (v : JSONValue) → printJSON v ≡ printTokenList (printTokens v)
+  printJSON-tokens : ∀ (v : JSON) → printJSON v ≡ printTokenList (printTokens v)
   printJSON-tokens (pure tt)    = refl
   printJSON-tokens (bool true)  = refl
   printJSON-tokens (bool false) = refl
@@ -101,7 +101,7 @@ mutual
   printJSON-tokens (arrayFromList xs)  = cong ('[' ∷_) (printArrayBody-tokens xs)
   printJSON-tokens (objectFromKVs kvs) = cong ('{' ∷_) (printObjectBody-tokens kvs)
 
-  printArrayBody-tokens : ∀ (xs : List JSONValue) → printArrayBody xs ≡ printTokenList (printArrayTokens xs)
+  printArrayBody-tokens : ∀ (xs : List JSON) → printArrayBody xs ≡ printTokenList (printArrayTokens xs)
   printArrayBody-tokens [] = refl
   printArrayBody-tokens (v ∷ []) = begin
     printJSON v ++ (']' ∷ [])
@@ -122,7 +122,7 @@ mutual
     ∎
     where open ≡-Reasoning
 
-  printObjectBody-tokens : ∀ (kvs : List (String × JSONValue)) → printObjectBody kvs ≡ printTokenList (printObjectTokens kvs)
+  printObjectBody-tokens : ∀ (kvs : List (String × JSON)) → printObjectBody kvs ≡ printTokenList (printObjectTokens kvs)
   printObjectBody-tokens [] = refl
   printObjectBody-tokens ((k , v) ∷ []) = cong (λ r → printStringLiteral k ++ (':' ∷ r)) (begin
     printJSON v ++ ('}' ∷ [])
@@ -199,7 +199,7 @@ validTokenSeq-++ (numberT n ∷ stringT s ∷ xs) ys (_ , vxs) nlys vys = tt , v
 validTokenSeq-++ (numberT n ∷ numberT m ∷ xs) ys (() , _) _ _
 
 mutual
-  validPrintTokens : ∀ (v : JSONValue) → ValidTokenSeq (printTokens v)
+  validPrintTokens : ∀ (v : JSON) → ValidTokenSeq (printTokens v)
   validPrintTokens (pure tt)           = tt
   validPrintTokens (bool _)            = tt
   validPrintTokens (number _)          = tt , tt
@@ -207,12 +207,12 @@ mutual
   validPrintTokens (arrayFromList xs)  = validPrintArrayTokens xs
   validPrintTokens (objectFromKVs kvs) = validPrintObjectTokens kvs
 
-  validPrintArrayTokens : ∀ (xs : List JSONValue) → ValidTokenSeq (printArrayTokens xs)
+  validPrintArrayTokens : ∀ (xs : List JSON) → ValidTokenSeq (printArrayTokens xs)
   validPrintArrayTokens []             = tt
   validPrintArrayTokens (v ∷ [])       = validTokenSeq-++ (printTokens v) (rbracketT ∷ []) (validPrintTokens v) tt tt
   validPrintArrayTokens (v ∷ v₂ ∷ vs)  = validTokenSeq-++ (printTokens v) (commaT ∷ printArrayTokens (v₂ ∷ vs)) (validPrintTokens v) tt (validPrintArrayTokens (v₂ ∷ vs))
 
-  validPrintObjectTokens : ∀ (kvs : List (String × JSONValue)) → ValidTokenSeq (printObjectTokens kvs)
+  validPrintObjectTokens : ∀ (kvs : List (String × JSON)) → ValidTokenSeq (printObjectTokens kvs)
   validPrintObjectTokens []                    = tt
   validPrintObjectTokens ((k , v) ∷ [])        = validTokenSeq-++ (printTokens v) (rbraceT ∷ []) (validPrintTokens v) tt tt
   validPrintObjectTokens ((k , v) ∷ kv₂ ∷ kvs) = validTokenSeq-++ (printTokens v) (commaT ∷ printObjectTokens (kv₂ ∷ kvs)) (validPrintTokens v) tt (validPrintObjectTokens (kv₂ ∷ kvs))
@@ -333,7 +333,7 @@ length-printTokenList (t ∷ ts)
   rewrite sym (+-assoc (length ts) (tokenExtra t) (tokenListExtra ts))
   = refl
 
-correctTokenize : ∀ (v : JSONValue) → tokenize (printJSON v) ≡ just (printTokens v)
+correctTokenize : ∀ (v : JSON) → tokenize (printJSON v) ≡ just (printTokens v)
 correctTokenize v
   rewrite printJSON-tokens v
   rewrite length-printTokenList (printTokens v)
@@ -343,7 +343,7 @@ correctTokenize v
 -- 3. Recursive-Descent Token Parser Soundness
 ------------------------------------------------------------------------
 
-parseElemAndContinue : ∀ (fuel : ℕ) (v : JSONValue) (tailToks : List JSONToken) →
+parseElemAndContinue : ∀ (fuel : ℕ) (v : JSON) (tailToks : List JSONToken) →
   (parseValue fuel (printTokens v ++ tailToks) ≡ just (v , tailToks)) →
   parseArrayElements (suc fuel) (printTokens v ++ tailToks) ≡ continueArray fuel v tailToks
 parseElemAndContinue fuel (pure tt)           tailToks eq rewrite eq = refl
@@ -353,18 +353,18 @@ parseElemAndContinue fuel (string _)          tailToks eq rewrite eq = refl
 parseElemAndContinue fuel (arrayFromList _)   tailToks eq rewrite eq = refl
 parseElemAndContinue fuel (objectFromKVs _)   tailToks eq rewrite eq = refl
 
-continueArrayCons : ∀ (fuel : ℕ) (v : JSONValue) (tailToks : List JSONToken) {vs rem'} →
+continueArrayCons : ∀ (fuel : ℕ) (v : JSON) (tailToks : List JSONToken) {vs rem'} →
   parseArrayElements fuel tailToks ≡ just (vs , rem') →
   continueArray fuel v (commaT ∷ tailToks) ≡ just (v ∷ vs , rem')
 continueArrayCons fuel v tailToks eq rewrite eq = refl
 
-continueObjectCons : ∀ (fuel : ℕ) (k : String) (v : JSONValue) (tailToks : List JSONToken) {kvs rem''} →
+continueObjectCons : ∀ (fuel : ℕ) (k : String) (v : JSON) (tailToks : List JSONToken) {kvs rem''} →
   parseObjectEntries fuel tailToks ≡ just (kvs , rem'') →
   continueObject fuel k v (commaT ∷ tailToks) ≡ just ((k , v) ∷ kvs , rem'')
 continueObjectCons fuel k v tailToks eq rewrite eq = refl
 
 mutual
-  correctParseValue : ∀ (v : JSONValue) (extra : ℕ) (rest : List JSONToken) →
+  correctParseValue : ∀ (v : JSON) (extra : ℕ) (rest : List JSONToken) →
     parseValue (length (printTokens v) + extra) (printTokens v ++ rest) ≡ just (v , rest)
   correctParseValue (pure tt) extra rest = refl
   correctParseValue (bool b)  extra rest = refl
@@ -375,7 +375,7 @@ mutual
   correctParseValue (objectFromKVs kvs) extra rest
     rewrite correctParseObject kvs extra rest = refl
 
-  correctParseArray : ∀ (xs : List JSONValue) (extra : ℕ) (rest : List JSONToken) →
+  correctParseArray : ∀ (xs : List JSON) (extra : ℕ) (rest : List JSONToken) →
     parseArrayElements (length (printArrayTokens xs) + extra) (printArrayTokens xs ++ rest) ≡ just (xs , rest)
   correctParseArray [] extra rest = refl
   correctParseArray (v ∷ []) extra rest
@@ -404,7 +404,7 @@ mutual
           step = parseElemAndContinue fuel v (commaT ∷ printArrayTokens (v₂ ∷ vs) ++ rest) eqV
       in trans step (continueArrayCons fuel v (printArrayTokens (v₂ ∷ vs) ++ rest) eqRec)
 
-  correctParseObject : ∀ (kvs : List (String × JSONValue)) (extra : ℕ) (rest : List JSONToken) →
+  correctParseObject : ∀ (kvs : List (String × JSON)) (extra : ℕ) (rest : List JSONToken) →
     parseObjectEntries (length (printObjectTokens kvs) + extra) (printObjectTokens kvs ++ rest) ≡ just (kvs , rest)
   correctParseObject [] extra rest = refl
   correctParseObject ((k , v) ∷ []) extra rest
@@ -445,8 +445,8 @@ mutual
 -- 4. Universal JSON Round-Trip Theorem & LeftInverse Bundle
 ------------------------------------------------------------------------
 
--- Universal round-trip theorem: parsing the printed characters of ANY JSONValue recovers it
-roundTripJSON : ∀ (v : JSONValue) → parseJSON (printJSON v) ≡ just v
+-- Universal round-trip theorem: parsing the printed characters of ANY JSON recovers it
+roundTripJSON : ∀ (v : JSON) → parseJSON (printJSON v) ≡ just v
 roundTripJSON v
   rewrite correctTokenize v
   rewrite sym (+-comm (length (printTokens v)) 1)
@@ -455,20 +455,20 @@ roundTripJSON v
   = refl
 
 -- Total JSON parser with null fallback
-parseJSONTotal : List Char → JSONValue
+parseJSONTotal : List Char → JSON
 parseJSONTotal cs with parseJSON cs
 ... | just v  = v
 ... | nothing = null
 
--- Universal retraction theorem: parseJSONTotal is a left inverse to printJSON for ALL JSONValue
-jsonRetraction : ∀ (v : JSONValue) → parseJSONTotal (printJSON v) ≡ v
+-- Universal retraction theorem: parseJSONTotal is a left inverse to printJSON for ALL JSON
+jsonRetraction : ∀ (v : JSON) → parseJSONTotal (printJSON v) ≡ v
 jsonRetraction v rewrite roundTripJSON v = refl
 
 -- Inverseˡ property required by Data.Function.Bundles.LeftInverse
-jsonLeftInverseˡ : ∀ {v : JSONValue} {cs : List Char} → cs ≡ printJSON v → parseJSONTotal cs ≡ v
+jsonLeftInverseˡ : ∀ {v : JSON} {cs : List Char} → cs ≡ printJSON v → parseJSONTotal cs ≡ v
 jsonLeftInverseˡ {v} refl = jsonRetraction v
 
--- Unconditional stdlib LeftInverse bundle: List Char ↩ JSONValue
+-- Unconditional stdlib LeftInverse bundle: List Char ↩ JSON
 -- with to = parseJSONTotal (pseudo-inverse) and from = printJSON (injection)
-jsonLeftInverse : List Char ↩ JSONValue
+jsonLeftInverse : List Char ↩ JSON
 jsonLeftInverse = mk↩ {to = parseJSONTotal} {from = printJSON} jsonLeftInverseˡ

@@ -31,21 +31,21 @@ open import GeoAgda.Tests.Milestone5 using (testFeatureCollection)
 ------------------------------------------------------------------------
 
 -- Test number round-trip
-testNumVal : JSONValue
+testNumVal : JSON
 testNumVal = number (jsonNumber - 42 (1 ∷ 2 ∷ 5 ∷ []) (+ 0))
 
 testNumRoundTrip : parseJSON (printJSON testNumVal) ≡ just testNumVal
 testNumRoundTrip = refl
 
 -- Test array round-trip
-testArrVal : JSONValue
+testArrVal : JSON
 testArrVal = arrayFromList (null ∷ trueⱼ ∷ falseⱼ ∷ testNumVal ∷ [])
 
 testArrRoundTrip : parseJSON (printJSON testArrVal) ≡ just testArrVal
 testArrRoundTrip = refl
 
 -- Test object round-trip
-testObjVal : JSONValue
+testObjVal : JSON
 testObjVal = objectFromKVs (("active" , trueⱼ) ∷ ("count" , testNumVal) ∷ [])
 
 testObjRoundTrip : parseJSON (printJSON testObjVal) ≡ just testObjVal
@@ -91,11 +91,11 @@ testUniversalXMLRetraction = xmlRetraction
 testXMLRetraction : parseXMLTotal (printXML renderedMap) ≡ renderedMap
 testXMLRetraction = xmlRetraction renderedMap
 
--- Verify universal JSON round-trip and retraction for ANY JSONValue
-testUniversalRoundTrip : ∀ (v : JSONValue) → parseJSON (printJSON v) ≡ just v
+-- Verify universal JSON round-trip and retraction for ANY JSON
+testUniversalRoundTrip : ∀ (v : JSON) → parseJSON (printJSON v) ≡ just v
 testUniversalRoundTrip = roundTripJSON
 
-testUniversalRetraction : ∀ (v : JSONValue) → parseJSONTotal (printJSON v) ≡ v
+testUniversalRetraction : ∀ (v : JSON) → parseJSONTotal (printJSON v) ≡ v
 testUniversalRetraction = jsonRetraction
 
 -- Verify JSON retraction on concrete object via universal jsonRetraction

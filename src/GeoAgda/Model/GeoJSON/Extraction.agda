@@ -11,7 +11,7 @@ open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
 open import Data.Maybe.Base as Maybe using (Maybe; just; nothing; _>>=_)
 open import Function.Base using (_∘_; _$_)
 
-open import GeoAgda.Data.JSON.AST using (JSONValue; JSONNumber)
+open import GeoAgda.Data.JSON.AST using (JSON; JSONNumber)
 open import GeoAgda.Data.JSON.Schema using (asArray; asObject; asString; asNumber; lookupField)
 open import GeoAgda.Model.GeoJSON.Types
 
@@ -24,7 +24,7 @@ mkPos (just lon) (just lat) = just (pos lon lat)
 mkPos _          _          = nothing
 
 -- Extract a single [longitude, latitude] pair
-extractPosition : JSONValue → Maybe Position
+extractPosition : JSON → Maybe Position
 extractPosition v with asArray v
 ... | just (lonV ∷ latV ∷ []) = mkPos (asNumber lonV) (asNumber latV)
 ... | _                       = nothing
@@ -38,13 +38,13 @@ mapM f (x ∷ xs) = do
   just (y ∷ ys)
 
 -- Extract a line or ring of positions
-extractPositions : JSONValue → Maybe (List Position)
+extractPositions : JSON → Maybe (List Position)
 extractPositions v with asArray v
 ... | nothing   = nothing
 ... | just arrs = mapM extractPosition arrs
 
 -- Extract polygon rings: list of linear rings (outer + inner holes)
-extractRings : JSONValue → Maybe (List (List Position))
+extractRings : JSON → Maybe (List (List Position))
 extractRings v with asArray v
 ... | nothing   = nothing
 ... | just arrs = mapM extractPositions arrs
@@ -53,7 +53,7 @@ extractRings v with asArray v
 -- Geometry Extraction
 ------------------------------------------------------------------------
 
-extractGeometryFromObject : List (String × JSONValue) → Maybe Geometry
+extractGeometryFromObject : List (String × JSON) → Maybe Geometry
 extractGeometryFromObject kvs = do
   typeVal   ← lookupField "type" kvs
   coordsVal ← lookupField "coordinates" kvs
@@ -66,7 +66,7 @@ extractGeometryFromObject kvs = do
                 then Maybe.map polygonG (extractRings coordsVal)
                 else nothing))
 
-extractGeometry : JSONValue → Maybe Geometry
+extractGeometry : JSON → Maybe Geometry
 extractGeometry v with asObject v
 ... | nothing  = nothing
 ... | just kvs = extractGeometryFromObject kvs
@@ -75,7 +75,7 @@ extractGeometry v with asObject v
 -- Feature Extraction
 ------------------------------------------------------------------------
 
-extractFeatureFromObject : List (String × JSONValue) → Maybe Feature
+extractFeatureFromObject : List (String × JSON) → Maybe Feature
 extractFeatureFromObject kvs = do
   typeVal  ← lookupField "type" kvs
   geomVal  ← lookupField "geometry" kvs
@@ -89,7 +89,7 @@ extractFeatureFromObject kvs = do
       just (feature idVal geom finalProps))
     else nothing
 
-extractFeature : JSONValue → Maybe Feature
+extractFeature : JSON → Maybe Feature
 extractFeature v with asObject v
 ... | nothing  = nothing
 ... | just kvs = extractFeatureFromObject kvs
@@ -98,7 +98,7 @@ extractFeature v with asObject v
 -- FeatureCollection Extraction
 ------------------------------------------------------------------------
 
-extractBBox : JSONValue → Maybe BBox
+extractBBox : JSON → Maybe BBox
 extractBBox v with asArray v
 ... | just (minLonV ∷ minLatV ∷ maxLonV ∷ maxLatV ∷ []) = do
         minLon ← asNumber minLonV
@@ -108,7 +108,7 @@ extractBBox v with asArray v
         just (bbox minLon minLat maxLon maxLat)
 ... | _ = nothing
 
-extractFeatureCollectionFromObject : List (String × JSONValue) → Maybe FeatureCollection
+extractFeatureCollectionFromObject : List (String × JSON) → Maybe FeatureCollection
 extractFeatureCollectionFromObject kvs = do
   typeVal     ← lookupField "type" kvs
   featuresVal ← lookupField "features" kvs
@@ -121,7 +121,7 @@ extractFeatureCollectionFromObject kvs = do
       just (featureCollection feats mbBBox))
     else nothing
 
-extractFeatureCollection : JSONValue → Maybe FeatureCollection
+extractFeatureCollection : JSON → Maybe FeatureCollection
 extractFeatureCollection v with asObject v
 ... | nothing  = nothing
 ... | just kvs = extractFeatureCollectionFromObject kvs
