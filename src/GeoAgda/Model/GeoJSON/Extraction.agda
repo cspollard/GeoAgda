@@ -49,6 +49,12 @@ extractRings v with asArray v
 ... | nothing   = nothing
 ... | just arrs = mapM extractPositions arrs
 
+-- Extract multi-polygon: list of polygon rings
+extractPolygons : JSON → Maybe (List (List (List Position)))
+extractPolygons v with asArray v
+... | nothing   = nothing
+... | just arrs = mapM extractRings arrs
+
 ------------------------------------------------------------------------
 -- Geometry Extraction
 ------------------------------------------------------------------------
@@ -60,11 +66,17 @@ extractGeometryFromObject kvs = do
   typeName  ← asString typeVal
   if typeName == "Point"
     then Maybe.map pointG (extractPosition coordsVal)
-    else (if typeName == "LineString"
-          then Maybe.map lineStringG (extractPositions coordsVal)
-          else (if typeName == "Polygon"
-                then Maybe.map polygonG (extractRings coordsVal)
-                else nothing))
+    else (if typeName == "MultiPoint"
+          then Maybe.map multiPointG (extractPositions coordsVal)
+          else (if typeName == "LineString"
+                then Maybe.map lineStringG (extractPositions coordsVal)
+                else (if typeName == "MultiLineString"
+                      then Maybe.map multiLineStringG (extractRings coordsVal)
+                      else (if typeName == "Polygon"
+                            then Maybe.map polygonG (extractRings coordsVal)
+                            else (if typeName == "MultiPolygon"
+                                  then Maybe.map multiPolygonG (extractPolygons coordsVal)
+                                  else nothing)))))
 
 extractGeometry : JSON → Maybe Geometry
 extractGeometry v with asObject v

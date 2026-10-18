@@ -3,7 +3,7 @@
 module GeoAgda.Parsing.XML.Parser where
 
 open import Data.Bool.Base using (Bool; true; false)
-open import Data.Char.Base using (Char)
+open import Data.Char.Base using (Char; isSpace)
 open import Data.Char.Properties using (_≟_)
 open import Data.String.Base as String using (String; toList; fromList)
 open import Data.String.Properties using () renaming (_≟_ to _≟S_)
@@ -16,7 +16,6 @@ open import Function.Base using (_∘_)
 open import Relation.Nullary.Decidable using (yes; no)
 
 open import GeoAgda.Data.XML.AST
-open import GeoAgda.Parsing.JSON.Lexer using (isWhitespace)
 
 ------------------------------------------------------------------------
 -- Whitespace & Escaped Lexical Scanners
@@ -24,7 +23,7 @@ open import GeoAgda.Parsing.JSON.Lexer using (isWhitespace)
 
 stripLeadingWS : List Char → List Char
 stripLeadingWS []       = []
-stripLeadingWS (c ∷ cs) with isWhitespace c
+stripLeadingWS (c ∷ cs) with isSpace c
 ... | true  = stripLeadingWS cs
 ... | false = c ∷ cs
 
@@ -188,7 +187,7 @@ double (suc n) = suc (suc (double n))
 mutual
   parseXMLTok : ℕ → List XMLToken → Maybe (XMLDoc × List XMLToken)
   parseXMLTok zero _ = nothing
-  parseXMLTok (suc fuel) (emptyTok ∷ rest)               = just (pure tt , rest)
+  parseXMLTok (suc fuel) (emptyTok ∷ rest)               = nothing
   parseXMLTok (suc fuel) (textTok s ∷ rest)              = just (text s , rest)
   parseXMLTok (suc fuel) (openTok tag attrs true ∷ rest) = just (elementList tag attrs [] , rest)
   parseXMLTok (suc fuel) (openTok tag attrs false ∷ rest) with parseXMLChildrenTok fuel tag rest

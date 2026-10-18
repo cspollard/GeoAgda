@@ -5,32 +5,70 @@ module GeoAgda.Data.XML.Print where
 open import Data.Char.Base using (Char)
 open import Data.Char.Properties using (_≟_)
 open import Data.String.Base as String using (String; toList; fromList)
-open import Data.List.Base as List using (List; []; _∷_; _++_)
+open import Data.List.Base as List using (List; []; _∷_; _++_; concat)
 open import Data.Product.Base using (_×_; _,_)
 open import Data.Unit.Base using (⊤; tt)
 open import Function.Base using (_∘_)
-open import Relation.Nullary.Decidable using (yes; no)
+open import Relation.Nullary.Decidable using (Dec; yes; no)
+open import Relation.Binary.PropositionalEquality using (_≡_)
 
 open import GeoAgda.Data.XML.AST
+
+open import Data.List.Relation.Unary.Any using (Any; here; there; any?)
 
 ------------------------------------------------------------------------
 -- Helpers: Tag Name, Attribute, & Text Escaping
 ------------------------------------------------------------------------
 
+-- Association table membership via Char decidable equality
+_∈-table?_ : (c : Char) (table : List (Char × Char)) → Dec (Any (λ (k , _) → c ≡ k) table)
+c ∈-table? table = any? (λ (k , _) → c ≟ k) table
+
+lookupEscape : ∀ {c : Char} {table : List (Char × Char)} → Any (λ (k , _) → c ≡ k) table → Char
+lookupEscape (here {x = _ , v} _) = v
+lookupEscape (there p)            = lookupEscape p
+
+escapeList : List (Char × Char) → List Char → List Char
+escapeList table []       = []
+escapeList table (c ∷ cs) with c ∈-table? table
+... | yes p = '\\' ∷ lookupEscape p ∷ escapeList table cs
+... | no  _ = c ∷ escapeList table cs
+
+-- Escape tables
+escapeNameChars : List (Char × Char)
+escapeNameChars =
+  ('\\' , '\\') ∷
+  (' '  , 's')  ∷
+  ('\t' , 't')  ∷
+  ('\n' , 'n')  ∷
+  ('\r' , 'r')  ∷
+  ('>'  , 'g')  ∷
+  ('/'  , 'f')  ∷
+  ('='  , 'e')  ∷
+  ('<'  , 'l')  ∷
+  ('!'  , 'b')  ∷ []
+
+escapeAttrChars : List (Char × Char)
+escapeAttrChars =
+  ('\\' , '\\') ∷
+  ('"'  , '"')  ∷
+  ('<'  , 'l')  ∷
+  ('>'  , 'g')  ∷
+  ('&'  , 'a')  ∷ []
+
+escapeTextChars : List (Char × Char)
+escapeTextChars =
+  ('\\' , '\\') ∷
+  ('<'  , 'l')  ∷
+  ('>'  , 'g')  ∷
+  ('&'  , 'a')  ∷
+  (' '  , 's')  ∷
+  ('\t' , 't')  ∷
+  ('\n' , 'n')  ∷
+  ('\r' , 'r')  ∷ []
+
 escapeName : List Char → List Char
-escapeName [] = []
-escapeName (c ∷ cs) with c ≟ '\\' | c ≟ ' ' | c ≟ '\t' | c ≟ '\n' | c ≟ '\r' | c ≟ '>' | c ≟ '/' | c ≟ '=' | c ≟ '<' | c ≟ '!'
-... | yes _ | _     | _     | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ '\\' ∷ escapeName cs
-... | no  _ | yes _ | _     | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ 's'  ∷ escapeName cs
-... | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ 't'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     | _     = '\\' ∷ 'n'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     = '\\' ∷ 'r'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     = '\\' ∷ 'g'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     = '\\' ∷ 'f'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     = '\\' ∷ 'e'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     = '\\' ∷ 'l'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ = '\\' ∷ 'b'  ∷ escapeName cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ = c ∷ escapeName cs
+escapeName = escapeList escapeNameChars
 
 printName : String → List Char
 printName s with toList s
@@ -38,14 +76,7 @@ printName s with toList s
 ... | c ∷ cs = escapeName (c ∷ cs)
 
 escapeAttr : List Char → List Char
-escapeAttr [] = []
-escapeAttr (c ∷ cs) with c ≟ '\\' | c ≟ '"' | c ≟ '<' | c ≟ '>' | c ≟ '&'
-... | yes _ | _     | _     | _     | _     = '\\' ∷ '\\' ∷ escapeAttr cs
-... | no  _ | yes _ | _     | _     | _     = '\\' ∷ '"'  ∷ escapeAttr cs
-... | no  _ | no  _ | yes _ | _     | _     = '\\' ∷ 'l'  ∷ escapeAttr cs
-... | no  _ | no  _ | no  _ | yes _ | _     = '\\' ∷ 'g'  ∷ escapeAttr cs
-... | no  _ | no  _ | no  _ | no  _ | yes _ = '\\' ∷ 'a'  ∷ escapeAttr cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ = c ∷ escapeAttr cs
+escapeAttr = escapeList escapeAttrChars
 
 -- Format a single attribute: ` key="val"`
 printAttribute : Attribute → List Char
@@ -57,17 +88,7 @@ printAttributes []       = []
 printAttributes (a ∷ as) = printAttribute a ++ printAttributes as
 
 escapeText : List Char → List Char
-escapeText [] = []
-escapeText (c ∷ cs) with c ≟ '\\' | c ≟ '<' | c ≟ '>' | c ≟ '&' | c ≟ ' ' | c ≟ '\t' | c ≟ '\n' | c ≟ '\r'
-... | yes _ | _     | _     | _     | _     | _     | _     | _     = '\\' ∷ '\\' ∷ escapeText cs
-... | no  _ | yes _ | _     | _     | _     | _     | _     | _     = '\\' ∷ 'l'  ∷ escapeText cs
-... | no  _ | no  _ | yes _ | _     | _     | _     | _     | _     = '\\' ∷ 'g'  ∷ escapeText cs
-... | no  _ | no  _ | no  _ | yes _ | _     | _     | _     | _     = '\\' ∷ 'a'  ∷ escapeText cs
-... | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     | _     = '\\' ∷ 's'  ∷ escapeText cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     | _     = '\\' ∷ 't'  ∷ escapeText cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ | _     = '\\' ∷ 'n'  ∷ escapeText cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | yes _ = '\\' ∷ 'r'  ∷ escapeText cs
-... | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ | no  _ = c ∷ escapeText cs
+escapeText = escapeList escapeTextChars
 
 printTextContent : String → List Char
 printTextContent s = escapeText (toList s) ++ ('\\' ∷ 'e' ∷ [])
@@ -76,18 +97,17 @@ printTextContent s = escapeText (toList s) ++ ('\\' ∷ 'e' ∷ [])
 -- XML Serialization
 ------------------------------------------------------------------------
 
-mutual
-  printXML : XMLDoc → List Char
-  printXML (pure tt) = '<' ∷ '!' ∷ '>' ∷ []
-  printXML (text s)  = printTextContent s
-  printXML (elementList tag attrs []) =
-    '<' ∷ printName tag ++ printAttributes attrs ++ (' ' ∷ '/' ∷ '>' ∷ [])
-  printXML (elementList tag attrs (c ∷ cs)) =
-    '<' ∷ printName tag ++ printAttributes attrs ++ ('>' ∷ printXMLChildren tag (c ∷ cs))
+printXML : XMLDoc → List Char
+printXML = foldXMLM (λ ()) printText printElem
+  where
+    printText : String → List Char
+    printText = printTextContent
 
-  printXMLChildren : String → List XMLDoc → List Char
-  printXMLChildren tag []       = '<' ∷ '/' ∷ printName tag ++ ('>' ∷ [])
-  printXMLChildren tag (c ∷ cs) = printXML c ++ printXMLChildren tag cs
+    printElem : String → Attributes → List (List Char) → List Char
+    printElem tag attrs [] =
+      '<' ∷ printName tag ++ printAttributes attrs ++ (' ' ∷ '/' ∷ '>' ∷ [])
+    printElem tag attrs (c ∷ cs) =
+      '<' ∷ printName tag ++ printAttributes attrs ++ ('>' ∷ concat (c ∷ cs) ++ ('<' ∷ '/' ∷ printName tag ++ ('>' ∷ [])))
 
 -- Render XML document to String
 renderXML : XMLDoc → String
