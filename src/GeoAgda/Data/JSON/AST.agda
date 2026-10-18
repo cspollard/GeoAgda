@@ -2,7 +2,7 @@
 
 module GeoAgda.Data.JSON.AST where
 
-open import Level using (0ℓ)
+open import Level using (0ℓ; Level) renaming (suc to lsuc)
 open import Data.Bool.Base using (Bool; true; false)
 open import Data.Nat.Base using (ℕ; zero; suc)
 open import Data.Integer.Base using (ℤ)
@@ -13,6 +13,23 @@ open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
 open import Data.Unit.Base using (⊤; tt)
 open import Data.Fin.Base using (Fin; zero; suc)
 open import Function.Base using (_∘_)
+open import Data.Container hiding (refl)
+import Data.Container.Combinator as CC
+open import Data.Container.FreeMonad as FM
+open import Relation.Binary.PropositionalEquality
+open import Data.Float
+open import Relation.Binary
+open import Relation.Nullary
+open import GeoAgda.Data.JSON.ObjectC
+open import Data.String.Properties using () renaming (≡-decSetoid to stringDecSetoid)
+open import Data.Sum
+open import Data.Empty
+open import Function using (flip)
+
+private variable
+  a b : Level
+  A : Set a
+  B : Set b
 
 ------------------------------------------------------------------------
 -- JSON Numbers
@@ -32,28 +49,133 @@ record JSONNumber : Set where
 -- The Inductive JSON AST Type
 ------------------------------------------------------------------------
 
--- JSON AST parameterized over variable/leaf type X
-data JSON (X : Set) : Set where
-  pure          : X → JSON X
-  bool          : Bool → JSON X
-  number        : JSONNumber → JSON X
-  string        : String → JSON X
-  arrayFromList : List (JSON X) → JSON X
-  objectFromKVs : List (String × JSON X) → JSON X
+-- put in module to avoid clashes
+module JSONCont where
 
--- Standard closed JSON values (with terminal leaf ⊤)
-JSONValue : Set
-JSONValue = JSON ⊤
+  ListC : Container 0ℓ 0ℓ
+  ListC = ℕ ▷ Fin
 
-------------------------------------------------------------------------
--- Smart Constructors
-------------------------------------------------------------------------
+  foldListC : (B → A → B) → B → ⟦ ListC ⟧ A → B
+  foldListC {B = B} {A = A} f b (n , lookup) = go n b lookup
+    where
+    go : ∀ n → B → (Fin n → A) → B
+    go zero acc _ = acc
+    go (suc k) acc pos = go k (f acc (pos zero)) (pos ∘ suc)
 
-null : JSONValue
-null = pure tt
+  StringObjectC : Container 0ℓ 0ℓ
+  StringObjectC = ObjectC stringDecSetoid
 
-trueⱼ : ∀ {X} → JSON X
-trueⱼ = bool true
+  listCToList : ⟦ ListC ⟧ A → List A
+  listCToList = foldListC (flip _∷_) []
 
-falseⱼ : ∀ {X} → JSON X
-falseⱼ = bool false
+  listToListC : List A → ⟦ ListC ⟧ A
+  listToListC = L.foldr add (zero , λ ())
+    where
+      import Data.List as L
+      add : A → ⟦ ListC ⟧ A → ⟦ ListC ⟧ A
+      add x (fst , snd) = suc fst , λ { zero → x; (suc i) → snd i }
+
+  data PrimJSONType : Set where
+    primstring primnumber primbool primnull : PrimJSONType
+
+  data JSONType : Set where
+    object array : JSONType
+    prim : PrimJSONType → JSONType
+
+  prim-injective : ∀ {t t'} → prim t ≡ prim t' → t ≡ t'
+  prim-injective refl = refl
+
+  pattern pstring = prim primstring
+  pattern pnumber = prim primnumber
+  pattern pbool = prim primbool
+  pattern pnull = prim primnull
+
+  RetType : (t : PrimJSONType) → Set
+  RetType primstring = String
+  RetType primnumber = JSONNumber
+  RetType primbool = Bool
+  RetType primnull = ⊤
+
+  PrimJSONType≟ : DecidableEquality PrimJSONType
+  PrimJSONType≟ primstring primstring = yes refl
+  PrimJSONType≟ primnumber primnumber = yes refl
+  PrimJSONType≟ primbool primbool = yes refl
+  PrimJSONType≟ primnull primnull = yes refl
+  PrimJSONType≟ primstring primnumber = no λ ()
+  PrimJSONType≟ primstring primbool = no λ ()
+  PrimJSONType≟ primstring primnull = no λ ()
+  PrimJSONType≟ primnumber primstring = no λ ()
+  PrimJSONType≟ primnumber primbool = no λ ()
+  PrimJSONType≟ primnumber primnull = no λ ()
+  PrimJSONType≟ primbool primstring = no λ ()
+  PrimJSONType≟ primbool primnumber = no λ ()
+  PrimJSONType≟ primbool primnull = no λ ()
+  PrimJSONType≟ primnull primstring = no λ ()
+  PrimJSONType≟ primnull primnumber = no λ ()
+  PrimJSONType≟ primnull primbool = no λ ()
+
+  JSONType≟ : DecidableEquality JSONType
+  JSONType≟ object object = yes refl
+  JSONType≟ array array = yes refl
+  JSONType≟ object array = no λ ()
+  JSONType≟ array object = no λ ()
+  JSONType≟ object (prim _) = no λ ()
+  JSONType≟ array (prim _) = no λ ()
+  JSONType≟ (prim _) object = no λ ()
+  JSONType≟ (prim _) array = no λ ()
+  JSONType≟ (prim t) (prim t') with PrimJSONType≟ t t'
+  ... | yes p = yes (cong prim p)
+  ... | no ¬p = no λ p → ¬p (prim-injective p)
+
+  JSON→ : JSONType → Container 0ℓ 0ℓ
+  JSON→ object = StringObjectC
+  JSON→ array = ListC
+  JSON→ (prim t) = CC.const (RetType t)
+
+  JSONC : Container 0ℓ 0ℓ
+  JSONC = CC.Σ _ JSON→
+
+  injC : ∀ t → RetType t → ∀ {A : Set a} → ⟦ JSONC ⟧ A
+  injC primstring x = (pstring , x) , λ ()
+  injC primnumber x = (pnumber , x) , λ ()
+  injC primbool x = (pbool , x) , λ ()
+  injC primnull _ = (pnull , _) , λ ()
+
+  JSONM : Set a → Set a
+  JSONM A = JSONC ⋆ A
+
+  -- it's better to use JSONM ⊥ rather than ∀ {a} {A : Set a} → JSONM A
+  -- they are isomorphic, but the latter has poor compilation properties
+  JSON : Set
+  JSON = JSONM ⊥
+
+  lift : (t : JSONType) → (xs : ⟦ JSON→ t ⟧ (JSONM A)) → JSONM A
+  lift t (fst , snd) = impure ((t , fst) , snd)
+
+  json↑ : (t : JSONType) → (xs : ⟦ JSON→ t ⟧ A) → JSONM A
+  json↑ t (s , go) = impure ((t , s) , pure ∘ go)
+
+  jsoninj : (t : PrimJSONType) → RetType t → JSON
+  jsoninj t x = json↑ (prim t) (x , λ ())
+
+  nullⱼ : JSON
+  nullⱼ = jsoninj primnull _
+
+  boolⱼ : Bool → JSON
+  boolⱼ = jsoninj primbool
+
+  trueⱼ falseⱼ : JSON
+  trueⱼ = boolⱼ true
+  falseⱼ = boolⱼ false
+
+  stringⱼ : String → JSON
+  stringⱼ = jsoninj primstring
+
+  arrayⱼ : List (JSONM A) → JSONM A
+  arrayⱼ = lift array ∘ listToListC
+
+  objectⱼ : ⟦ StringObjectC ⟧ (JSONM A) → JSONM A
+  objectⱼ = lift object
+
+open JSONCont public using
+  (JSONM; JSON; nullⱼ; boolⱼ; trueⱼ; falseⱼ; stringⱼ; arrayⱼ; objectⱼ)
