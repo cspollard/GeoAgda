@@ -135,11 +135,8 @@ module JSONCont where
   JSONC : Container 0ℓ 0ℓ
   JSONC = CC.Σ _ JSON→
 
-  foldJSONC : (∀ t → B → RetType t → B) → (B → A → B) → B → ⟦ JSONC ⟧ A → B
-  foldJSONC f g b ((prim t , x) , _) = f t b x
-  foldJSONC f g b ((array , shp) , pos) = foldListC g b (shp , pos)
-  foldJSONC f g b ((object , shp) , pos) =
-    foldObject stringDecSetoid g b (shp , pos)
+  foldJSONC : (∀ t → ⟦ JSON→ t ⟧ A → B) → ⟦ JSONC ⟧ A → B
+  foldJSONC f (shp , pos) = f (shp .proj₁) (shp .proj₂ , pos)
 
   injC : ∀ t → RetType t → ∀ {A : Set a} → ⟦ JSONC ⟧ A
   injC primstring x = (pstring , x) , λ ()
@@ -155,8 +152,8 @@ module JSONCont where
   JSON : Set
   JSON = JSONM ⊥
 
-  foldJSONM : (A → B) → (∀ t → B → RetType t → B) → (∙ : B → B → B) → B → JSONM A → B
-  foldJSONM f g ∙ b = foldr f (foldJSONC g ∙ b)
+  foldJSONM : (A → B) → (∀ t → ⟦ JSON→ t ⟧ B → B) → JSONM A → B
+  foldJSONM f g = foldr f (foldJSONC g)
 
   lift : (t : JSONType) → (xs : ⟦ JSON→ t ⟧ (JSONM A)) → JSONM A
   lift t (fst , snd) = impure ((t , fst) , snd)

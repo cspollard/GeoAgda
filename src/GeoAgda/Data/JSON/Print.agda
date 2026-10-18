@@ -74,7 +74,7 @@ printObjectBody []                    = '}' ∷ []
 printObjectBody ((k , v) ∷ [])        = printStringLiteral k ++ (':' ∷ printJSON v ++ ('}' ∷ []))
 printObjectBody ((k , v) ∷ kv₂ ∷ kvs) = printStringLiteral k ++ (':' ∷ printJSON v ++ (',' ∷ printObjectBody (kv₂ ∷ kvs)))
 
-printJSON = foldJSONM (λ ()) (λ t cs x → cs ++ printPrim t x) {!   !} {!   !}
+printJSON = foldJSONM (λ ()) {! printJSONC  !}
 
 
 
