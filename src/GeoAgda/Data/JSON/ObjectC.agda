@@ -26,7 +26,7 @@ open import Relation.Binary.Construct.On
   using () renaming (decSetoid to on-decSetoid)
 import Data.List.Relation.Unary.Unique.DecSetoid.Properties as U
 open import Data.Product
-open import Function using (_∘_)
+open import Function using (_∘_; id)
 
 private variable
   a b : Level
@@ -69,5 +69,9 @@ toObjectC l =
 Object : Set a → Set (a ⊔ c ⊔ ℓ)
 Object = ⟦ ObjectC ⟧
 
-foldObject : (f : B → A → B) → B → Object A → B
-foldObject f b = L.foldl f b ∘ L.map proj₂ ∘ fromObjectC
+foldObjectC : (f : B → (Key × A) → B) → B → Object A  → B
+foldObjectC f b = L.foldl f b ∘ fromObjectC
+
+objectToList : Object A → List (Key × A)
+objectToList obj = foldObjectC (λ f x → f ∘ (x ∷_)) id obj []
+  where open import Data.List
