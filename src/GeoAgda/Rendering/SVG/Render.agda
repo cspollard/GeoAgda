@@ -55,7 +55,7 @@ defaultPolygonStyle : SVGStyle
 defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "0.05") (just "0.8") "3" nothing false false false "2.8" "#2b231d"
 
 defaultTerrainStyle : SVGStyle
-defaultTerrainStyle = svgStyle (just "#ded8c7") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#092244") true true true "1.2" "#222222"
+defaultTerrainStyle = svgStyle (just "#a8cca0") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#092244") true true true "1.2" "#222222"
 
 terrainStyle : SVGStyle
 terrainStyle = defaultTerrainStyle
@@ -93,14 +93,19 @@ bathymetryColor d =
   "#020b24"
 
 -- Natural Earth elevation palette (meters above sea level)
+-- Hypsometric tints: lush coastal green -> spring green -> yellow-green -> savanna buff -> upland tan -> plateau ochre -> sienna -> alpine brown -> snow cap
 elevationColor : ℕ → String
 elevationColor e =
-  if e ≤ᵇ 300  then "#c5d5a9" else
-  if e ≤ᵇ 800  then "#d9cd9f" else
-  if e ≤ᵇ 1500 then "#c89b53" else
-  if e ≤ᵇ 2500 then "#ab753d" else
-  if e ≤ᵇ 4000 then "#8c562b" else
-  "#6e3d1b"
+  if e ≤ᵇ 100  then "#a8cca0" else   -- 0 - 100m: lowlands & coastal plains (lush green)
+  if e ≤ᵇ 250  then "#bed89f" else   -- 100 - 250m: lowlands & valleys (soft spring green)
+  if e ≤ᵇ 500  then "#dae3a8" else   -- 250 - 500m: plains & rolling lowlands (warm yellow-green)
+  if e ≤ᵇ 800  then "#eadcb0" else   -- 500 - 800m: interior plains & steppes (buff savanna tan)
+  if e ≤ᵇ 1200 then "#dec28a" else   -- 800 - 1200m: upland plateaus & hills (warm ochre tan)
+  if e ≤ᵇ 1800 then "#cb9c62" else   -- 1200 - 1800m: highlands & lower plateaus (rich ochre)
+  if e ≤ᵇ 2800 then "#b37742" else   -- 1800 - 2800m: mountains (warm sienna)
+  if e ≤ᵇ 4000 then "#94562c" else   -- 2800 - 4000m: high ranges (deep sienna)
+  if e ≤ᵇ 5000 then "#773c1d" else   -- 4000 - 5000m: rugged alpine crags (deep mountain brown)
+  "#e8eef2"                          -- 5000m+: glaciated summits & snow caps
 
 -- Natural Earth physical map earth-tone palette for countries/regions
 terrainColorByMapIndex : ℕ → String
@@ -127,12 +132,13 @@ terrainColorByContinent c =
 defaultTerrainFeatureStyle : SVGStyle → Properties → SVGStyle
 defaultTerrainFeatureStyle s props with lookupField "elevation" props >>= asNumber
 ... | just (jsonNumber _ elev _ _) =
-  record s { fill = just (elevationColor elev) ; stroke = just "#6d5843" ; strokeWidth = just "0.08" }
+  let c = elevationColor elev
+  in record s { fill = just c ; stroke = just c ; strokeWidth = just "0.05" }
 ... | nothing with lookupField "CONTINENT" props >>= asString
 ...   | just cont =
       record s { fill = just (terrainColorByContinent cont) ; stroke = just "#7d7565" ; strokeWidth = just "0.08" }
 ...   | nothing   =
-      record s { fill = just "#ded8c7" ; stroke = just "#7d7565" ; strokeWidth = just "0.08" }
+      record s { fill = just "#a8cca0" ; stroke = just "#98bc90" ; strokeWidth = just "0.08" }
 
 private
   _∈?_ : String → List String → Bool
@@ -147,32 +153,10 @@ terrainStyleByFeatureClass s cla props =
                       nothing → 0
             c = bathymetryColor depth
         in record s { fill = just c ; stroke = just c ; strokeWidth = just "0.02" ; opacity = just "1.0" })
-  else if (cla ∈? ("Land" ∷ "land" ∷ []))
-  then record s { fill = just "#ded8c7" ; stroke = just "#baa896" ; strokeWidth = just "0.1" }
-  else if (cla ∈? ("Admin-0 country" ∷ "Admin-0 sovereignty" ∷ "Admin-0 map unit" ∷ "Country" ∷ []))
-  then record s { fill = just "#ded8c7" ; stroke = just "#8c827a" ; strokeWidth = just "0.2" }
-  else if (cla ∈? ("Admin-0 boundary lines" ∷ "International boundary (real)" ∷ []))
-  then record s { fill = just "none" ; stroke = just "#777065" ; strokeWidth = just "0.2" }
-  else if cla == "CountryLabel"
-  then record s { fill = just "none" ; stroke = just "none" ; strokeWidth = just "0" ; pointRadius = "0" }
   else if (cla ∈? ("Glaciated areas" ∷ "Antarctic Ice Shelf" ∷ "glacier" ∷ []))
   then record s { fill = just "#f4f9fa" ; stroke = just "#c8dde6" ; strokeWidth = just "0.05" }
   else if cla == "Antarctic Ice Shelf Edge"
   then record s { fill = just "none" ; stroke = just "#b0cce0" ; strokeWidth = just "0.15" }
-  else if (cla ∈? ("Range/mtn" ∷ "mountain" ∷ "Gorge" ∷ []))
-  then record s { fill = just "#8c562b" ; stroke = just "#6d401e" ; strokeWidth = just "0.08" }
-  else if cla == "Foothills"
-  then record s { fill = just "#a6783d" ; stroke = just "#855822" ; strokeWidth = just "0.06" }
-  else if (cla ∈? ("Plateau" ∷ "Highland" ∷ []))
-  then record s { fill = just "#c89b53" ; stroke = just "#a67832" ; strokeWidth = just "0.06" }
-  else if (cla ∈? ("Desert" ∷ "Playa" ∷ []))
-  then record s { fill = just "#e8ca85" ; stroke = just "#d2ba77" ; strokeWidth = just "0.05" }
-  else if (cla ∈? ("Plain" ∷ "Lowland" ∷ "Valley" ∷ []))
-  then record s { fill = just "#bccb96" ; stroke = just "#a6b68a" ; strokeWidth = just "0.05" }
-  else if cla == "Basin"
-  then record s { fill = just "#8fae78" ; stroke = just "#6f8d59" ; strokeWidth = just "0.05" }
-  else if cla == "Tundra"
-  then record s { fill = just "#b0c0a0" ; stroke = just "#8fa080" ; strokeWidth = just "0.05" }
   else if (cla ∈? ("Lake" ∷ "Reservoir" ∷ "Pluvial lake" ∷ []))
   then record s { fill = just "#7baecb" ; stroke = just "#568dae" ; strokeWidth = just "0.08" }
   else if cla == "Alkaline Lake"
@@ -183,13 +167,44 @@ terrainStyleByFeatureClass s cla props =
   then record s { fill = just "none" ; stroke = just "#6baed6" ; strokeWidth = just "0.12" }
   else if cla == "Reefs"
   then record s { fill = just "none" ; stroke = just "#5fb39c" ; strokeWidth = just "0.1" }
+  else if (cla ∈? ("Admin-0 boundary lines" ∷ "International boundary (real)" ∷ []))
+  then record s { fill = just "none" ; stroke = just "#777065" ; strokeWidth = just "0.2" }
+  else if cla == "CountryLabel"
+  then record s { fill = just "none" ; stroke = just "none" ; strokeWidth = just "0" ; pointRadius = "0" }
   else if cla == "Coastline"
   then record s { fill = just "none" ; stroke = just "#7a7266" ; strokeWidth = just "0.1" }
   else if cla == "Minor coastline"
   then record s { fill = just "none" ; stroke = just "#7a7266" ; strokeWidth = just "0.08" }
   else if cla == "spot elevation"
-  then record s { fill = just "#8c562b" ; stroke = just "#ffffff" ; strokeWidth = just "0.2" ; pointRadius = "1.5" }
-  else defaultTerrainFeatureStyle s props
+  then (case lookupField "elevation" props >>= asNumber of λ where
+          (just (jsonNumber _ elev _ _)) →
+            record s { fill = just (elevationColor elev) ; stroke = just "#ffffff" ; strokeWidth = just "0.2" ; pointRadius = "1.5" }
+          nothing →
+            record s { fill = just "#94562c" ; stroke = just "#ffffff" ; strokeWidth = just "0.2" ; pointRadius = "1.5" })
+  else (case lookupField "elevation" props >>= asNumber of λ where
+          (just (jsonNumber _ elev _ _)) →
+            let c = elevationColor elev
+            in record s { fill = just c ; stroke = just c ; strokeWidth = just "0.04" }
+          nothing →
+            if (cla ∈? ("Land" ∷ "land" ∷ []))
+            then record s { fill = just "#a8cca0" ; stroke = just "#98bc90" ; strokeWidth = just "0.08" }
+            else if (cla ∈? ("Admin-0 country" ∷ "Admin-0 sovereignty" ∷ "Admin-0 map unit" ∷ "Country" ∷ []))
+            then record s { fill = just "#a8cca0" ; stroke = just "#8c827a" ; strokeWidth = just "0.2" }
+            else if (cla ∈? ("Range/mtn" ∷ "mountain" ∷ "Gorge" ∷ []))
+            then record s { fill = just "#94562c" ; stroke = just "#773c1d" ; strokeWidth = just "0.08" }
+            else if cla == "Foothills"
+            then record s { fill = just "#b37742" ; stroke = just "#94562c" ; strokeWidth = just "0.06" }
+            else if (cla ∈? ("Plateau" ∷ "Highland" ∷ []))
+            then record s { fill = just "#cb9c62" ; stroke = just "#b37742" ; strokeWidth = just "0.06" }
+            else if (cla ∈? ("Desert" ∷ "Playa" ∷ []))
+            then record s { fill = just "#eadcb0" ; stroke = just "#dec28a" ; strokeWidth = just "0.05" }
+            else if (cla ∈? ("Plain" ∷ "Lowland" ∷ "Valley" ∷ []))
+            then record s { fill = just "#dae3a8" ; stroke = just "#bed89f" ; strokeWidth = just "0.05" }
+            else if cla == "Basin"
+            then record s { fill = just "#bed89f" ; stroke = just "#a8cca0" ; strokeWidth = just "0.05" }
+            else if cla == "Tundra"
+            then record s { fill = just "#b0c0a0" ; stroke = just "#8fa080" ; strokeWidth = just "0.05" }
+            else defaultTerrainFeatureStyle s props)
 
 featureTerrainStyle : SVGStyle → Properties → SVGStyle
 featureTerrainStyle s props with lookupField "featurecla" props >>= asString

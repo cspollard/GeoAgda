@@ -12,8 +12,9 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [x] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [x] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
-- [x] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG**
+- [ ] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG**
 - [x] **Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts**
+- [ ] **Milestone 9: Algebraic Map Representation via Containers & Free Monads (Multi-Source Ingestion to SVG)**
 
 ---
 
@@ -218,3 +219,102 @@ Leverage constructive evidence of schema conformance to eliminate defensive part
   - [x] Formal schemas: `positionSchema`, `lineStringSchema`, `polygonSchema`, `pointGeomSchema`, `lineGeomSchema`, `polygonGeomSchema`.
   - [x] Decidable domain checkers: `checkPosition`, `checkGeometry`, `checkFeature`, `checkFeatureCollection`.
   - [x] Wrapper `validateAndExtract : JSON → Maybe FeatureCollection` and compile-time test suite (`GeoAgda.Tests.Milestone8`).
+
+---
+
+### Milestone 9: Algebraic Map Representation via Containers & Free Monads (Multi-Source Ingestion to SVG)
+Model hierarchical cartographic documents as a strongly-typed polynomial functor and free monad (`MapC ⋆ A`), decoupling spatial topology, graphic primitives, and visual styling from polymorphic domain metadata ($A$). Implement the end-to-end pipeline: multi-source JSON AST ingestion $\to$ thematic combination into `Map A` $\to$ catamorphic translation to `XMLDoc` $\to$ SVG serialization.
+
+- [ ] **9.1 Graphic & Cartographic Primitives Specification**
+  - [ ] **Primitive Taxonomy (`MapPrimitive`):**
+    - `textP` : Text string, anchor `Position`, orientation angle (degrees), offset $(\Delta x, \Delta y)$ for cartographic labels (countries, mountain ranges, spot height numerals).
+    - `markerP` : Point coordinate `Position`, marker symbol geometry (`circle`, `square`, `triangle`, `diamond`, `cross`, `star`).
+    - `curveP` : Linear rings and open curve trajectories:
+      - `polyline` : Piecewise linear coordinate paths (`List Position`).
+      - `bezier` : Smooth cubic / quadratic Bézier curves with control points for hydrographic centerlines and natural elevation contour lines.
+    - `areaP` : Closed planar shapes (`List (List Position)`) supporting outer boundary rings and inner enclave/lake holes with `evenodd` fill rules.
+  - [ ] **Cartographic Style & Attribute Models (`GeoAgda.Model.Map.Style`):**
+    - `FillStyle` : `fillColor : Maybe String`, `fillOpacity : Maybe String`, `fillRule : FillRule` (`nonzero | evenodd`).
+    - `StrokeStyle` : `strokeColor : Maybe String`, `strokeWidth : Maybe String`, `strokeOpacity : Maybe String`, `strokeDashArray : Maybe String` (dashed boundaries/tracks), `strokeLineCap : LineCap` (`butt | round | square`), `strokeLineJoin : LineJoin` (`miter | round | bevel`).
+    - `TextStyle` : `fontFamily : String`, `fontSize : String`, `fontWeight : FontWeight`, `fontStyle : FontStyle` (`normal | italic` for water features), `textAnchor : TextAnchor` (`start | middle | end`), `dominantBaseline : DominantBaseline` (`central | alphabetic`), `haloColor : Maybe String`, `haloWidth : Maybe String`, `paintOrder : PaintOrder` (`stroke-fill` halo effect).
+    - `MarkerStyle` : `radius : String`, `shape : MarkerShape`, `fill : FillStyle`, `stroke : StrokeStyle`.
+    - `LayerMeta` : `layerId : String`, `layerClass : String`, `zIndex : ℕ`, `visible : Bool`.
+    - `ViewMeta` : `viewBox : ViewBox`, `projection : ProjectionType`, `aspectRatio : String`, `oceanBackdrop : Maybe String`.
+
+- [ ] **9.2 Container & Free Monad Formulation (`GeoAgda.Model.Map.AST`)**
+  - [ ] Define the polynomial signature container `MapC = MapShape ▷ MapPosition`:
+    ```agda
+    data MapShape : Set where
+      -- Leaf Graphic Primitives (hold 1 position for the polymorphic payload A)
+      textₛ    : String → Position → TextStyle → MapShape
+      markerₛ  : Position → MarkerStyle → MapShape
+      curveₛ   : CurveGeometry → StrokeStyle → MapShape
+      areaₛ    : AreaGeometry → FillStyle → StrokeStyle → MapShape
+      -- Branching Structural Nodes (hold Fin n positions for child sub-elements)
+      groupₛ   : (groupId : String) (attrs : Attributes) (arity : ℕ) → MapShape
+      layerₛ   : (meta : LayerMeta) (arity : ℕ) → MapShape
+      mapRootₛ : (view : ViewMeta) (arity : ℕ) → MapShape
+
+    MapPosition : MapShape → Set
+    MapPosition (textₛ _ _ _)    = ⊤       -- 1 position: holds payload A
+    MapPosition (markerₛ _ _)    = ⊤       -- 1 position: holds payload A
+    MapPosition (curveₛ _ _)     = ⊤       -- 1 position: holds payload A
+    MapPosition (areaₛ _ _ _)    = ⊤       -- 1 position: holds payload A
+    MapPosition (groupₛ _ _ n)   = Fin n   -- n children
+    MapPosition (layerₛ _ n)     = Fin n   -- n items in layer
+    MapPosition (mapRootₛ _ n)   = Fin n   -- n layers in map
+    ```
+  - [ ] Define `MapM A = MapC ⋆ A` using `Data.Container.FreeMonad`.
+  - [ ] Closed map specialization: `Map A = MapM A`.
+  - [ ] Functor instance `mapMap : (A → B) → MapM A → MapM B` via `FM.map`.
+  - [ ] Catamorphism engine `foldMapM : (A → B) → (⟦ MapC ⟧ B → B) → MapM A → B` via `FM.foldr`.
+
+- [ ] **9.3 Stage 1: Multi-Source JSON AST Ingestion**
+  - [ ] Load and parse heterogeneous inputs (`List Char → Maybe JSONDoc` via `GeoAgda.Parsing.JSON.Parser`):
+    - Physical features (bathymetry contours, coastlines, terrain regions).
+    - Topography attributes (spot elevations, summits).
+    - Cultural features (country polygons, administrative boundary lines).
+    - Optional tabular / thematic data (demographics, regional indices).
+  - [ ] Schema validation and typed extraction (`GeoAgda.Model.GeoJSON.Conformance`):
+    - Verify structural conformance of each document via `checkFeatureCollection`.
+    - Extract into strongly-typed `FeatureCollection`s with zero defensive partiality.
+
+- [ ] **9.4 Stage 2: Thematic Combination & `Map A` Construction**
+  - [ ] **Spatial & Thematic Combinators (`GeoAgda.Model.Map.Combine`):**
+    - `joinByProperty` : Join geometric features with external property records by key / name / ISO code.
+    - `assignElevation` : Attribute terrain polygons with hypsometric elevations based on spot heights or geomorphological classes.
+    - `filterByBBox` : Spatial clipping and bounding box filtering.
+  - [ ] **Layer Stratification & Z-Ordering:**
+    - Construct ordered cartographic layers:
+      1. `bathymetryLayer : LayerMeta → List (AreaGeometry × Depth) → MapM Depth`
+      2. `landBaseLayer : LayerMeta → List (AreaGeometry × Elevation) → MapM Elevation`
+      3. `topographyLayer : LayerMeta → List (AreaGeometry × TopoData) → MapM TopoData`
+      4. `hydrographyLayer : LayerMeta → List (CurveGeometry × HydroData) → MapM HydroData`
+      5. `boundaryLayer : LayerMeta → List (CurveGeometry × AdminData) → MapM AdminData`
+      6. `annotationLayer : LayerMeta → List (Position × LabelData) → MapM LabelData`
+  - [ ] **Root Map Assembly:**
+    - Combine all layers under `mapRootNode : ViewMeta → List (MapM A) → MapM A`.
+    - Global bounding box calculation and automatic `ViewBox` derivation.
+  - [ ] **Polymorphic Styling Transformations:**
+    - Decouple data from rendering via `styleMap : (A → PrimitiveStyle) → MapM A → MapM PrimitiveStyle`.
+
+- [ ] **9.5 Stage 3: Catamorphic SVG Export (Map AST $\to$ XML AST $\to$ Text)**
+  - [ ] **Map-to-XML Catamorphism (`GeoAgda.Rendering.SVG.Export`):**
+    - Define `mapToXMLAlgebra : ⟦ MapC ⟧ XMLDoc → XMLDoc`:
+      - `textₛ` $\mapsto$ `<text x="..." y="..." ...> ... </text>` with halo strokes.
+      - `markerₛ` $\mapsto$ `<circle>` / `<path>` marker symbols with projected coordinates.
+      - `curveₛ` $\mapsto$ `<path d="M ... L ...">` with `fill="none"` and stroke attributes.
+      - `areaₛ` $\mapsto$ `<path d="M ... Z" fill-rule="evenodd">` with fill and stroke attributes.
+      - `groupₛ` $\mapsto$ `<g id="..."> ... </g>`.
+      - `layerₛ` $\mapsto$ `<g id="..." class="..."> ... </g>`.
+      - `mapRootₛ` $\mapsto$ `<svg viewBox="..." width="..." height="..."> ... </svg>`.
+    - Evaluate via `exportMapToXML : Projection → MapM PrimitiveStyle → XMLDoc` using `foldMapM`.
+  - [ ] **Subsequent Fold over XML AST:**
+    - Serialize `XMLDoc` via existing `printSVGDoc` / `foldXMLM` in linear time with verified character escaping.
+    - Ensure zero regression on Milestone 7 retraction proofs (`List Char ↩ XMLDoc`).
+
+- [ ] **9.6 Fixture Tests & End-to-End Verification (`GeoAgda.Tests.Milestone9`)**
+  - [ ] Compile-time tests validating `foldMapM` correctness on simple map fixtures.
+  - [ ] End-to-end integration test reading Natural Earth JSON fixtures, constructing multi-layer `Map A`, and rendering to SVG.
+  - [ ] Verify clean rasterization via Inkscape without geometric fill artifacts or escaping issues.
+
