@@ -3,15 +3,15 @@
 module GeoAgda.Data.XML.AST where
 
 open import Level using (0ℓ; Level) renaming (suc to lsuc)
-open import Data.Bool.Base using (Bool; true; false)
-open import Data.Nat.Base using (ℕ; zero; suc)
-open import Data.String.Base using (String)
-open import Data.List.Base using (List; []; _∷_; length; lookup)
-open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
-open import Data.Unit.Base using (⊤; tt)
+open import Data.Bool using (Bool; true; false)
+open import Data.Nat using (ℕ; zero; suc)
+open import Data.String using (String)
+open import Data.List using (List; []; _∷_; length; lookup)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
+open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
-open import Data.Fin.Base using (Fin; zero; suc)
-open import Function.Base using (_∘_)
+open import Data.Fin using (Fin; zero; suc)
+open import Function using (_∘_)
 open import Data.Container hiding (refl)
 import Data.Container.Combinator as CC
 open import Data.Container.FreeMonad as FM
@@ -82,7 +82,7 @@ module XMLCont where
   XMLDoc = XMLM ⊥
 
   foldXMLC : (String → B) → (String → Attributes → List B → B) → ⟦ XMLC ⟧ B → B
-  foldXMLC fText fElem (textₛ s , _)               = fText s
+  foldXMLC fText fElem (textₛ s , _) = fText s
   foldXMLC fText fElem (elementₛ tag attrs n , pos) = fElem tag attrs (listCToList (n , pos))
 
   foldXMLM : (A → B) → (String → B) → (String → Attributes → List B → B) → XMLM A → B

@@ -3,13 +3,13 @@
 module GeoAgda.Model.GeoJSON.Extraction where
 
 open import Level using (0ℓ)
-open import Data.Bool.Base using (Bool; true; false; if_then_else_)
-open import Data.String.Base as String using (String)
+open import Data.Bool using (Bool; true; false; if_then_else_)
+open import Data.String as String using (String)
 open import Data.String.Properties using (_==_)
-open import Data.List.Base as List using (List; []; _∷_; map)
-open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
-open import Data.Maybe.Base as Maybe using (Maybe; just; nothing; _>>=_)
-open import Function.Base using (_∘_; _$_)
+open import Data.List as List using (List; []; _∷_; map)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
+open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
+open import Function using (_∘_; _$_)
 
 open import GeoAgda.Data.JSON.AST using (JSON; JSONNumber)
 open import GeoAgda.Data.JSON.Schema using (asArray; asObject; asString; asNumber; lookupField)

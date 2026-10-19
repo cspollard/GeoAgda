@@ -5,11 +5,11 @@
 module GeoAgda.Container.Combinators where
 
 open import Level using (Level; 0ℓ)
-open import Data.Nat.Base using (ℕ; zero; suc)
-open import Data.Fin.Base using (Fin; zero; suc)
-open import Data.List.Base as List using (List; []; _∷_; _++_)
-open import Data.Char.Base using (Char)
-open import Function.Base using (_∘_)
+open import Data.Nat using (ℕ; zero; suc)
+open import Data.Fin using (Fin; zero; suc)
+open import Data.List as List using (List; []; _∷_; _++_)
+open import Data.Char using (Char)
+open import Function using (_∘_)
 
 private
   variable

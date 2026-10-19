@@ -2,13 +2,13 @@
 
 module GeoAgda.Data.XML.Print where
 
-open import Data.Char.Base using (Char)
+open import Data.Char using (Char)
 open import Data.Char.Properties using (_≟_)
-open import Data.String.Base as String using (String; toList; fromList)
-open import Data.List.Base as List using (List; []; _∷_; _++_; concat)
-open import Data.Product.Base using (_×_; _,_)
-open import Data.Unit.Base using (⊤; tt)
-open import Function.Base using (_∘_)
+open import Data.String as String using (String; toList; fromList)
+open import Data.List as List using (List; []; _∷_; _++_; concat)
+open import Data.Product using (_×_; _,_)
+open import Data.Unit using (⊤; tt)
+open import Function using (_∘_)
 open import Relation.Nullary.Decidable using (Dec; yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_)
 

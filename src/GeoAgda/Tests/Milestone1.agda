@@ -4,10 +4,10 @@
 
 module GeoAgda.Tests.Milestone1 where
 
-open import Data.List.Base using ([]; _∷_)
-open import Data.Product.Base using (_,_)
-open import Data.Sign.Base using (+; -)
-open import Data.Integer.Base using (0ℤ)
+open import Data.List using ([]; _∷_)
+open import Data.Product using (_,_)
+open import Data.Sign using (+; -)
+open import Data.Integer using (0ℤ)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda

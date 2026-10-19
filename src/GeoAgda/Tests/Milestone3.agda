@@ -2,13 +2,13 @@
 
 module GeoAgda.Tests.Milestone3 where
 
-open import Data.List.Base using (List; []; _∷_)
+open import Data.List using (List; []; _∷_)
 
-open import Data.String.Base using (toList)
-open import Data.Product.Base using (_,_)
-open import Data.Sign.Base using (+; -)
-open import Data.Integer.Base using (0ℤ)
-open import Data.Maybe.Base using (just)
+open import Data.String using (toList)
+open import Data.Product using (_,_)
+open import Data.Sign using (+; -)
+open import Data.Integer using (0ℤ)
+open import Data.Maybe using (just)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda

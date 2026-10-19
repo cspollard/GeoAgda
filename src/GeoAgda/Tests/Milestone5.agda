@@ -3,12 +3,12 @@
 module GeoAgda.Tests.Milestone5 where
 
 open import Level using (0ℓ)
-open import Data.List.Base using (List; []; _∷_)
-open import Data.String.Base as String using (String)
+open import Data.List using (List; []; _∷_)
+open import Data.String as String using (String)
 open import Data.String.Properties using (_==_)
-open import Data.Integer.Base using (ℤ; +_; -[1+_])
-open import Data.Sign.Base using (+; -)
-open import Data.Maybe.Base using (just; nothing)
+open import Data.Integer using (ℤ; +_; -[1+_])
+open import Data.Sign using (+; -)
+open import Data.Maybe using (just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda.Data.JSON.AST using (jsonNumber)
@@ -79,6 +79,6 @@ renderedMapStr : String
 renderedMapStr = renderXML renderedMapDoc
 
 -- Non-empty output sanity check
-open import Data.Nat.Base using (NonZero)
+open import Data.Nat using (NonZero)
 _ : NonZero (String.length renderedMapStr)
 _ = _

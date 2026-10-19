@@ -3,11 +3,11 @@
 module GeoAgda.Pipeline where
 
 open import Level using (0ℓ)
-open import Data.Char.Base using (Char)
-open import Data.String.Base as String using (String; toList; fromList)
-open import Data.List.Base using (List)
-open import Data.Maybe.Base using (Maybe; just; nothing; _>>=_)
-open import Function.Base using (_∘_; _$_)
+open import Data.Char using (Char)
+open import Data.String as String using (String; toList; fromList)
+open import Data.List using (List)
+open import Data.Maybe using (Maybe; just; nothing; _>>=_)
+open import Function using (_∘_; _$_)
 
 open import GeoAgda.Data.JSON.AST using (JSON)
 open import GeoAgda.Data.XML.AST using (XMLDoc)

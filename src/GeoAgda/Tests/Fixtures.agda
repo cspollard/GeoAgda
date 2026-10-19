@@ -3,11 +3,11 @@
 module GeoAgda.Tests.Fixtures where
 
 open import Level using (0ℓ)
-open import Data.List.Base using (List; []; _∷_)
-open import Data.String.Base as String using (String; toList; fromList)
-open import Data.Maybe.Base using (Maybe; just; nothing)
+open import Data.List using (List; []; _∷_)
+open import Data.String as String using (String; toList; fromList)
+open import Data.Maybe using (Maybe; just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
-open import Data.Product.Base using (_×_; _,_; ∃)
+open import Data.Product using (_×_; _,_; ∃)
 
 open import GeoAgda.Pipeline using (geojsonStringToSVG; geojsonCharsToSVG)
 open import GeoAgda.Data.XML.AST using (XMLDoc)

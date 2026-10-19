@@ -3,14 +3,14 @@
 module GeoAgda.Rendering.SVG.Render where
 
 open import Level using (0ℓ)
-open import Data.Bool.Base using (Bool; true; false; if_then_else_; _∧_; _∨_; not)
-open import Data.Nat.Base using (ℕ; zero; suc; _≤ᵇ_)
-open import Data.String.Base as String using (String)
+open import Data.Bool using (Bool; true; false; if_then_else_; _∧_; _∨_; not)
+open import Data.Nat using (ℕ; zero; suc; _≤ᵇ_)
+open import Data.String as String using (String)
 open import Data.String.Properties using (_==_)
-open import Data.List.Base as List using (List; []; _∷_; map; concat; _++_)
-open import Data.Product.Base using (_×_; _,_)
-open import Data.Maybe.Base as Maybe using (Maybe; just; nothing; _>>=_)
-open import Function.Base using (_∘_; _$_)
+open import Data.List as List using (List; []; _∷_; map; concat; _++_)
+open import Data.Product using (_×_; _,_)
+open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
+open import Function using (_∘_; _$_)
 
 open import GeoAgda.Data.JSON.AST using (JSON; JSONNumber; jsonNumber)
 open import GeoAgda.Data.JSON.Schema using (lookupField; asNumber; asString)

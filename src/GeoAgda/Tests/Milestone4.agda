@@ -2,12 +2,12 @@
 
 module GeoAgda.Tests.Milestone4 where
 
-open import Data.List.Base using (List; []; _∷_)
-open import Data.String.Base using (toList)
-open import Data.Product.Base using (_,_)
-open import Data.Sign.Base using (+; -)
-open import Data.Integer.Base using (0ℤ)
-open import Data.Maybe.Base using (just)
+open import Data.List using (List; []; _∷_)
+open import Data.String using (toList)
+open import Data.Product using (_,_)
+open import Data.Sign using (+; -)
+open import Data.Integer using (0ℤ)
+open import Data.Maybe using (just)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda
@@ -33,7 +33,7 @@ sampleCollectionStr = toList "{ \"type\" : \"FeatureCollection\" , \"features\" 
 testExtractGeom : Maybe Geometry
 testExtractGeom with parseJSON samplePointStr
 ... | just v  = extractGeometry v
-... | nothing = Data.Maybe.Base.nothing
+... | nothing = Data.Maybe.nothing
 
 _ : testExtractGeom ≡ just (pointG (pos (jsonNumber + 10 [] 0ℤ) (jsonNumber + 20 [] 0ℤ)))
 _ = refl
@@ -42,10 +42,10 @@ _ = refl
 testExtractFeature : Maybe Feature
 testExtractFeature with parseJSON sampleFeatureStr
 ... | just v  = extractFeature v
-... | nothing = Data.Maybe.Base.nothing
+... | nothing = Data.Maybe.nothing
 
 _ : testExtractFeature ≡ just
-  (feature Data.Maybe.Base.nothing
+  (feature Data.Maybe.nothing
     (pointG (pos (jsonNumber + 10 [] 0ℤ) (jsonNumber + 20 [] 0ℤ)))
     (("name" , string "London") ∷ []))
 _ = refl
@@ -54,11 +54,11 @@ _ = refl
 testExtractCollection : Maybe FeatureCollection
 testExtractCollection with parseJSON sampleCollectionStr
 ... | just v  = extractFeatureCollection v
-... | nothing = Data.Maybe.Base.nothing
+... | nothing = Data.Maybe.nothing
 
 _ : testExtractCollection ≡ just
   (featureCollection
-    (feature Data.Maybe.Base.nothing
+    (feature Data.Maybe.nothing
       (pointG (pos (jsonNumber + 10 [] 0ℤ) (jsonNumber + 20 [] 0ℤ)))
       (("name" , string "London") ∷ [])
     ∷ []))

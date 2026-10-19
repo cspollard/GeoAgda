@@ -3,16 +3,16 @@
 module GeoAgda.Data.JSON.AST where
 
 open import Level using (0ℓ; Level) renaming (suc to lsuc)
-open import Data.Bool.Base using (Bool; true; false)
-open import Data.Nat.Base using (ℕ; zero; suc)
-open import Data.Integer.Base using (ℤ)
-open import Data.Sign.Base using (Sign; +; -)
-open import Data.String.Base using (String)
-open import Data.List.Base using (List; []; _∷_; length; lookup)
-open import Data.Product.Base using (_×_; _,_; proj₁; proj₂)
-open import Data.Unit.Base using (⊤; tt)
-open import Data.Fin.Base using (Fin; zero; suc)
-open import Function.Base using (_∘_)
+open import Data.Bool using (Bool; true; false)
+open import Data.Nat using (ℕ; zero; suc)
+open import Data.Integer using (ℤ)
+open import Data.Sign using (Sign; +; -)
+open import Data.String using (String)
+open import Data.List using (List; []; _∷_; length; lookup)
+open import Data.Product using (_×_; _,_; proj₁; proj₂)
+open import Data.Unit using (⊤; tt)
+open import Data.Fin using (Fin; zero; suc)
+open import Function using (_∘_)
 open import Data.Container hiding (refl)
 import Data.Container.Combinator as CC
 open import Data.Container.FreeMonad as FM

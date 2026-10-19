@@ -3,14 +3,14 @@
 module GeoAgda.Tests.Milestone7 where
 
 open import Level using (0ℓ)
-open import Data.List.Base using (List; []; _∷_)
-open import Data.String.Base as String using (String; toList)
-open import Data.Integer.Base using (+_; -[1+_])
-open import Data.Sign.Base using (+; -)
-open import Data.Maybe.Base using (Maybe; just; nothing)
+open import Data.List using (List; []; _∷_)
+open import Data.String as String using (String; toList)
+open import Data.Integer using (+_; -[1+_])
+open import Data.Sign using (+; -)
+open import Data.Maybe using (Maybe; just; nothing)
 open import Function.Bundles using (LeftInverse)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Data.Product.Base using (_×_; _,_; ∃)
+open import Data.Product using (_×_; _,_; ∃)
 
 open import GeoAgda.Data.JSON.AST
 open import GeoAgda.Data.JSON.Print using (printJSON)

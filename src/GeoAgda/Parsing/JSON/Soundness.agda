@@ -3,20 +3,20 @@
 module GeoAgda.Parsing.JSON.Soundness where
 
 open import Level using (0ℓ)
-open import Data.Bool.Base using (Bool; true; false)
-open import Data.Nat.Base using (ℕ; zero; suc; _+_)
+open import Data.Bool using (Bool; true; false)
+open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Data.Nat.Properties using (+-comm; +-assoc)
-open import Data.Char.Base using (Char)
+open import Data.Char using (Char)
 open import Data.Char.Properties using (_≟_)
-open import Data.Sign.Base using (Sign; +; -)
-open import Data.Fin.Base using (Fin)
-open import Data.List.Base using (List; []; _∷_; _++_; length)
+open import Data.Sign using (Sign; +; -)
+open import Data.Fin using (Fin)
+open import Data.List using (List; []; _∷_; _++_; length)
 open import Data.List.Properties using (++-assoc; ++-identityʳ; length-++)
-open import Data.Product.Base using (∃; _×_; _,_; proj₁; proj₂)
-open import Data.Maybe.Base as Maybe using (Maybe; just; nothing)
-open import Data.String.Base using (String; toList; fromList)
+open import Data.Product using (∃; _×_; _,_; proj₁; proj₂)
+open import Data.Maybe as Maybe using (Maybe; just; nothing)
+open import Data.String using (String; toList; fromList)
 open import Agda.Builtin.String.Properties using (primStringToListInv)
-open import Data.Unit.Base using (⊤; tt)
+open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥; ⊥-elim)
 open import Function.Bundles using (LeftInverse; _↩_; mk↩)
 open import Relation.Nullary.Decidable using (yes; no)
@@ -234,16 +234,16 @@ noLeadingNumCont-TokenList (numberT _ ∷ _)  ()
 tokenizeDigitStep : ∀ (fuel : ℕ) (d : Fin 10) (tail : List Char) {num rem} →
   lexNumber + (printDigit d ∷ tail) ≡ just (num , rem) →
   tokenizeLoop (suc fuel) (printDigit d ∷ tail) ≡ Maybe.map (numberT num ∷_) (tokenizeLoop fuel rem)
-tokenizeDigitStep fuel Data.Fin.Base.zero tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc Data.Fin.Base.zero) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero)) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero))) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero)))) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero))))) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero)))))) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero))))))) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero)))))))) tail eq rewrite eq = refl
-tokenizeDigitStep fuel (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc (Data.Fin.Base.suc Data.Fin.Base.zero))))))))) tail eq rewrite eq = refl
+tokenizeDigitStep fuel Data.Fin.zero tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc Data.Fin.zero) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc Data.Fin.zero)) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc Data.Fin.zero))) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc Data.Fin.zero)))) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc Data.Fin.zero))))) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc Data.Fin.zero)))))) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc Data.Fin.zero))))))) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc Data.Fin.zero)))))))) tail eq rewrite eq = refl
+tokenizeDigitStep fuel (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc (Data.Fin.suc Data.Fin.zero))))))))) tail eq rewrite eq = refl
 
 tokenizeNumberStep : ∀ (fuel : ℕ) (n : JSONNumber) (ts : List JSONToken) →
   NoLeadingNumberToken ts →

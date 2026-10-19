@@ -2,11 +2,11 @@
 
 module GeoAgda.Tests.Milestone2 where
 
-open import Data.List.Base using ([]; _∷_)
-open import Data.Fin.Base using (zero; suc)
-open import Data.Product.Base using (_,_)
-open import Data.Maybe.Base using (just)
-open import Data.Unit.Base using (tt)
+open import Data.List using ([]; _∷_)
+open import Data.Fin using (zero; suc)
+open import Data.Product using (_,_)
+open import Data.Maybe using (just)
+open import Data.Unit using (tt)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda
