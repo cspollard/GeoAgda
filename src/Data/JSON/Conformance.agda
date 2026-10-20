@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Data.JSON.Conformance where
+module Data.JSON.Conformance where
 
 
 -- TODO
@@ -23,8 +23,8 @@ module GeoAgda.Data.JSON.Conformance where
 -- open import Relation.Nullary.Negation using (¬_; contradiction)
 -- open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong)
 
--- open import GeoAgda.Data.JSON.AST
--- open import GeoAgda.Data.JSON.Schema using (asNumber; asString; asArray; asObject; lookupField)
+-- open import Data.JSON.AST
+-- open import Data.JSON.Schema using (asNumber; asString; asArray; asObject; lookupField)
 
 -- ------------------------------------------------------------------------
 -- -- Rich Schema Language

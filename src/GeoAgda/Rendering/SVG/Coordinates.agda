@@ -16,9 +16,9 @@ open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Function using (_∘_; _$_)
 
-open import GeoAgda.Data.JSON.AST using (JSONNumber; jsonNumber)
-open import GeoAgda.Data.JSON.Print using (printNumber)
-open import GeoAgda.Data.JSON.Schema using (lookupField; asNumber)
+open import Data.JSON.AST using (JSONNumber; jsonNumber)
+open import Data.JSON.Print using (printNumber)
+open import Data.JSON.Schema using (lookupField; asNumber)
 open import GeoAgda.Model.GeoJSON.Types
   using (Position; pos; BBox; bbox; Geometry; pointG; multiPointG; lineStringG;
          multiLineStringG; polygonG; multiPolygonG; geometryCollectionG;

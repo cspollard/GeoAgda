@@ -12,13 +12,13 @@ open import Function.Bundles using (LeftInverse)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; ∃)
 
-open import GeoAgda.Data.JSON.AST
-open import GeoAgda.Data.JSON.Print using (printJSON)
+open import Data.JSON.AST
+open import Data.JSON.Print using (printJSON)
 open import GeoAgda.Parsing.JSON.Parser using (parseJSON)
 open import GeoAgda.Parsing.JSON.Soundness
 
-open import GeoAgda.Data.XML.AST
-open import GeoAgda.Data.XML.Print using (printXML)
+open import Data.XML.AST
+open import Data.XML.Print using (printXML)
 open import GeoAgda.Parsing.XML.Parser using (parseXMLChars)
 open import GeoAgda.Parsing.XML.Soundness
 

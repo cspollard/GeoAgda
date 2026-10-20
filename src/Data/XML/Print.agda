@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Data.XML.Print where
+module Data.XML.Print where
 
 open import Data.Char using (Char)
 open import Data.Char.Properties using (_≟_)
@@ -12,7 +12,7 @@ open import Function using (_∘_)
 open import Relation.Nullary.Decidable using (Dec; yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_)
 
-open import GeoAgda.Data.XML.AST
+open import Data.XML.AST
 
 open import Data.List.Relation.Unary.Any using (Any; here; there; any?)
 

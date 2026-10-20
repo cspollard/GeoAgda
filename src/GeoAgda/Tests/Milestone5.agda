@@ -11,9 +11,9 @@ open import Data.Sign using (+; -)
 open import Data.Maybe using (just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
-open import GeoAgda.Data.JSON.AST using (jsonNumber)
-open import GeoAgda.Data.XML.AST using (XMLDoc)
-open import GeoAgda.Data.XML.Print using (renderXML)
+open import Data.JSON.AST using (jsonNumber)
+open import Data.XML.AST using (XMLDoc)
+open import Data.XML.Print using (renderXML)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Coordinates
 open import GeoAgda.Rendering.SVG.Render

@@ -12,8 +12,8 @@ open import Relation.Nullary.Decidable using (yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; ∃)
 
-open import GeoAgda.Data.JSON.AST
-open import GeoAgda.Data.JSON.Conformance
+open import Data.JSON.AST
+open import Data.JSON.Conformance
 open import GeoAgda.Parsing.JSON.Parser using (parseJSON)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Model.GeoJSON.Extraction using (extractPosition; extractGeometry; extractFeatureCollection)

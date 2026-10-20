@@ -14,7 +14,7 @@ open import Data.Unit using (⊤; tt)
 open import Function using (_∘_; _$_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
-open import GeoAgda.Data.JSON.AST
+open import Data.JSON.AST
   using (JSON; nullⱼ; boolⱼ; numberⱼ; stringⱼ; arrayⱼ; objectFromList)
 open import GeoAgda.Parsing.JSON.Lexer
   using (JSONToken; lbraceT; rbraceT; lbracketT; rbracketT; colonT; commaT; nullT; boolT; numberT; stringT; tokenize)

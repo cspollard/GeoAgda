@@ -19,7 +19,7 @@ open import Function using (_∘_; _$_)
 open import Relation.Nullary.Decidable using (yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
-open import GeoAgda.Data.JSON.AST using (JSONNumber; jsonNumber)
+open import Data.JSON.AST using (JSONNumber; jsonNumber)
 open import GeoAgda.Parsing.Invertible.Char using (parseDigit; printDigit)
 open import GeoAgda.Parsing.Invertible.Number public
   using (digitsToNatAcc; digitsToNat; parseDigitsLoop; lexFraction; lexExponent; lexNumber)

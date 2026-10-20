@@ -2,7 +2,7 @@
 
 open import Relation.Binary using (DecSetoid)
 
-module GeoAgda.Data.JSON.ObjectC {c ℓ} (D : DecSetoid c ℓ) where
+module Data.JSON.ObjectC {c ℓ} (D : DecSetoid c ℓ) where
 
 import Data.Container as Cont
 open Cont using (Container; _▷_; ⟦_⟧)

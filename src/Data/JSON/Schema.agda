@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Data.JSON.Schema where
+module Data.JSON.Schema where
 
 open import Level using (0ℓ)
 open import Data.Bool using (Bool; true; false)
@@ -17,10 +17,10 @@ open import Data.Container.FreeMonad using (pure; impure)
 open import Relation.Nullary.Decidable using (Dec; yes; no)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
-open import GeoAgda.Data.JSON.AST
+open import Data.JSON.AST
 open JSONCont
   using (listCToList; pstring; pnumber; pbool; pnull; object; array; primnull; primbool; primnumber; primstring; prim)
-open import GeoAgda.Data.JSON.ObjectC stringDecSetoid using (objectToList)
+open import Data.JSON.ObjectC stringDecSetoid using (objectToList)
 
 ------------------------------------------------------------------------
 -- JSON Unpacking / Projections

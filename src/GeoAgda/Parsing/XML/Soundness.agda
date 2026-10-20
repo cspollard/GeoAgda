@@ -2,4 +2,4 @@
 
 module GeoAgda.Parsing.XML.Soundness where
 
-open import GeoAgda.Data.XML.AST public
+open import Data.XML.AST public

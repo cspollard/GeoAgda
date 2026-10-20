@@ -8,7 +8,7 @@ open import Data.List using (List; []; _∷_)
 open import Data.Product using (_×_; _,_)
 open import Data.Maybe using (Maybe; just; nothing)
 
-open import GeoAgda.Data.JSON.AST using (JSONNumber; JSON)
+open import Data.JSON.AST using (JSONNumber; JSON)
 
 ------------------------------------------------------------------------
 -- GeoJSON Position (Coordinates)

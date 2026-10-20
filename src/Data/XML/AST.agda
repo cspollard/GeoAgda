@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Data.XML.AST where
+module Data.XML.AST where
 
 open import Level using (0ℓ; Level) renaming (suc to lsuc)
 open import Data.Bool using (Bool; true; false)

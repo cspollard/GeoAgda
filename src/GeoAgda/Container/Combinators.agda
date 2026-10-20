@@ -1,7 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
 
-
 module GeoAgda.Container.Combinators where
 
 open import Level using (Level; 0ℓ)

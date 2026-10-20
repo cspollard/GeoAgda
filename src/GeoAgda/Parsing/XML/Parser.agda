@@ -15,7 +15,7 @@ open import Data.Unit using (⊤; tt)
 open import Function using (_∘_)
 open import Relation.Nullary.Decidable using (yes; no)
 
-open import GeoAgda.Data.XML.AST
+open import Data.XML.AST
 
 ------------------------------------------------------------------------
 -- Whitespace & Escaped Lexical Scanners

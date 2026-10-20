@@ -24,9 +24,9 @@ open import Relation.Nullary.Negation using (contradiction)
 open import Relation.Binary.PropositionalEquality as ≡
   using (_≡_; refl; sym; trans; cong; module ≡-Reasoning)
 
-open import GeoAgda.Data.JSON.AST
+open import Data.JSON.AST
   using (JSON; JSON; JSONNumber; jsonNumber; pure; null; bool; trueⱼ; falseⱼ; number; string; arrayFromList; objectFromList)
-open import GeoAgda.Data.JSON.Print
+open import Data.JSON.Print
   using (escapeString; printStringLiteral; printJSON; printArrayBody; printObjectBody;
          printNumber; printSign; printNat; printFraction; printExponent)
 open import GeoAgda.Parsing.Invertible.Char using (parseDigit; printDigit; parsePrintDigit)

@@ -27,7 +27,7 @@ Establish the core algebraic foundation modeling hierarchical document ASTs as f
   - [x] Configure `GeoAgda.agda-lib` linking `standard-library` and `agda-categories`.
   - [x] Establish `.agents/rules/guidelines.md` for hole-driven development and container conventions.
   - [x] Initialize `src/GeoAgda/` directory structure with base library index `src/GeoAgda.agda`.
-- [x] **1.2 JSON Container Definition (`GeoAgda.Data.JSON.AST`)**
+- [x] **1.2 JSON Container Definition (`Data.JSON.AST`)**
   - [x] Define `JSONShape` specifying the polynomial functor shapes:
     - Null, Boolean, Number (integral / rational representation), String literals.
     - Array node of length $n$ (`Fin n` positions).
@@ -36,15 +36,15 @@ Establish the core algebraic foundation modeling hierarchical document ASTs as f
   - [x] Assemble `JSONContainer : Container 0ℓ 0ℓ`.
   - [x] Define `JSON : Set → Set` as `JSONContainer ⋆ X` using `Data.Container.FreeMonad`.
   - [x] Specialize `JSON = JSON ⊤` for standard closed JSON terms.
-- [x] **1.3 JSON Catamorphisms & Serialization (`GeoAgda.Data.JSON.Print`)**
+- [x] **1.3 JSON Catamorphisms & Serialization (`Data.JSON.Print`)**
   - [x] Implement `foldJSON` via `Data.Container.FreeMonad.foldr`.
   - [x] Define `printJSON : JSON → List Char` as an algebra over `JSONContainer`.
-- [x] **1.4 XML / SVG Container Definition (`GeoAgda.Data.XML.AST`)**
+- [x] **1.4 XML / SVG Container Definition (`Data.XML.AST`)**
   - [x] Define `XMLShape` modeling text nodes, element tags, attributes (`List (String × String)`), and child arity $n$.
   - [x] Define `XMLPosition : XMLShape → Set` indexing child sub-elements.
   - [x] Form `XMLContainer : Container 0ℓ 0ℓ` and `XML = XMLContainer ⋆ X`.
   - [x] Define SVG element constructors (`svg`, `g`, `path`, `circle`, `polygon`, `polyline`, `rect`) as smart constructors over `XML ⊤`.
-- [x] **1.5 XML / SVG Pretty Printing (`GeoAgda.Data.XML.Print`)**
+- [x] **1.5 XML / SVG Pretty Printing (`Data.XML.Print`)**
   - [x] Define `printXML : XML ⊤ → List Char` using free monad catamorphism.
 
 
@@ -88,7 +88,7 @@ Assemble invertible combinators to construct the full JSON parser targeting `JSO
 ### Milestone 4: Schema Validation & Typed GeoJSON Extraction
 Bridge untyped JSON free monads to strongly-typed GeoJSON domain models with verified decidable validation.
 
-- [x] **4.1 Lightweight JSON Schema Language (`GeoAgda.Data.JSON.Schema`)**
+- [x] **4.1 Lightweight JSON Schema Language (`Data.JSON.Schema`)**
   - [x] Define `Schema` data type (`sNull`, `sBool`, `sNumber`, `sString`, `sArray`, `sObject`).
   - [x] Define validation predicate `_⊨_ : JSON → Schema → Set`.
   - [x] Implement decidable checker `checkSchema : (v : JSON) (s : Schema) → Dec (v ⊨ s)`.
@@ -198,7 +198,7 @@ Construct formal, mechanized left inverse objects (`List Char ↩ XMLDoc` and `L
 ### Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts
 Leverage constructive evidence of schema conformance to eliminate defensive partiality and enable shortcut projections.
 
-- [x] **8.1 Decidable Schema Conformance Relation (`GeoAgda.Data.JSON.Conformance`)**
+- [x] **8.1 Decidable Schema Conformance Relation (`Data.JSON.Conformance`)**
   - [x] Define the constructive satisfaction relation `_⊨_ : JSON → Schema → Set`:
     - Evidence for `sObject`: proofs that required fields exist and conform to sub-schemas (`FieldEvidence`, `AllFieldsEvidence`).
     - Evidence for `sArray`: pointwise conformity vectors/lists (`All (_⊨ elemS)`).

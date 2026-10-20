@@ -10,7 +10,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
 open import Data.Product using (_×_; _,_; ∃)
 
 open import GeoAgda.Pipeline using (geojsonStringToSVG; geojsonCharsToSVG)
-open import GeoAgda.Data.XML.AST using (XMLDoc)
+open import Data.XML.AST using (XMLDoc)
 
 ------------------------------------------------------------------------
 -- Fixture 1: Point FeatureCollection

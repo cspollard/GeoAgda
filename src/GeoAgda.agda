@@ -3,12 +3,12 @@
 module GeoAgda where
 
 -- JSON AST, Container signature, Free Monad, and Serialization
-open import GeoAgda.Data.JSON.AST public
-open import GeoAgda.Data.JSON.Print public
+open import Data.JSON.AST public
+open import Data.JSON.Print public
 
 -- XML / SVG AST, Container signature, Free Monad, and Serialization
-open import GeoAgda.Data.XML.AST public
-open import GeoAgda.Data.XML.Print public
+open import Data.XML.AST public
+open import Data.XML.Print public
 
 -- Invertible Parsing Primitives & Combinators
 open import GeoAgda.Parsing.Invertible.Core public
@@ -26,8 +26,8 @@ open import GeoAgda.Parsing.XML.Parser public
 open import GeoAgda.Parsing.XML.Soundness public
 
 -- Schema Validation, Conformance & Typed GeoJSON Models
-open import GeoAgda.Data.JSON.Schema public
-open import GeoAgda.Data.JSON.Conformance public
+open import Data.JSON.Schema public
+open import Data.JSON.Conformance public
 open import GeoAgda.Model.GeoJSON.Types public
 open import GeoAgda.Model.GeoJSON.Extraction public
 open import GeoAgda.Model.GeoJSON.Conformance public

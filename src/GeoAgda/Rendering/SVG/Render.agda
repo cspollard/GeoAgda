@@ -12,9 +12,9 @@ open import Data.Product using (_×_; _,_)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
 open import Function using (_∘_; _$_)
 
-open import GeoAgda.Data.JSON.AST using (JSON; JSONNumber; jsonNumber)
-open import GeoAgda.Data.JSON.Schema using (lookupField; asNumber; asString)
-open import GeoAgda.Data.XML.AST
+open import Data.JSON.AST using (JSON; JSONNumber; jsonNumber)
+open import Data.JSON.Schema using (lookupField; asNumber; asString)
+open import Data.XML.AST
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Coordinates
 

@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Data.JSON.Print where
+module Data.JSON.Print where
 
 open import Level using (0ℓ)
 open import Data.Bool using (Bool; true; false)
@@ -23,10 +23,10 @@ open import Relation.Nullary.Decidable using (yes; no; does)
 open import Data.Container as C
 open import Data.Empty
 
-open import GeoAgda.Data.JSON.AST
-open import GeoAgda.Data.JSON.ObjectC stringDecSetoid
+open import Data.JSON.AST
+open import Data.JSON.ObjectC stringDecSetoid
 open JSONCont
-open import GeoAgda.Parsing.Invertible.Number public
+open import GeoAgda.Parsing.Invertible.Number
   using (printSign; printNat; printFraction; printExponent; printNumber)
 
 ------------------------------------------------------------------------

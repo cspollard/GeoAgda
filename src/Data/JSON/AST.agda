@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Data.JSON.AST where
+module Data.JSON.AST where
 
 open import Level using (0ℓ; Level) renaming (suc to lsuc)
 open import Data.Bool using (Bool; true; false)
@@ -20,7 +20,7 @@ open import Relation.Binary.PropositionalEquality
 open import Data.Float
 open import Relation.Binary
 open import Relation.Nullary
-open import GeoAgda.Data.JSON.ObjectC
+open import Data.JSON.ObjectC
 open import Data.String.Properties using () renaming (≡-decSetoid to stringDecSetoid)
 open import Data.Sum
 open import Data.Empty
@@ -62,7 +62,7 @@ module JSONCont where
     go zero _ = b
     go (suc k) pos = f (pos zero) (go k (pos ∘ suc))
 
-  module SO = GeoAgda.Data.JSON.ObjectC stringDecSetoid
+  module SO = Data.JSON.ObjectC stringDecSetoid
   StringObjectC : Container 0ℓ 0ℓ
   StringObjectC = SO.ObjectC
 

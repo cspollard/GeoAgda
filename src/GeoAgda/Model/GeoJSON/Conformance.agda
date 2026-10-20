@@ -17,9 +17,9 @@ open import Relation.Nullary.Negation using (¬_; contradiction)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Function using (_∘_; _$_)
 
-open import GeoAgda.Data.JSON.AST using (JSON; JSONNumber)
-open import GeoAgda.Data.JSON.Schema using (asArray; asObject; asString; lookupField)
-open import GeoAgda.Data.JSON.Conformance
+open import Data.JSON.AST using (JSON; JSONNumber)
+open import Data.JSON.Schema using (asArray; asObject; asString; lookupField)
+open import Data.JSON.Conformance
 open import GeoAgda.Model.GeoJSON.Types
 
 ------------------------------------------------------------------------
