@@ -16,10 +16,10 @@ open import GeoAgda.Parsing.Invertible.Char public
 open import GeoAgda.Parsing.Invertible.Number public
 open import GeoAgda.Parsing.Invertible.Combinators public
 
--- JSON Lexer, Parser, and Invertible Soundness
+-- JSON Lexer, Parser, and the round-trip theorem
 open import GeoAgda.Parsing.JSON.Lexer public
 open import GeoAgda.Parsing.JSON.Parser public
-open import GeoAgda.Parsing.JSON.Soundness public
+open import Data.JSON.RoundTrip public
 
 -- XML & SVG Lexer, Parser, and Invertible Soundness
 open import GeoAgda.Parsing.XML.Parser public

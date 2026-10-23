@@ -187,8 +187,7 @@ jsonStage    : RightInverse JSONSetoid Chars               -- DONE: Composition.
 The headline theorem is already proved *from* `lexer` and `parser` by the stdlib's composition; there is no separate
 `_⟫_`, compatibility lemma, or `print-cong` (validity lives in the `ValidTokens` setoid, congruence of printing is
 `to-cong`). `renderJSON : JSON → String` stays a one-way convenience (`fromList ∘ printJSON`); the safe theorem is at
-`List Char` (decision 9). `Goals.agda` is deleted in Phase 9, once each goal lives in its home module; it is not in
-`test/Everything.agda` (it has holes).
+`List Char` (decision 9). `Goals.agda` was deleted once every goal had been proved and moved to its home module.
 
 ### Phase 2 — Stage infrastructure (`Data.JSON.Stage`) — **done**
 - `Chars`, `Subtype` (sub-setoid cut out by a predicate, via `Relation.Binary.Construct.On`), `parseOr`, and
@@ -245,15 +244,18 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
 - Collapse `JSONType≟`/`PrimJSONType≟` (16-clause) if unused; otherwise derive via a code/decode map.
 - Update `Schema.agda`'s `asObject`, `lookupField` for the new object shape; keep `lookupField` first-match semantics.
 
-### Phase 6 — Tokens, lexer, parser — **lexing done, parser pending**
+### Phase 6 — Tokens, lexer, parser — **done**
 - Done: `Data.JSON.Token` (`JSONToken`, `printToken`, `lexToken` dispatching on `parseDigit` first,
   `lexToken-printToken` under `TokenFollow`, `tokenStage`) and `Data.JSON.Lexer` (`skipWS`, fuel-based `tokenize`,
   `ValidTokenSeq = Linked NotAdjacent` from the stdlib, `tokenize-print`, and
   `lexer : RightInverse ValidTokens Chars` — `from` checks the decidable validity and falls back to `[]`).
   No holes. The "segmentation layer" alternative was *not* needed: `from` into a `Subtype` with a decidable
   predicate is enough, and the prefix lemma stays internal as planned.
-- Pending: `Data.JSON.Parser` (`printTokens`, `parseValue`, the fuel invariant "fuel ≥ consumed tokens",
-  `parser : RightInverse JSONSetoid ValidTokens`) and `printTokens-valid`.
+- Done: `Data.JSON.Tokens` (`printTokens` as a `foldJSONM`, `printTokens-valid` via `Linked.++⁺`,
+  `printTokens-head`, `printTokens-cong`) and `Data.JSON.Parser` (`parseValue` with the fuel invariant
+  "fuel ≥ tokens consumed", `arrayLoop-print`/`objectLoop-print`, `parseValue-print`, and
+  `parser : RightInverse JSONSetoid ValidTokens`). The case split on the first token uses a small datatype
+  `ValueStart` instead of a 11-way match. No holes anywhere.
 - `Token.agda`: `JSONToken`, `printToken`, `printTokens` (moved from `Soundness`), `tokenStage`, whitespace `skipWS`
   (a token never prints with leading whitespace: this is part of `TokenFollow`). `lexer : RightInverse ValidTokens Chars`
   is the iteration of `tokenStage` over the input (`ValidTokenSeq` is exactly what makes the follow-conditions line
@@ -263,7 +265,12 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
   `printTokens` paired with its validity proof (the compatibility lemma is *in the type*); `to-cong` is
   "printing respects `_≈ⱼ_`".
 
-### Phase 7 — Printer and top-level theorem
+### Phase 7 — Printer and top-level theorem — **done**
+- Done: `Data.JSON.Print.printJSON = printTokenList ∘ printTokens`; `Data.JSON.RoundTrip.jsonStage =
+  Composition.rightInverse parser lexer` (the headline `RightInverse JSONSetoid Chars`), `to-printJSON`, the partial
+  `parseJSON` and `parseJSON-printJSON`. `GeoAgda.Parsing.JSON.{Parser,Lexer}` are shims; `Soundness` is deleted and
+  `Goals.agda` is gone (no goals left).
+- Original plan text, kept for reference:
 - `Print.agda`: `printJSON := to jsonStage` (= `printTokenList ∘ printTokens`); `renderJSON := fromList ∘ printJSON`;
   delete the old printer.
 - `RoundTrip.agda`: `jsonStage = parser ∘-rightInverse lexer` (`Function.Construct.Composition.rightInverse`) — the
