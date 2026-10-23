@@ -102,9 +102,15 @@ Two stdlib facts found while preparing Phase 1 (they change the design, see deci
    stays as is and `_≈ⱼ_` must be proved insensitive to the `Unique` proof (needs Hedberg on `String`).
 3. **Stages are stdlib `RightInverse` / `IsRightInverse` bundles, not a custom record.** `print` is `to`, `parse`
    is `from` (total, with a default witness: `nullⱼ`, `0`, `[]`), the round trip is `inverseʳ`. Stages compose with
-   `Function.Construct.Composition.rightInverse`; products with `Data.Product.Function.NonDependent.Setoid` /
-   `Data.Product.Function.Dependent.Setoid`. Prefix parsing (needed for lexing) is a `RightInverse` out of
-   `PrefixSetoid`, the setoid of values paired with an allowed continuation. This replaces `InvertibleParser`.
+   `Function.Construct.Composition.rightInverse`; products/sums with `Data.Product.Function.{NonDependent,Dependent}.Setoid`
+   / `Data.Sum.Function.Setoid`. `Data.JSON.Stage.mkStage` builds a stage from the partial `Maybe`-parser used at
+   runtime. This replaces `InvertibleParser`.
+   *Caveat found in Phase 2:* a stage for a **prefix** parser with a follow-condition cannot be a `RightInverse`
+   (`from : B → A` would have to produce the `Follow` proof for arbitrary input; making the relation absorb it breaks
+   `inverseʳ`). So the prefix round-trip lemmas (`lexToken (printToken t ++ rest) ≡ just (t , rest)` under a
+   follow-condition, `parseValue … (printTokens v ++ rest)`) are **internal induction lemmas about the partial
+   functions**, not exported contracts. Every *exported* stage — lexeme, token stream, parser, pipeline — is a
+   `RightInverse`; lexeme stages are the `rest = []` instances.
 4. **Prove on lists, not on `Fin`-lookups — as a view over the container.** `AST` gets a
    `view : JSON → JSONView` / `unview` pair (generalising `matchJSON` from `Geo.agda`) with `view (unview v) ≈ⱼ v`,
    where arrays/objects appear as `List`s (via `listCToList` / `listToListC`). The printer is still the free-monad
@@ -131,7 +137,7 @@ Two stdlib facts found while preparing Phase 1 (they change the design, see deci
 
 ```
 src/Data/JSON/
-  Stage.agda       PrefixSetoid, Prefix, seq/whole/many glue over stdlib RightInverse 
+  Stage.agda       Chars, Subtype, mkStage (RightInverse from a partial parser)  — done
   Number.agda      JSONNumber, digits, nat/sign/fraction/exponent/number codecs   (from GeoAgda.Parsing.Invertible.Number + AST)
   String.agda      escape / unescape codec for string literals
   AST.agda         JSON container, constructors, JSONView, _≈ⱼ_, view/unview
@@ -161,47 +167,38 @@ before inventing lemmas; `agda_get_symbol_implementation` only to learn proof st
   (`Data.Float`, `Data.Container.FreeMonad` duplicates, …), `Print.print⊤`.
 
 ### Phase 1 — Goal file with holes (`src/Data/JSON/Goals.agda`) — **done**
-The whole top-level contract is written with every implementation as `?`; it typechecks with 14 open holes (4
-stub predicates/setoids, `PrefixSetoid`, 4 prefix stages, `lexer`, `parser`, `jsonStage`, `_≈ⱼ_`, `JSONSetoid`).
-All stages are stdlib `Function.Bundles.RightInverse` bundles (`to` = print, `from` = parse, total with a default
-witness; `inverseʳ` = the round-trip law; `.isRightInverse` gives the `IsRightInverse` structure):
+The top-level contract is written with implementations as `?`; it typechecks with 9 open holes
+(`_≈ⱼ_`, `JSONSetoid`, `ValidTokenSeq`, four lexeme stages, `lexer`, `parser`). Every stage is a stdlib
+`Function.Bundles.RightInverse` (`to` = print, `from` = parse, total with a default witness; `inverseʳ` = the
+round-trip law; `.isRightInverse` gives the `IsRightInverse` structure):
 
 ```agda
-Prefix S Follow = RightInverse (PrefixSetoid S Follow) (setoid (List I))   -- to (y , rest) = print y ++ rest
-
-numberStage  : Prefix (setoid JSONNumber)    (λ _ rest → NoLeadingNumCont rest)
-stringStage  : Prefix (setoid (List Char))   (λ _ _ → ⊤)
-keywordStage : Prefix (setoid Keyword)       (λ _ _ → ⊤)
-tokenStage   : Prefix (setoid JSONToken)     TokenFollow
-lexer        : RightInverse ValidTokens Chars
-parser       : RightInverse JSONSetoid ValidTokens        -- to = printTokens (with validity), to-cong = print respects ≈ⱼ
-jsonStage    : RightInverse JSONSetoid Chars              -- = parser ∘-rightInverse lexer
+numberStage  : RightInverse (setoid JSONNumber)  Chars     -- also stringStage, keywordStage, tokenStage
+lexer        : RightInverse ValidTokens Chars              -- ValidTokens = Subtype (setoid (List JSONToken)) ValidTokenSeq
+parser       : RightInverse JSONSetoid ValidTokens         -- to = printTokens (validity is in the type), to-cong = print respects ≈ⱼ
+jsonStage    : RightInverse JSONSetoid Chars               -- DONE: Composition.rightInverse parser lexer
 ```
-There is no separate `_⟫_`, compatibility lemma, or `print-cong`: composition is the stdlib's
-`Function.Construct.Composition.rightInverse`, validity lives in the `ValidTokens` setoid, and congruence of printing is
-the bundle's `to-cong`. `renderJSON : JSON → String` stays a one-way convenience (`fromList ∘ printJSON`); the safe
-theorem is at `List Char` (decision 9). `Goals.agda` is deleted in Phase 9, once each goal lives in its home module;
-it is not yet in `test/Everything.agda` (it has holes).
+The headline theorem is already proved *from* `lexer` and `parser` by the stdlib's composition; there is no separate
+`_⟫_`, compatibility lemma, or `print-cong` (validity lives in the `ValidTokens` setoid, congruence of printing is
+`to-cong`). `renderJSON : JSON → String` stays a one-way convenience (`fromList ∘ printJSON`); the safe theorem is at
+`List Char` (decision 9). `Goals.agda` is deleted in Phase 9, once each goal lives in its home module; it is not in
+`test/Everything.agda` (it has holes).
 
-### Phase 2 — Stage infrastructure (`Data.JSON.Stage`)
-- Real definitions of `PrefixSetoid` and `Prefix` (see `Goals.agda`), the `ValidTokens` subtype setoid, and the glue
-  that the stdlib does not give directly:
-  - `seq` : sequencing of two prefix stages `Prefix S F` and `Prefix T G`, built from stdlib pieces:
-    `Data.Product.Function.Dependent.Setoid.rightInverse` (the rest-of-input dependency) with
-    `Function.Construct.Composition.rightInverse`, plus the reassociation `(a , b) , r ≅ a , (b , r)`.
-  - `whole` : a `Prefix S F` with `∀ y → F y []` gives `RightInverse S Chars` (uses `++-identityʳ`).
-  - `liftList`/`many` for iterating a prefix stage; `mapStage` along setoid maps.
-- Port the useful bits of `Invertible.Core` (`unitP`, `mapIso`); keep `Core` untouched until XML migrates.
-- Reuse stdlib: `Function.Construct.{Composition,Identity,Symmetry}`, `Function.Properties.RightInverse`
-  (`mkRightInverse`), `Data.Product.Function.NonDependent.Setoid._×-rightInverse_`,
-  `Data.Sum.Function.Setoid` — do not re-prove congruence/composition lemmas.
+### Phase 2 — Stage infrastructure (`Data.JSON.Stage`) — **done**
+- `Chars`, `Subtype` (sub-setoid cut out by a predicate, via `Relation.Binary.Construct.On`), `parseOr`, and
+  `mkStage` (a `RightInverse S Chars` from `print`, a partial `parse`, a default, `print-cong`, and the `Maybe`-form
+  round trip). Typechecks with no holes.
+- Reuse stdlib for everything else: `Function.Construct.{Composition,Identity,Symmetry}`,
+  `Function.Properties.RightInverse`, `Data.Product.Function.NonDependent.Setoid._×-rightInverse_`,
+  `Data.Sum.Function.Setoid`; look for a `List`-lift of `RightInverse` (else write one, once) when needed for strings.
+- `Invertible.Core` (`InvertibleParser`, `unitP`, `mapIso`) stays until XML migrates.
 
 ### Phase 3 — Numbers (`Data.JSON.Number`)
 - Move `JSONNumber` here; move digit/nat/sign/fraction/exponent code from `Invertible.Number`. This breaks the
   `AST ↔ Number` cycle: `AST` imports `Number`.
-- Give each sub-lexer its own `Prefix` stage (`digitsStage`, `natStage`, `signStage`, `fractionStage`, `exponentStage`)
-  and build `numberStage` with `seq`; the existing lemmas (`correctDigitsLoopGen`, `correctLexFraction`,
-  `correctLexExponent`, `correctLexNumberSign`) become the `inverseʳ` fields. Search stdlib first (`Data.Nat.Show`,
+- Keep the existing prefix lemmas (`correctDigitsLoopGen`, `correctLexFraction`, `correctLexExponent`,
+  `correctLexNumberSign`) as internal lemmas; `numberStage` is `mkStage` applied to `printNumber` / `lexNumber +/-`
+  with `rest = []` (the `NoLeadingNumCont []` side-condition is trivial). The sign (`-` prefix) is dispatched in the stage. Search stdlib first (`Data.Nat.Show`,
   `Data.Digit`, `Data.Nat.DivMod`) to shrink `toDigits10` (≈80 lines of arithmetic; `lem`/`lem′` are suspicious).
 - Fix: `lexExponentSign` uses `ℕ.pred (digitsToNat ds)` for negatives — check `e-0` / empty-digit behaviour
   is only relevant on the parse side, and document that.
@@ -212,7 +209,7 @@ it is not yet in `test/Everything.agda` (it has holes).
   and the `∈ escapeList` check in `Print`. Per-character escaping is a `RightInverse` of chars to char-lists; the
   string stage is the `List`-lift of it (look for a stdlib list/`map` lifting of `RightInverse` first,
   e.g. in `Data.List.Relation.Binary.Pointwise` / `Function.Properties.RightInverse`).
-- `stringStage : Prefix (setoid (List Char)) …` terminated by `"`.
+- `stringStage : RightInverse (setoid (List Char)) Chars` (quoted literal) via `mkStage`, from the prefix lemma.
 - `keywordStage` for `null`/`true`/`false` (replaces three literal clauses in `lexToken`).
 
 ### Phase 5 — AST cleanup (`Data.JSON.AST`)
