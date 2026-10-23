@@ -226,7 +226,18 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
 - `stringStage : RightInverse (setoid (List Char)) Chars` (quoted literal) via `mkStage`, from the prefix lemma.
 - `keywordStage` for `null`/`true`/`false` (replaces three literal clauses in `lexToken`).
 
-### Phase 5 — AST cleanup (`Data.JSON.AST`)
+### Phase 5 — AST cleanup (`Data.JSON.AST`) — **done**
+- Done: `ObjectC` is now `List Key ▷ (Fin ∘ length)` (`Key = List Char`, duplicates allowed, `Data.JSON.ObjectC` deleted);
+  string payloads and keys are `List Char` (`stringⱼ`/`objectFromList` still take `String`, `stringⱼ′`/`objectFromList′`
+  take `List Char`); array/object converters are `foldr`-based; dead code (`JSONType≟` etc., unused imports) removed;
+  `Schema.asString/asObject` convert with `fromList`; `Data.JSON.Print` is rewritten as a compact `foldJSONM`
+  catamorphism over the shared `printNumber`/`printStringLiteral`/`keywordText` (the old unquoted printer is gone).
+- Done: `Data.JSON.Equality`: `_≈ⱼ_` (one constructor per node kind, shape equations on `ℕ` / `List Key` instead of the
+  dependent shape pair — this avoids Σ-injectivity under `--cubical-compatible`; it is *not* stdlib `Pointwise`, which
+  would force that extraction), `≈ⱼ-refl/sym/trans`, `JSONSetoid`, and the two structural lemmas the parser proof
+  needs: `arrayⱼ-go` and `objectFromList′-go` (a list pointwise-bisimilar to a node's children rebuilds a bisimilar
+  node). No `JSONView` was needed.
+- Remaining: `Data.JSON.Geo` still has unrelated errors (e.g. `+ Data.Fin.toℕ n`); it moves out in Phase 9.
 - Keep the container/free-monad definition. Apply decisions 1, 2, 4: simplify `ObjectC` to a `List String`-shaped
   container (still a `Container`), add `JSONView`/`view`/`unview`, and define `_≈ⱼ_` from the stdlib container
   equality (prove it is an equivalence by instantiating the stdlib setoid, not by hand). Smart constructors `nullⱼ … objectⱼ` kept with the same names (callers in
