@@ -78,6 +78,12 @@ Stages and their printers:
 | `Data.JSON.Geo` | **error** (`toListC` not in scope) |
 | `GeoAgda.Model.GeoJSON.Conformance` | **error** (`Schema` not in scope: `Data.JSON.Conformance` is all comments) |
 
+Pre-existing failures further out (identical at the baseline commit `49662ef`, checked in a throwaway worktree):
+`GeoAgda.agda` (hence `Tests/Milestone3`) — `escapeList` defined in both `Data.JSON.Print` and `Data.XML.Print`;
+`Tests/Milestone5` — numeric literal where `Fin 10` expected (line 27); `Tests/Milestone7` — via `Soundness`;
+`Tests/Milestone8` — via `Model.GeoJSON.Conformance`. `Pipeline`, `Coordinates`, `exe/Main` load fine, and are the
+regression guard while migrating. The Phase 7/9 shim removal must fix these, not just preserve them.
+
 Two stdlib facts found while preparing Phase 1 (they change the design, see decisions 1 and 9):
 - The stdlib has **no equality on free monads**, only one layer: `Data.Container.Relation.Binary.Pointwise.Pointwise C R`
   / `Data.Container.Relation.Binary.Equality.Setoid`. `_≈ⱼ_` is therefore a small inductive type built on `Pointwise`.
@@ -193,7 +199,12 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
   `Data.Sum.Function.Setoid`; look for a `List`-lift of `RightInverse` (else write one, once) when needed for strings.
 - `Invertible.Core` (`InvertibleParser`, `unitP`, `mapIso`) stays until XML migrates.
 
-### Phase 3 — Numbers (`Data.JSON.Number`)
+### Phase 3 — Numbers (`Data.JSON.Number`) — **number stage done; digit clean-up pending**
+- Done: code moved from `Invertible.Number` (shim left at the old path), `JSONNumber` moved in (re-exported from `AST`,
+  so the `AST ↔ Number` cycle is gone), `parseNumber` + `numberStage : RightInverse (setoid JSONNumber) Chars` proved
+  with no holes (`mkStage`, `correctLexNumberSign` at `rest = []`).
+- Pending: replace `printDigit`/`parseDigit` (10-clause matches in `Invertible.Char`, against guideline 6.2) by stdlib
+  `Data.Digit`/`Data.Nat.Show`, and shrink `toDigits10`.
 - Move `JSONNumber` here; move digit/nat/sign/fraction/exponent code from `Invertible.Number`. This breaks the
   `AST ↔ Number` cycle: `AST` imports `Number`.
 - Keep the existing prefix lemmas (`correctDigitsLoopGen`, `correctLexFraction`, `correctLexExponent`,
