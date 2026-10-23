@@ -214,7 +214,10 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
 - Fix: `lexExponentSign` uses `ℕ.pred (digitsToNat ds)` for negatives — check `e-0` / empty-digit behaviour
   is only relevant on the parse side, and document that.
 
-### Phase 4 — Strings and keywords (`Data.JSON.String`, part of `Token`)
+### Phase 4 — Strings and keywords (`Data.JSON.String`, `Data.JSON.Keyword`) — **done (basic escapes)**
+- Done: `Data.JSON.String` (table-driven `escapes`, `lexBody-printBody`, `stringStage`) and `Data.JSON.Keyword`
+  (`stripPrefix`, `lexKeyword-print`, `keywordStage`), no holes. Escapes cover `" \\ \n \r \t \b \f` (read back also `\/`).
+  Not yet: printing other control characters as `\u00XX` and reading `\uXXXX` (stretch; needs hex digits).
 - Table-driven escapes: one `escapeChar : Char → Maybe Char` / `unescapeChar` pair with
   `unescape (escape c) ≡ c` as a lemma, replacing the nested `with` ladder in `lexStringChars`
   and the `∈ escapeList` check in `Print`. Per-character escaping is a `RightInverse` of chars to char-lists; the
