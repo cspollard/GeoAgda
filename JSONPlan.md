@@ -245,7 +245,15 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
 - Collapse `JSONType≟`/`PrimJSONType≟` (16-clause) if unused; otherwise derive via a code/decode map.
 - Update `Schema.agda`'s `asObject`, `lookupField` for the new object shape; keep `lookupField` first-match semantics.
 
-### Phase 6 — Tokens, lexer, parser
+### Phase 6 — Tokens, lexer, parser — **lexing done, parser pending**
+- Done: `Data.JSON.Token` (`JSONToken`, `printToken`, `lexToken` dispatching on `parseDigit` first,
+  `lexToken-printToken` under `TokenFollow`, `tokenStage`) and `Data.JSON.Lexer` (`skipWS`, fuel-based `tokenize`,
+  `ValidTokenSeq = Linked NotAdjacent` from the stdlib, `tokenize-print`, and
+  `lexer : RightInverse ValidTokens Chars` — `from` checks the decidable validity and falls back to `[]`).
+  No holes. The "segmentation layer" alternative was *not* needed: `from` into a `Subtype` with a decidable
+  predicate is enough, and the prefix lemma stays internal as planned.
+- Pending: `Data.JSON.Parser` (`printTokens`, `parseValue`, the fuel invariant "fuel ≥ consumed tokens",
+  `parser : RightInverse JSONSetoid ValidTokens`) and `printTokens-valid`.
 - `Token.agda`: `JSONToken`, `printToken`, `printTokens` (moved from `Soundness`), `tokenStage`, whitespace `skipWS`
   (a token never prints with leading whitespace: this is part of `TokenFollow`). `lexer : RightInverse ValidTokens Chars`
   is the iteration of `tokenStage` over the input (`ValidTokenSeq` is exactly what makes the follow-conditions line
