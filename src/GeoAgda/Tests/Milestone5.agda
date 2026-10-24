@@ -4,6 +4,7 @@ module GeoAgda.Tests.Milestone5 where
 
 open import Level using (0ℓ)
 open import Data.List using (List; []; _∷_)
+open import Data.Fin.Patterns using (1F; 2F; 3F; 5F; 8F)
 open import Data.String as String using (String)
 open import Data.String.Properties using (_==_)
 open import Data.Integer using (ℤ; +_; -[1+_])
@@ -24,11 +25,11 @@ open import GeoAgda.Rendering.SVG.Render
 
 -- London: Lon -0.12, Lat 51.5
 ptLondon : Position
-ptLondon = pos (jsonNumber - 0 (1 ∷ 2 ∷ []) (+_ 0)) (jsonNumber + 51 (5 ∷ []) (+_ 0))
+ptLondon = pos (jsonNumber - 0 (1F ∷ 2F ∷ []) (+_ 0)) (jsonNumber + 51 (5F ∷ []) (+_ 0))
 
 -- Paris: Lon 2.35, Lat 48.85
 ptParis : Position
-ptParis = pos (jsonNumber + 2 (3 ∷ 5 ∷ []) (+_ 0)) (jsonNumber + 48 (8 ∷ 5 ∷ []) (+_ 0))
+ptParis = pos (jsonNumber + 2 (3F ∷ 5F ∷ []) (+_ 0)) (jsonNumber + 48 (8F ∷ 5F ∷ []) (+_ 0))
 
 testGeomPoint : Geometry
 testGeomPoint = pointG ptLondon

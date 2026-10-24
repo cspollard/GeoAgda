@@ -17,11 +17,11 @@ open import GeoAgda
 ------------------------------------------------------------------------
 
 samplePointJSON : JSON
-samplePointJSON = objectFromlist
-  ( ("type" , string "Point")
-  ∷ ("coordinates" , arrayFromList
-      ( number (jsonNumber + 10 [] 0ℤ)
-      ∷ number (jsonNumber + 20 [] 0ℤ)
+samplePointJSON = objectFromList
+  ( ("type" , stringⱼ "Point")
+  ∷ ("coordinates" , arrayⱼ
+      ( numberⱼ (jsonNumber + 10 [] 0ℤ)
+      ∷ numberⱼ (jsonNumber + 20 [] 0ℤ)
       ∷ []
       ))
   ∷ []

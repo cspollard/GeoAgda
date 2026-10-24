@@ -6,9 +6,11 @@ open import Level using (0ℓ)
 open import Data.List using (List; []; _∷_)
 open import Data.String as String using (String; toList)
 open import Data.Integer using (+_; -[1+_])
-open import Data.Sign using (+; -)
+import Data.Sign as Sign
+open import Data.Fin.Patterns using (1F; 2F; 5F)
 open import Data.Maybe using (Maybe; just; nothing)
-open import Relation.Nullary.Decidable using (yes; no)
+open import Data.Unit using (tt)
+open import Relation.Nullary.Decidable using (yes; no; toWitness)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; ∃)
 
@@ -25,9 +27,9 @@ open import GeoAgda.Tests.Fixtures using (pointGeoJSON; polygonGeoJSON; naturalE
 ------------------------------------------------------------------------
 
 posJson : JSON
-posJson = arrayFromList
-  ( number (jsonNumber - 0 (1 ∷ 2 ∷ []) (+ 0))
-  ∷ number (jsonNumber + 51 (5 ∷ []) (+ 0))
+posJson = arrayⱼ
+  ( numberⱼ (jsonNumber Sign.- 0 (1F ∷ 2F ∷ []) (+_ 0))
+  ∷ numberⱼ (jsonNumber Sign.+ 51 (5F ∷ []) (+_ 0))
   ∷ []
   )
 
@@ -36,17 +38,17 @@ testPosDec : ∃ (λ p → checkPosition posJson ≡ yes p)
 testPosDec = _ , refl
 
 -- Total extraction using the proof certificate
-testPosShortcut : ∃ (λ p → extractPositionFromEvidence p ≡ pos (jsonNumber - 0 (1 ∷ 2 ∷ []) (+ 0)) (jsonNumber + 51 (5 ∷ []) (+ 0)))
-testPosShortcut with checkPosition posJson
-... | yes p = p , refl
+testPosShortcut : extractPositionFromEvidence (toWitness {a? = checkPosition posJson} tt)
+                  ≡ pos (jsonNumber Sign.- 0 (1F ∷ 2F ∷ []) (+_ 0)) (jsonNumber Sign.+ 51 (5F ∷ []) (+_ 0))
+testPosShortcut = refl
 
 ------------------------------------------------------------------------
 -- 2. Geometry Conformance & Proof Shortcut Test
 ------------------------------------------------------------------------
 
 pointGeomJson : JSON
-pointGeomJson = objectFromlist
-  ( ("type" , string "Point")
+pointGeomJson = objectFromList
+  ( ("type" , stringⱼ "Point")
   ∷ ("coordinates" , posJson)
   ∷ []
   )
@@ -54,9 +56,9 @@ pointGeomJson = objectFromlist
 testGeomDec : ∃ (λ gEv → checkGeometry pointGeomJson ≡ yes gEv)
 testGeomDec = _ , refl
 
-testGeomShortcut : ∃ (λ gEv → extractGeometryFromEvidence gEv ≡ pointG (pos (jsonNumber - 0 (1 ∷ 2 ∷ []) (+ 0)) (jsonNumber + 51 (5 ∷ []) (+ 0))))
-testGeomShortcut with checkGeometry pointGeomJson
-... | yes gEv = gEv , refl
+testGeomShortcut : extractGeometryFromEvidence (toWitness {a? = checkGeometry pointGeomJson} tt)
+                   ≡ pointG (pos (jsonNumber Sign.- 0 (1F ∷ 2F ∷ []) (+_ 0)) (jsonNumber Sign.+ 51 (5F ∷ []) (+_ 0)))
+testGeomShortcut = refl
 
 ------------------------------------------------------------------------
 -- 3. FeatureCollection Conformance & End-to-End Validation
@@ -65,7 +67,7 @@ testGeomShortcut with checkGeometry pointGeomJson
 parsedPointFC : JSON
 parsedPointFC with parseJSON (toList pointGeoJSON)
 ... | just v = v
-... | nothing = null
+... | nothing = nullⱼ
 
 testFCDec : ∃ (λ fcEv → checkFeatureCollection parsedPointFC ≡ yes fcEv)
 testFCDec = _ , refl

@@ -7,10 +7,10 @@ open import Data.String using (toList)
 open import Data.Product using (_,_)
 open import Data.Sign using (+; -)
 open import Data.Integer using (0ℤ)
-open import Data.Maybe using (just)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import GeoAgda
+open import Data.Maybe using (Maybe; just; nothing)
 
 ------------------------------------------------------------------------
 -- Fixtures
@@ -47,7 +47,7 @@ testExtractFeature with parseJSON sampleFeatureStr
 _ : testExtractFeature ≡ just
   (feature Data.Maybe.nothing
     (pointG (pos (jsonNumber + 10 [] 0ℤ) (jsonNumber + 20 [] 0ℤ)))
-    (("name" , string "London") ∷ []))
+    (("name" , stringⱼ "London") ∷ []))
 _ = refl
 
 -- Test 3: FeatureCollection Extraction
@@ -60,7 +60,8 @@ _ : testExtractCollection ≡ just
   (featureCollection
     (feature Data.Maybe.nothing
       (pointG (pos (jsonNumber + 10 [] 0ℤ) (jsonNumber + 20 [] 0ℤ)))
-      (("name" , string "London") ∷ [])
-    ∷ []))
+      (("name" , stringⱼ "London") ∷ [])
+    ∷ [])
+    nothing)
 _ = refl
 

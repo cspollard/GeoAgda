@@ -1,5 +1,18 @@
 # JSONPlan — a JSON pipeline where every stage is a proven pseudoinverse of its printer
 
+## Status (2026-10-24)
+
+Phases 0–7 are **done**: `Data.JSON.RoundTrip.jsonStage : RightInverse JSONSetoid Chars` is proved (lexing and parsing
+included) with no holes, no postulates and no termination pragmas; the whole library except `Data.JSON.Geo`
+type-checks, and the executable gives byte-identical SVG to the baseline on all four fixtures (including the 725 KB
+Natural Earth file). Done beyond the original phases: `Data.JSON.Conformance` was rebuilt on the container AST
+(evidence stated through `asNull … asObject`, not `≡` on `JSON`), `GeoAgda.Model.GeoJSON.Conformance` fixed (its failure
+cases had never type-checked against the `with … in` equations; `checkTyped` replaces three copies), the lightweight
+`Schema` in `Data.JSON.Schema` (unused) removed, `Invertible.Char` digit tables use `Data.Fin.Patterns`, and tests were
+migrated (`Tests/JSONRoundTrip` is new; Milestones 1, 3, 4, 5, 7, 8 load).
+Still open: Phase 8 (pretty-printer), `\uXXXX` escapes, `Data.JSON.Geo` (yours; moves to `GeoAgda.Model.GeoJSON`),
+the XML half of Milestone 7 (`GeoAgda.Parsing.XML.Soundness` is a stub), and shrinking `toDigits10`.
+
 ## Goal
 
 Every stage of `List Char → JSON` (lexing and parsing included) is paired with a
