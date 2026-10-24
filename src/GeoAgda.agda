@@ -13,15 +13,13 @@ open import Data.XML.Print public
 open import Data.XML.RoundTrip public
 open import Data.SVG public
 
--- Invertible Parsing Primitives & Combinators
-open import GeoAgda.Parsing.Invertible.Core public
-open import GeoAgda.Parsing.Invertible.Char public
-open import GeoAgda.Parsing.Invertible.Number public
-open import GeoAgda.Parsing.Invertible.Combinators public
-
--- JSON Lexer, Parser, and the round-trip theorem
-open import GeoAgda.Parsing.JSON.Lexer public
-open import GeoAgda.Parsing.JSON.Parser public
+-- Invertible parsing, the JSON lexer/parser and its round-trip theorem
+open import Data.Invertible.Core public
+open import Data.Invertible.Char public
+open import Data.Invertible.Combinators public
+open import Data.JSON.Number public
+open import Data.JSON.Lexer public
+open import Data.JSON.Parser public
 open import Data.JSON.RoundTrip public
 
 -- Schema Validation, Conformance & Typed GeoJSON Models

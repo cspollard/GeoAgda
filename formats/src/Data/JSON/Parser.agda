@@ -35,7 +35,7 @@ open import Data.JSON.Lexer using (ValidTokens; ValidTokenSeq)
 open import Data.JSON.Tokens
 open import Data.Container.FreeMonad using (pure; impure)
 open import Data.JSON.Equality
-open import Data.JSON.Stage using (Subtype)
+open import Data.Stage using (Subtype)
 
 ------------------------------------------------------------------------
 -- The parser

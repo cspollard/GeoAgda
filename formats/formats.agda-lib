@@ -1,0 +1,5 @@
+name: formats
+include:
+  src
+depend:
+  standard-library

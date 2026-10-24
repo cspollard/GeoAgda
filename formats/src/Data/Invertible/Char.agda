@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Parsing.Invertible.Char where
+module Data.Invertible.Char where
 
 open import Level using (0ℓ)
 open import Data.Char using (Char)
@@ -17,7 +17,7 @@ open import Relation.Nullary.Decidable using (Dec; yes; no)
 open import Relation.Binary.PropositionalEquality as ≡
   using (_≡_; refl; sym; trans; cong)
 
-open import GeoAgda.Parsing.Invertible.Core
+open import Data.Invertible.Core
 
 ------------------------------------------------------------------------
 -- Digit Encodings and Decoders

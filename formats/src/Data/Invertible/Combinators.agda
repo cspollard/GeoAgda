@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Parsing.Invertible.Combinators where
+module Data.Invertible.Combinators where
 
 open import Level using (0ℓ)
 open import Data.Char using (Char)
@@ -12,8 +12,8 @@ open import Function using (_∘_; _$_)
 open import Function.Bundles using (_↔_; mk↔ₛ′)
 open import Relation.Binary.PropositionalEquality as ≡ using (_≡_; refl)
 
-open import GeoAgda.Parsing.Invertible.Core
-open import GeoAgda.Parsing.Invertible.Char using (litChar)
+open import Data.Invertible.Core
+open import Data.Invertible.Char using (litChar)
 
 ------------------------------------------------------------------------
 -- Unit Elimination Isomorphisms

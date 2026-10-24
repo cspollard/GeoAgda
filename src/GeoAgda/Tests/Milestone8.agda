@@ -16,7 +16,7 @@ open import Data.Product using (_×_; _,_; ∃)
 
 open import Data.JSON.AST
 open import Data.JSON.Conformance
-open import GeoAgda.Parsing.JSON.Parser using (parseJSON)
+open import Data.JSON.RoundTrip using (parseJSON)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Model.GeoJSON.Extraction using (extractPosition; extractGeometry; extractFeatureCollection)
 open import GeoAgda.Model.GeoJSON.Conformance

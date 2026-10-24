@@ -37,7 +37,7 @@ open import Relation.Binary.PropositionalEquality
 
 open import Data.XML.Escape using (escapeText-head)
 open import Data.XML.Token
-open import Data.JSON.Stage using (Chars; Subtype)
+open import Data.Stage using (Chars; Subtype)
 
 ------------------------------------------------------------------------
 -- The tokenizer

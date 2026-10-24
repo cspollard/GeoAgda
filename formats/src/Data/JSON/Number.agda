@@ -33,7 +33,7 @@ open import Relation.Nullary.Negation using (contradiction)
 open import Relation.Binary.PropositionalEquality as ≡
   using (_≡_; refl; sym; trans; cong; cong₂; module ≡-Reasoning)
 
-open import GeoAgda.Parsing.Invertible.Char using (parseDigit; printDigit; parsePrintDigit)
+open import Data.Invertible.Char using (parseDigit; printDigit; parsePrintDigit)
 
 ------------------------------------------------------------------------
 -- Exact representation of JSON numbers according to RFC 8259:
@@ -330,7 +330,7 @@ correctLexNumberSign s int frac exp rest (noD , noDot , noExp)
 -- Lexeme-level stage
 ------------------------------------------------------------------------
 
-open import Data.JSON.Stage using (Chars; mkStage)
+open import Data.Stage using (Chars; mkStage)
 open import Relation.Binary.PropositionalEquality using (setoid; subst)
 open import Function.Bundles using (RightInverse)
 

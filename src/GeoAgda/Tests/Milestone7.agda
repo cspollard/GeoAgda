@@ -18,7 +18,7 @@ open import Data.Vec using () renaming (_∷_ to _∷ᵛ_; [] to []ᵛ)
 
 open import Data.JSON.AST
 open import Data.JSON.Print using (printJSON)
-open import GeoAgda.Parsing.JSON.Parser using (parseJSON)
+open import Data.JSON.RoundTrip using (parseJSON)
 open import Data.JSON.Number using (jsonNumber)
 open import Data.JSON.RoundTrip using (jsonStage; parseJSON-printJSON)
 open import Data.JSON.Equality using (_≈ⱼ_)

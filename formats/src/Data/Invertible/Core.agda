@@ -2,7 +2,7 @@
 
 
 
-module GeoAgda.Parsing.Invertible.Core where
+module Data.Invertible.Core where
 
 open import Level using (0ℓ)
 open import Data.Char using (Char)

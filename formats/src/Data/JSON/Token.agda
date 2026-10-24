@@ -31,8 +31,8 @@ open import Relation.Binary.PropositionalEquality
 open import Data.JSON.Number
 open import Data.JSON.String using (printStringLiteral; printBody; lexBody; lexBody-printBody)
 open import Data.JSON.Keyword
-open import Data.JSON.Stage using (Chars; mkStage)
-open import GeoAgda.Parsing.Invertible.Char using (parseDigit; printDigit; parsePrintDigit)
+open import Data.Stage using (Chars; mkStage)
+open import Data.Invertible.Char using (parseDigit; printDigit; parsePrintDigit)
 
 ------------------------------------------------------------------------
 -- Tokens and their spelling

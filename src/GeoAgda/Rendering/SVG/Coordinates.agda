@@ -23,7 +23,7 @@ open import GeoAgda.Model.GeoJSON.Types
   using (Position; pos; BBox; bbox; Geometry; pointG; multiPointG; lineStringG;
          multiLineStringG; polygonG; multiPolygonG; geometryCollectionG;
          Feature; feature; Properties)
-open import GeoAgda.Parsing.Invertible.Number using (signNatToℤ)
+open import Data.JSON.Number using (signNatToℤ)
 
 
 ------------------------------------------------------------------------

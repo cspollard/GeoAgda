@@ -15,7 +15,7 @@
 -- at runtime, so the executable and the proof share one definition.
 ------------------------------------------------------------------------
 
-module Data.JSON.Stage where
+module Data.Stage where
 
 open import Level using (0ℓ)
 open import Data.Char using (Char)

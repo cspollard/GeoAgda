@@ -45,7 +45,7 @@ open import Data.XML.Equality
 open import Data.XML.Token
 open import Data.XML.Lexer using (ValidTokens; Run; isText)
 open import Data.XML.Tokens
-open import Data.JSON.Stage using (Subtype)
+open import Data.Stage using (Subtype)
 
 ------------------------------------------------------------------------
 -- The parser

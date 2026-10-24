@@ -30,7 +30,7 @@ open import Relation.Nullary.Decidable using (yes; no)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; sym; trans; cong; subst; setoid)
 
-open import Data.JSON.Stage using (Chars; mkStage)
+open import Data.Stage using (Chars; mkStage)
 
 ------------------------------------------------------------------------
 -- The escape table

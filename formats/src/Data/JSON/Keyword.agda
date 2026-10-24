@@ -22,7 +22,7 @@ open import Relation.Nullary.Decidable using (yes; no)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; trans; cong; subst; setoid)
 
-open import Data.JSON.Stage using (Chars; mkStage)
+open import Data.Stage using (Chars; mkStage)
 
 data Keyword : Set where
   nullK trueK falseK : Keyword

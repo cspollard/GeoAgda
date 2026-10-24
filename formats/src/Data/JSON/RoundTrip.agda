@@ -29,7 +29,7 @@ open import Data.JSON.Equality using (_≈ⱼ_; JSONSetoid)
 open import Data.JSON.Lexer using (lexer; tokenize; tokenize-printTokenList)
 open import Data.JSON.Parser using (parser; parseTokens; parseTokens-printTokens)
 open import Data.JSON.Print using (printJSON)
-open import Data.JSON.Stage using (Chars)
+open import Data.Stage using (Chars)
 open import Data.JSON.Token using (printTokenList)
 open import Data.JSON.Tokens using (printTokens; printTokens-valid)
 

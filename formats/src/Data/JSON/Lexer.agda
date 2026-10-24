@@ -42,8 +42,8 @@ open import Data.JSON.Number
   using (JSONNumber; jsonNumber; NoLeadingNumCont; printNat-head; printFraction; printExponent)
 open import Data.Sign as Sign using ()
 open import Data.JSON.Token
-open import Data.JSON.Stage using (Chars; Subtype)
-open import GeoAgda.Parsing.Invertible.Char using (parseDigit; printDigit; parsePrintDigit)
+open import Data.Stage using (Chars; Subtype)
+open import Data.Invertible.Char using (parseDigit; printDigit; parsePrintDigit)
 
 ------------------------------------------------------------------------
 -- White space

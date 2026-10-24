@@ -29,7 +29,7 @@ open import Data.XML.Equality using (_≈ₓ_; XMLSetoid)
 open import Data.XML.Lexer using (lexer; tokenize; tokenize-printTokenList)
 open import Data.XML.Parser using (parser; parseTokens; parseTokens-printTokens)
 open import Data.XML.Print using (printXML)
-open import Data.JSON.Stage using (Chars)
+open import Data.Stage using (Chars)
 open import Data.XML.Tokens using (printTokens; printTokens-valid)
 
 xmlStage : RightInverse XMLSetoid Chars
