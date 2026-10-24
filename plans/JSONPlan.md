@@ -3,14 +3,14 @@
 ## Status (2026-10-24)
 
 Phases 0–7 are **done**: `Data.JSON.RoundTrip.jsonStage : RightInverse JSONSetoid Chars` is proved (lexing and parsing
-included) with no holes, no postulates and no termination pragmas; the whole library except `Data.JSON.Geo`
+included) with no holes, no postulates and no termination pragmas; the whole library
 type-checks, and the executable gives byte-identical SVG to the baseline on all four fixtures (including the 725 KB
 Natural Earth file). Done beyond the original phases: `Data.JSON.Conformance` was rebuilt on the container AST
 (evidence stated through `asNull … asObject`, not `≡` on `JSON`), `GeoAgda.Model.GeoJSON.Conformance` fixed (its failure
 cases had never type-checked against the `with … in` equations; `checkTyped` replaces three copies), the lightweight
 `Schema` in `Data.JSON.Schema` (unused) removed, `Invertible.Char` digit tables use `Data.Fin.Patterns`, and tests were
 migrated (`Tests/JSONRoundTrip` is new; Milestones 1, 3, 4, 5, 7, 8 load).
-Still open: Phase 8 (pretty-printer), `\uXXXX` escapes, `Data.JSON.Geo` (yours; moves to `GeoAgda.Model.GeoJSON`),
+Still open: Phase 8 (pretty-printer), `\uXXXX` escapes,
 the XML half of Milestone 7 (`GeoAgda.Parsing.XML.Soundness` is a stub), and shrinking `toDigits10`.
 
 ## Goal
@@ -46,9 +46,7 @@ Stages and their printers:
 - **`GeoAgda.Parsing.JSON.Soundness` does not load** — it still uses the old constructors and
   a few removed names (`isWhitespace`, `primStringToListInv`). This is the main proof file (474 lines);
   its structure (`printTokens`, `ValidTokenSeq`, `correctLexStringChars`) is reusable.
-- **`Data.JSON.Geo` does not load** (`toListC` not in scope). It is not a JSON module: it is GeoJSON
-  typing and extraction, and duplicates `GeoAgda.Model.GeoJSON.Extraction`. It also has stubs/bugs:
-  `getNat` returns `0`, `jsonNumToFloat` ignores the exponent.
+- `Data.JSON.Geo` did not load; it duplicated `GeoAgda.Model.GeoJSON.Extraction` and has since been **deleted**.
 - `Data.JSON.Conformance` is 100% commented out, yet `GeoAgda.Model.GeoJSON.Conformance` imports it.
 - **`Data.JSON.Print` disagrees with the lexer**: `printPrim primstring = toList` (no quotes, no escaping)
   and object keys are printed unquoted, so `printJSON` output is not valid JSON. Only the token-level printer
@@ -88,7 +86,7 @@ Stages and their printers:
 |---|---|
 | `Data.JSON.{AST,Print,Schema}`, `GeoAgda.Parsing.JSON.Parser`, `Model.GeoJSON.Extraction`, `Pipeline` | load, no warnings |
 | `GeoAgda.Parsing.JSON.Soundness` | **error** (old constructors; missing `isWhitespace`, `primStringToListInv`) |
-| `Data.JSON.Geo` | **error** (`toListC` not in scope) |
+| `Data.JSON.Geo` | **error** (deleted since) |
 | `GeoAgda.Model.GeoJSON.Conformance` | **error** (`Schema` not in scope: `Data.JSON.Conformance` is all comments) |
 
 Pre-existing failures further out (identical at the baseline commit `49662ef`, checked in a throwaway worktree):
@@ -149,8 +147,7 @@ Two stdlib facts found while preparing Phase 1 (they change the design, see deci
    stays as a boundary convenience (`stringⱼ = stringⱼ′ ∘ toList`); consumers (`Schema.asString`, `Extraction`)
    convert with `fromList`. The `String`-level corollary (`parseJSON (toList (renderJSON v))`) is **not** part of the safe
    core; if wanted it goes in a separate `--with-K` module using `Data.String.Unsafe`.
-8. `Data.JSON.Geo` leaves `Data/JSON/` (moves under `GeoAgda.Model.GeoJSON`); it is kept compiling but is
-   not part of the proof effort.
+8. `Data.JSON.Geo` is deleted (it duplicated `GeoAgda.Model.GeoJSON.Extraction`).
 
 ## Target layout
 
@@ -180,7 +177,7 @@ before inventing lemmas; `agda_get_symbol_implementation` only to learn proof st
 
 ### Phase 0 — Triage (no behaviour change)
 - Load each of `src/Data/JSON/*.agda`, `GeoAgda/Parsing/**`, `Model/GeoJSON/*`, `Tests/*`; record in this file
-  what loads and what doesn't (known: `Soundness`, `Geo`, probably `Model.GeoJSON.Conformance`).
+  what loads and what doesn't (known: `Soundness`, probably `Model.GeoJSON.Conformance`).
 - Don't touch the unrelated working-tree files (`data/fixtures/earth_physical_topography.geojson`).
 - Delete dead code: commented-out body of `Conformance.agda` (keep its design in Phase 9), unused imports in `AST.agda`
   (`Data.Float`, `Data.Container.FreeMonad` duplicates, …), `Print.print⊤`.
@@ -249,7 +246,6 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
   would force that extraction), `≈ⱼ-refl/sym/trans`, `JSONSetoid`, and the two structural lemmas the parser proof
   needs: `arrayⱼ-go` and `objectFromList′-go` (a list pointwise-bisimilar to a node's children rebuilds a bisimilar
   node). No `JSONView` was needed.
-- Remaining: `Data.JSON.Geo` still has unrelated errors (e.g. `+ Data.Fin.toℕ n`); it moves out in Phase 9.
 - Keep the container/free-monad definition. Apply decisions 1, 2, 4: simplify `ObjectC` to a `List String`-shaped
   container (still a `Container`), add `JSONView`/`view`/`unview`, and define `_≈ⱼ_` from the stdlib container
   equality (prove it is an equivalence by instantiating the stdlib setoid, not by hand). Smart constructors `nullⱼ … objectⱼ` kept with the same names (callers in
@@ -299,12 +295,10 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
   witness for both the compact and the pretty printer (`Function.Properties.RightInverse` gives that the two `to`s
   are related through `from`). This is the version `renderJSON` for the CLI should use.
 
-### Phase 9 — Schema, Geo, and clean-up
+### Phase 9 — Schema and clean-up
 - `Schema.agda`: single schema language; add the `_⊨_` evidence relation (from the commented `Conformance.agda`)
   and `checkSchema ≡ true ⇔ ∃ evidence` soundness; delete `Conformance.agda`; repoint
   `GeoAgda.Model.GeoJSON.Conformance`.
-- `Data/JSON/Geo.agda`: replace `toListC` with the new object view, then move to `GeoAgda/Model/GeoJSON/`; reconcile
-  with `Extraction.agda`; fix `getNat` and the exponent in `jsonNumToFloat` (or mark them explicitly as lossy).
 - Remove `Goals.agda`, refresh `PLAN.md` Milestone 7 (items 7.1–7.4 are now this plan), regenerate `Everything.agda`.
 
 ## Verification
@@ -332,4 +326,4 @@ The headline theorem is already proved *from* `lexer` and `parser` by the stdlib
   parser must accept duplicates and the printer must preserve them. Decision 2 is therefore final: `ObjectC` becomes a
   non-unique, list-shaped `Container`; `WellFormed` (unique keys) is an optional predicate, not part of the type.
   `lookupField` keeps first-match semantics.
-- **`Data.JSON.Geo`** moves out of `Data/JSON/` into `GeoAgda.Model.GeoJSON` (decision 8, confirmed).
+- **`Data.JSON.Geo`** is deleted (decision 8, revised 2026-10-24).
