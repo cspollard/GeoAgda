@@ -2,7 +2,7 @@
 
 ## Status (2026-10-24)
 
-Phases 1–4 done (2026-10-24); Phase 5 (`Equality`) is next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
+Phases 1–5 done (2026-10-24), so the AST is in its target state and awaits review; Phases 6–8 (printer proofs, parser, theorem) are next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
 printer over a container AST. This plan brings `Data.XML` to the same shape. **Scope of the first pass: the AST
 only** (Phases 1–5). The parser/printer and the right-inverse theorem (Phases 6–8) are outlined, and are to be
 detailed once the AST has settled.
@@ -114,7 +114,7 @@ payload change. Commit when everything typechecks.
 Create `Data.SVG` with the SVG constructors (they take `String` for convenience). Update `Render.agda` and
 `Milestone7`. `GeoAgda.agda` re-exports both modules.
 
-### Phase 5 — `Data.XML.Equality`
+### Phase 5 — `Data.XML.Equality` — **done**
 `_≈ₓ_` with a single `≈element` (equal tag, attributes and text slots, arity equality `e : n ≡ m`, children related
 through `subst Fin e`; validity proofs ignored), mirroring `_≈ⱼ_`. Prove refl, sym, trans, and the `Setoid`. Optionally, show it
 agrees with the stdlib `Data.Container.Relation.Binary.Pointwise` on one layer.
@@ -138,9 +138,8 @@ tags are checked, not assumed. Prefer the same `RightInverse` plumbing as `Data.
 
 ## Verification
 
-`make check` only covers `Main`. To check every module use `bash make-everything.sh`, but note that
-`Data.JSON.Geo` currently fails to typecheck (a `let` with local definitions at line ~120; it predates this plan and
-nothing imports it). Until that is fixed, check all other modules with a temporary `Everything` that omits it.
+`make check` only covers `Main`; use `bash make-everything.sh` to check every module (green as of Phase 5, after
+`Data.JSON.Geo` was removed).
 
 - `make check` after every phase; the `Data.JSON.*` and GeoJSON modules must stay green in Phases 2 and 3.
 - Hole-driven development via the Agda MCP for all proofs (guidelines §1.4).
