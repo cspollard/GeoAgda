@@ -2,7 +2,7 @@
 
 ## Status (2026-10-24)
 
-Phases 1–5 done (2026-10-24), so the AST is in its target state and awaits review; Phases 6–8 (printer proofs, parser, theorem) are next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
+Phases 1–6 done (2026-10-24): the AST is reviewed and final, and escaping has its round-trip proof. Phases 7–8 (tokens, lexer, parser, top-level theorem) are next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
 printer over a container AST. This plan brings `Data.XML` to the same shape. **Scope of the first pass: the AST
 only** (Phases 1–5). The parser/printer and the right-inverse theorem (Phases 6–8) are outlined, and are to be
 detailed once the AST has settled.
@@ -121,10 +121,20 @@ agrees with the stdlib `Data.Container.Relation.Binary.Pointwise` on one layer.
 
 **Stop here for review.** The AST is then in the target state.
 
-### Phase 6 — Printer and escaping (outline)
-One printer, defined by `foldXMLM`. An `Escape` stage with a right inverse: `unescape (escape cs) ≡ just cs`, where
-the unescaper handles the five predefined entities and rejects the rest. Name and attribute-value variants as in
-`Data.JSON.Keyword`.
+### Phase 6 — Escaping — **done**
+`Data.XML.Escape`: table-driven escaping (`textTable`, `valueTable`; `escapeText`, `escapeValue`) and a decoder
+`lexBody stop` that reads up to an unescaped terminator, which it leaves in the rest. It decodes the five predefined
+entities, the entities the printer emits, and any other numeric reference that is a legal XML character
+(`&#N;`, `&#xH;` via `Data.Nat.Show.readMaybe`); raw whitespace is not normalised. Proved:
+`lexBody-escapeText : lexBody '<' (escapeText cs ++ '<' ∷ rest) ≡ just (cs , '<' ∷ rest)` and
+`lexBody-escapeValue` (terminator `"`), generically over the table (`lexBody-escapeWith`). `Data.XML.Print` uses the
+module. Names need no escaping (valid names are ASCII).
+
+Notes for Phase 7: entities make `lexBody` recurse on a suffix returned by a scan, so entity reading is a mutual
+function with an accumulator (`lexEntity`), which is structurally recursive. Also, the character test is a separate
+function (`lexChar stop c cs (c ≟ stop)`): a nested `with` on `c ≟ stop` stops proofs from abstracting it. Use the same
+style for the tag and attribute lexers. Validity (`isValidText`, `isValidName`, unique attribute names) is not checked
+by `lexBody`; the token/parser stage checks it and fails otherwise.
 
 ### Phase 7 — Tokens, lexer, parser (outline)
 Tokens: open (name, attributes, self-closing flag), close name, text. `lexer` is a right inverse of the token

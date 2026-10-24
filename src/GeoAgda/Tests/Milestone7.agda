@@ -3,7 +3,7 @@
 module GeoAgda.Tests.Milestone7 where
 
 open import Level using (0ℓ)
-open import Data.List using (List; []; _∷_)
+open import Data.List using (List; []; _∷_; _++_)
 open import Data.String as String using (String; toList)
 open import Data.Integer using (+_; -[1+_])
 import Data.Sign as Sign
@@ -25,6 +25,7 @@ open import Data.JSON.Equality using (_≈ⱼ_)
 open import Data.XML.AST
 open import Data.XML.Sanitize using (element; textElement)
 open import Data.XML.Print using (printXML; renderXML)
+open import Data.XML.Escape using (lexBody; escapeText; escapeValue; lexBody-escapeText; lexBody-escapeValue)
 open import Data.SVG
 
 open import GeoAgda.Model.GeoJSON.Types
@@ -95,6 +96,29 @@ _ = refl
 
 _ : renderXML (textElement "t" [] "\0") ≡ "<t>\xFFFD</t>"
 _ = refl
+
+-- Decoding: predefined entities, numeric references (decimal and hex), and
+-- the terminator is left in the rest.
+_ : lexBody '<' (toList "a&amp;b&apos;&#65;&#x42;<c") ≡ just (toList "a&b'AB" , toList "<c")
+_ = refl
+
+-- Unknown entities, bad numeric references and NUL are rejected.
+_ : lexBody '<' (toList "&nope;<") ≡ nothing
+_ = refl
+
+_ : lexBody '<' (toList "&#0;<") ≡ nothing
+_ = refl
+
+_ : lexBody '"' (toList "unterminated") ≡ nothing
+_ = refl
+
+-- Escaping then decoding is the identity (the general statements are
+-- `lexBody-escapeText` and `lexBody-escapeValue`).
+testEscapeText : ∀ cs rest → lexBody '<' (escapeText cs ++ '<' ∷ rest) ≡ just (cs , '<' ∷ rest)
+testEscapeText = lexBody-escapeText
+
+testEscapeValue : ∀ cs rest → lexBody '"' (escapeValue cs ++ '"' ∷ rest) ≡ just (cs , '"' ∷ rest)
+testEscapeValue = lexBody-escapeValue
 
 ------------------------------------------------------------------------
 -- 3. Universal Round-Trip, Retraction & Standard Library LeftInverse
