@@ -8,7 +8,9 @@ open import Data.JSON.Print public
 
 -- XML / SVG AST, Container signature, Free Monad, and Serialization
 open import Data.XML.AST public
+open import Data.XML.Sanitize public
 open import Data.XML.Print public
+open import Data.SVG public
 
 -- Invertible Parsing Primitives & Combinators
 open import GeoAgda.Parsing.Invertible.Core public
@@ -20,10 +22,6 @@ open import GeoAgda.Parsing.Invertible.Combinators public
 open import GeoAgda.Parsing.JSON.Lexer public
 open import GeoAgda.Parsing.JSON.Parser public
 open import Data.JSON.RoundTrip public
-
--- XML & SVG Lexer, Parser, and Invertible Soundness
-open import GeoAgda.Parsing.XML.Parser public
-open import GeoAgda.Parsing.XML.Soundness public
 
 -- Schema Validation, Conformance & Typed GeoJSON Models
 open import Data.JSON.Schema public

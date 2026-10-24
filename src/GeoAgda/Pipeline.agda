@@ -11,7 +11,7 @@ open import Function using (_∘_; _$_)
 
 open import Data.JSON.AST using (JSON)
 open import Data.XML.AST using (XMLDoc)
-open import Data.XML.Print using (renderXML; renderSVG)
+open import Data.XML.Print using (renderXML)
 open import GeoAgda.Parsing.JSON.Parser using (parseJSON)
 open import GeoAgda.Model.GeoJSON.Types using (FeatureCollection)
 open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
@@ -38,7 +38,7 @@ geojsonDocToPlainSVG = geojsonDocToSVGWithStyle defaultPolygonStyle
 geojsonCharsToSVG : List Char → Maybe String
 geojsonCharsToSVG input = do
   svgDoc ← geojsonDocToSVG input
-  just (renderSVG svgDoc)
+  just (renderXML svgDoc)
 
 -- Ingest GeoJSON String to rendered SVG XML String
 geojsonStringToSVG : String → Maybe String

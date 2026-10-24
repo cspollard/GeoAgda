@@ -2,7 +2,7 @@
 
 ## Status (2026-10-24)
 
-Not started. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
+Phases 1–4 done (2026-10-24); Phase 5 (`Equality`) is next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
 printer over a container AST. This plan brings `Data.XML` to the same shape. **Scope of the first pass: the AST
 only** (Phases 1–5). The parser/printer and the right-inverse theorem (Phases 6–8) are outlined, and are to be
 detailed once the AST has settled.
@@ -84,16 +84,25 @@ src/Data/SVG.agda                   -- svg, g, path, circle, rect, polygon, poly
 
 ## Phases
 
-### Phase 1 — Baseline
+### Phase 1 — Baseline — **done**
 Typecheck everything (`make check`) and record that the tree is green. Commit nothing yet. Check whether
 `Data.JSON.Stage` is generic enough to host the XML stages; if not, note what has to be generalised.
 
-### Phase 2 — Shared list container
+### Phase 2 — Shared list container — **done**
 Move `ListC`, `foldListC`, `listCToList`, `listToListC` into one module and have `Data.JSON.AST` and `Data.XML.AST`
 import it. Any lemmas the JSON proofs use about them move too. JSON must still typecheck unchanged apart from imports
 (`agda_check_modules` on `Data.JSON.*`, `GeoAgda.Model.GeoJSON.*`).
 
-### Phase 3 — Recast `Data.XML.AST`
+### Phase 3 — Recast `Data.XML.AST` — **done**
+
+Outcome, where it differs from the text below: the shape is a **record** (`XMLShape`) with `Vec Text (suc arity)` and
+three `T (… )` proofs; validity is `Bool`-valued (`isValidName`, `isValidAttrs`, `isValidTexts`, …), so the
+evidence is definitionally irrelevant. Raw constructors are `node`, `leaf`, `parent`, `parentList`. Runtime data goes
+through `Data.XML.Sanitize` (`element`, `textElement`, and primed `List Char` versions), which repairs invalid input
+(U+FFFD, `_`, last duplicate attribute wins) and proves the result valid. There is now a single printer
+(`Data.XML.Print`, entity-escaped, self-closing empty elements). The old `GeoAgda.Parsing.XML.{Parser,Soundness}`
+modules and the XML round-trip tests in `Milestone7` were **removed** rather than ported (the old parser read the
+backslash syntax and text nodes); `Milestone7` now has printer tests. They return in Phase 7/8.
 Start with `Data.XML.Valid` (predicates with `Dec`, small fixtures). Then, in the JSON header style: `List Char`
 payloads, the mixed-content element container with validity proofs in the shape, remove `XMLContainer` / `XML`, prune
 imports, keep `elementC` and `leafElement` only if used. Smart constructors take the proofs by instance or
@@ -101,7 +110,7 @@ imports, keep `elementC` and `leafElement` only if used. Smart constructors take
 validity by computation). Spike the container packaging first (record shape vs nested `Σ`) by writing `foldXMLC`. Update `Print`, `Parser`, `Render` and the tests for the
 payload change. Commit when everything typechecks.
 
-### Phase 4 — Move SVG constructors
+### Phase 4 — Move SVG constructors — **done**
 Create `Data.SVG` with the SVG constructors (they take `String` for convenience). Update `Render.agda` and
 `Milestone7`. `GeoAgda.agda` re-exports both modules.
 
@@ -128,6 +137,10 @@ tags are checked, not assumed. Prefer the same `RightInverse` plumbing as `Data.
 (`parse (print fixture)`), including SVG output from `Render`.
 
 ## Verification
+
+`make check` only covers `Main`. To check every module use `bash make-everything.sh`, but note that
+`Data.JSON.Geo` currently fails to typecheck (a `let` with local definitions at line ~120; it predates this plan and
+nothing imports it). Until that is fixed, check all other modules with a temporary `Everything` that omits it.
 
 - `make check` after every phase; the `Data.JSON.*` and GeoJSON modules must stay green in Phases 2 and 3.
 - Hole-driven development via the Agda MCP for all proofs (guidelines §1.4).

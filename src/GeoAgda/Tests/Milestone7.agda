@@ -12,6 +12,8 @@ open import Data.Maybe using (Maybe; just; nothing)
 open import Function.Bundles using (LeftInverse; RightInverse)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; ∃)
+open import Data.Unit using (tt)
+open import Data.Vec using () renaming (_∷_ to _∷ᵛ_; [] to []ᵛ)
 
 open import Data.JSON.AST
 open import Data.JSON.Print using (printJSON)
@@ -21,9 +23,9 @@ open import Data.JSON.RoundTrip using (jsonStage; parseJSON-printJSON)
 open import Data.JSON.Equality using (_≈ⱼ_)
 
 open import Data.XML.AST
-open import Data.XML.Print using (printXML)
-open import GeoAgda.Parsing.XML.Parser using (parseXMLChars)
-open import GeoAgda.Parsing.XML.Soundness
+open import Data.XML.Sanitize using (element; textElement)
+open import Data.XML.Print using (printXML; renderXML)
+open import Data.SVG
 
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; defaultPolygonStyle)
@@ -54,30 +56,45 @@ testObjVal = objectFromList (("active" , trueⱼ) ∷ ("count" , testNumVal) ∷
 testObjRoundTrip : parseJSON (printJSON testObjVal) ≡ just testObjVal
 testObjRoundTrip = refl
 
-------------------------------------------------------------------------
--- 2. XML & SVG Inversion Tests
+------------------------------------------------------------------------------------------------------------------------------------------
+-- 2. XML & SVG Printing Tests
 ------------------------------------------------------------------------
 
--- Test SVG rect round-trip
+-- (The XML parser and its round-trip theorem are still to be written, see
+-- plans/XMLPlan.md; until then these check the printer.)
+
 testRectDoc : XMLDoc
 testRectDoc = rect "0" "0" "800" "400" (("fill" , "#ffffff") ∷ [])
 
-testRectRoundTrip : parseXMLChars (printXML testRectDoc) ≡ just testRectDoc
-testRectRoundTrip = refl
+_ : renderXML testRectDoc ≡ "<rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"#ffffff\" />"
+_ = refl
 
--- Test SVG polygon round-trip
 testPolyDoc : XMLDoc
-testPolyDoc = polygon "-25,-67 -13,-67 -13,-63 -25,-63" (("stroke" , "#000000") ∷ [])
+testPolyDoc = polygon "-25,-67 -13,-67" (("stroke" , "#000000") ∷ [])
 
-testPolyRoundTrip : parseXMLChars (printXML testPolyDoc) ≡ just testPolyDoc
-testPolyRoundTrip = refl
+_ : renderXML testPolyDoc ≡ "<polygon points=\"-25,-67 -13,-67\" stroke=\"#000000\" />"
+_ = refl
 
--- Test full rendered SVG map round-trip
-renderedMap : XMLDoc
-renderedMap = renderMapSVG defaultPolygonStyle testFeatureCollection
+-- Text is escaped; mixed content keeps its text slots in order.
+_ : renderXML (textElement "title" [] "a<b & c") ≡ "<title>a&lt;b &amp; c</title>"
+_ = refl
 
-testMapRoundTrip : parseXMLChars (printXML renderedMap) ≡ just renderedMap
-testMapRoundTrip = refl
+_ : renderXML (node (toList "p") [] (toList "x " ∷ᵛ toList " y" ∷ᵛ []ᵛ) (λ _ → leaf (toList "b") [] (toList "z"))
+                {tt} {tt} {tt})
+    ≡ "<p>x <b>z</b> y</p>"
+_ = refl
+
+-- Attribute values escape quotes and whitespace that parsers would normalise.
+_ : renderXML (element "a" (("k" , "\"\n") ∷ []) []) ≡ "<a k=\"&quot;&#10;\" />"
+_ = refl
+
+-- Runtime data is repaired rather than rejected: duplicate attribute names
+-- collapse (last wins), bad name characters become `_`, and NUL becomes U+FFFD.
+_ : renderXML (element "g h" (("id" , "1") ∷ ("id" , "2") ∷ []) []) ≡ "<g_h id=\"2\" />"
+_ = refl
+
+_ : renderXML (textElement "t" [] "\0") ≡ "<t>\xFFFD</t>"
+_ = refl
 
 ------------------------------------------------------------------------
 -- 3. Universal Round-Trip, Retraction & Standard Library LeftInverse

@@ -14,7 +14,9 @@ open import Function using (_∘_; _$_)
 
 open import Data.JSON.AST using (JSON; JSONNumber; jsonNumber)
 open import Data.JSON.Schema using (lookupField; asNumber; asString)
-open import Data.XML.AST
+open import Data.XML.AST using (XMLDoc)
+open import Data.XML.Sanitize using (element; textElement)
+open import Data.SVG
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Coordinates
 
@@ -60,14 +62,14 @@ defaultTerrainStyle = svgStyle (just "#a8cca0") (just "#7d7565") (just "0.15") (
 terrainStyle : SVGStyle
 terrainStyle = defaultTerrainStyle
 
-styleToAttrs : SVGStyle → Attributes
+styleToAttrs : SVGStyle → Attrs
 styleToAttrs s =
   addAttr "fill" (SVGStyle.fill s)
     (addAttr "stroke" (SVGStyle.stroke s)
       (addAttr "stroke-width" (SVGStyle.strokeWidth s)
         (addAttr "opacity" (SVGStyle.opacity s) [])))
   where
-    addAttr : String → Maybe String → Attributes → Attributes
+    addAttr : String → Maybe String → Attrs → Attrs
     addAttr key nothing  acc = acc
     addAttr key (just v) acc = (key , v) ∷ acc
 
@@ -311,7 +313,7 @@ mutual
 ------------------------------------------------------------------------
 
 private
-  addAttr : String → Maybe String → Attributes → Attributes
+  addAttr : String → Maybe String → Attrs → Attrs
   addAttr key nothing  acc = acc
   addAttr key (just v) acc = (key , v) ∷ acc
 
@@ -321,7 +323,7 @@ renderFeatureLabel proj s feat@(feature _ _ props) =
   then (case (featureName props) , (featureCentroid feat) of λ where
          (just name , just p) →
            let pt = proj p
-           in elementList "text"
+           in textElement "text"
                 (("x" , ProjectedPoint.x pt) ∷
                  ("y" , ProjectedPoint.y pt) ∷
                  ("text-anchor" , "middle") ∷
@@ -334,7 +336,7 @@ renderFeatureLabel proj s feat@(feature _ _ props) =
                  ("stroke-width" , "0.25") ∷
                  ("paint-order" , "stroke fill") ∷
                  ("class" , "map-label") ∷ [])
-                (text name ∷ []) ∷ []
+                name ∷ []
          _ → [])
   else []
 
@@ -347,7 +349,7 @@ renderFeature proj s feat@(feature _ geom props) =
       fid      = featureId feat
       attrs    = addAttr "id" fid (("class" , featureClassName props) ∷ [])
       titleDoc = case featureName props of λ where
-                   (just n) → elementList "title" [] (text n ∷ []) ∷ []
+                   (just n) → textElement "title" [] n ∷ []
                    nothing  → []
   in g attrs (titleDoc ++ (geomDoc ∷ []))
 
