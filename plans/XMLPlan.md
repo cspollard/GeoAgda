@@ -2,7 +2,7 @@
 
 ## Status (2026-10-24)
 
-Phases 1–6 done (2026-10-24): the AST is reviewed and final, and escaping has its round-trip proof. Phases 7–8 (tokens, lexer, parser, top-level theorem) are next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
+Phases 1–7 done (2026-10-24): the AST is reviewed and final, escaping, tokens, lexer and parser are proved. Phase 8 (the top-level theorem and `Print` via tokens) is next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
 printer over a container AST. This plan brings `Data.XML` to the same shape. **Scope of the first pass: the AST
 only** (Phases 1–5). The parser/printer and the right-inverse theorem (Phases 6–8) are outlined, and are to be
 detailed once the AST has settled.
@@ -136,11 +136,27 @@ function (`lexChar stop c cs (c ≟ stop)`): a nested `with` on `c ≟ stop` sto
 style for the tag and attribute lexers. Validity (`isValidText`, `isValidName`, unique attribute names) is not checked
 by `lexBody`; the token/parser stage checks it and fails otherwise.
 
-### Phase 7 — Tokens, lexer, parser (outline)
-Tokens: open (name, attributes, self-closing flag), close name, text. `lexer` is a right inverse of the token
-printer. The parser builds the tree from tokens by structural recursion on a well-matched token stream; the matching
-tags are checked, not assumed. Prefer the same `RightInverse` plumbing as `Data.JSON.Parser`, and avoid fuel (no
-`TERMINATING`). Remove the old `Parsing/XML/*` modules once replaced.
+### Phase 7 — Tokens, lexer, parser — **done**
+Four modules, mirroring the JSON ones (the stage plumbing is `Data.JSON.Stage`, reused for now):
+- `Data.XML.Token`: `XMLToken` (`openT n as`, `selfT n as`, `closeT n`, `textT t`; a tag is one token, attributes
+  included), `printToken`, the prefix lexer `lexToken`, and `lexToken-printToken` (printing then lexing gives the token
+  back whatever follows, for well-formed tokens, with character data followed by `<`). Tags are read with
+  `lexName` (maximal run of name characters), `lexAttr`/`lexAttrs` (fuel-bounded; white space is skipped between
+  attributes but not around `=`), and character data with `Data.XML.Escape.lexBody`.
+- `Data.XML.Lexer`: `tokenize` (no white-space skipping: it is significant), the valid-stream predicate
+  `Run false false` (every token well formed, no two text tokens adjacent, no trailing text), its decision procedure,
+  `tokenize-printTokenList`, and `lexer : RightInverse ValidTokens Chars`.
+- `Data.XML.Tokens`: `printTokens` as a fold (an element with no content is one `selfT`), `printTokens-valid`,
+  `printTokens-head`, `printTokens-cong`, and `mixed-map`.
+- `Data.XML.Parser`: fuel-bounded recursive descent (`parseElement`, `parseChildren`, …), `mkNode` (checks names,
+  characters and unique attributes when it builds a node), `parseElement-print` (the parser inverts `printTokens` up to
+  `_≈ₓ_`, whatever tokens follow), `parseTokens-printTokens`, and `parser : RightInverse XMLSetoid ValidTokens`.
+
+Design points: tokens are raw (no validity proofs), so token round trips are plain `≡`; validity is checked in
+`mkNode`, where the AST's proofs are available in the proof. `Data.XML.AST` gained `NodeData`, `consNode`,
+`fromContent′`, `fromContent` (the inverse of `mixed`) and `mixed` no longer uses `with`. Limitations, deliberately: the
+document must be exactly one element (no prolog, comments, or surrounding text), and raw whitespace in attribute
+values is not normalised.
 
 ### Phase 8 — Top-level theorem (outline)
 `xmlStage`, and `parseXML (printXML x) ≈ₓ just x` composed from the stages. Add fixtures in `GeoAgda.Tests`
