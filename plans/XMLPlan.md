@@ -2,7 +2,7 @@
 
 ## Status (2026-10-24)
 
-Phases 1–7 done (2026-10-24): the AST is reviewed and final, escaping, tokens, lexer and parser are proved. Phase 8 (the top-level theorem and `Print` via tokens) is next. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
+Phases 1–8 done (2026-10-24): the AST is reviewed and final; escaping, tokens, lexer, parser and the top-level theorem are proved. The JSON pipeline (`plans/JSONPlan.md`) is complete: `jsonStage` is a proven right inverse of the
 printer over a container AST. This plan brings `Data.XML` to the same shape. **Scope of the first pass: the AST
 only** (Phases 1–5). The parser/printer and the right-inverse theorem (Phases 6–8) are outlined, and are to be
 detailed once the AST has settled.
@@ -158,9 +158,10 @@ Design points: tokens are raw (no validity proofs), so token round trips are pla
 document must be exactly one element (no prolog, comments, or surrounding text), and raw whitespace in attribute
 values is not normalised.
 
-### Phase 8 — Top-level theorem (outline)
-`xmlStage`, and `parseXML (printXML x) ≈ₓ just x` composed from the stages. Add fixtures in `GeoAgda.Tests`
-(`parse (print fixture)`), including SVG output from `Render`.
+### Phase 8 — Top-level theorem — **done**
+`Data.XML.Print.printXML = printTokenList ∘ printTokens` (printed strings unchanged). `Data.XML.RoundTrip` has
+`xmlStage = Composition.rightInverse parser lexer`, `parseXML`, and `parseXML-printXML`. `Milestone7` states the
+universal theorems and checks concrete re-prints (including the rendered map, and a rejected ill-nested input).
 
 ## Verification
 

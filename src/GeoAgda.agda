@@ -10,6 +10,7 @@ open import Data.JSON.Print public
 open import Data.XML.AST public
 open import Data.XML.Sanitize public
 open import Data.XML.Print public
+open import Data.XML.RoundTrip public
 open import Data.SVG public
 
 -- Invertible Parsing Primitives & Combinators

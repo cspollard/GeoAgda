@@ -9,6 +9,7 @@ open import Data.Integer using (+_; -[1+_])
 import Data.Sign as Sign
 open import Data.Fin.Patterns using (1F; 2F; 5F)
 open import Data.Maybe using (Maybe; just; nothing)
+import Data.Maybe
 open import Function.Bundles using (LeftInverse; RightInverse)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Data.Product using (_×_; _,_; ∃)
@@ -25,12 +26,14 @@ open import Data.JSON.Equality using (_≈ⱼ_)
 open import Data.XML.AST
 open import Data.XML.Sanitize using (element; textElement)
 open import Data.XML.Print using (printXML; renderXML)
+open import Data.XML.RoundTrip using (xmlStage; parseXML; parseXML-printXML)
+open import Data.XML.Equality using (_≈ₓ_)
 open import Data.XML.Escape using (lexBody; escapeText; escapeValue; lexBody-escapeText; lexBody-escapeValue)
 open import Data.SVG
 
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; defaultPolygonStyle)
-open import GeoAgda.Tests.Milestone5 using (testFeatureCollection)
+open import GeoAgda.Tests.Milestone5 using (testFeatureCollection; renderedMapDoc)
 
 ------------------------------------------------------------------------
 -- 1. JSON Structural Inversion Tests
@@ -61,8 +64,7 @@ testObjRoundTrip = refl
 -- 2. XML & SVG Printing Tests
 ------------------------------------------------------------------------
 
--- (The XML parser and its round-trip theorem are still to be written, see
--- plans/XMLPlan.md; until then these check the printer.)
+-- (The universal round trip is in section 3.)
 
 testRectDoc : XMLDoc
 testRectDoc = rect "0" "0" "800" "400" (("fill" , "#ffffff") ∷ [])
@@ -124,8 +126,6 @@ testEscapeValue = lexBody-escapeValue
 -- 3. Universal Round-Trip, Retraction & Standard Library LeftInverse
 ------------------------------------------------------------------------
 
--- (The universal XML round-trip and retraction theorems are still to be
--- proved: `GeoAgda.Parsing.XML.Soundness` is a stub; see plans/JSONPlan.md.)
 
 -- Verify universal JSON round-trip for ANY JSON (up to bisimilarity)
 testUniversalRoundTrip : ∀ (v : JSON) → ∃ λ v′ → parseJSON (printJSON v) ≡ just v′ × v′ ≈ⱼ v
@@ -135,3 +135,30 @@ testUniversalRoundTrip = parseJSON-printJSON
 testUniversalRetraction : ∀ (v : JSON) →
   RightInverse.from jsonStage (RightInverse.to jsonStage v) ≈ⱼ v
 testUniversalRetraction v = RightInverse.inverseʳ jsonStage refl
+
+-- Verify universal XML round-trip for ANY document (up to bisimilarity)
+testUniversalXMLRoundTrip : ∀ (v : XMLDoc) → ∃ λ v′ → parseXML (printXML v) ≡ just v′ × v′ ≈ₓ v
+testUniversalXMLRoundTrip = parseXML-printXML
+
+testUniversalXMLRetraction : ∀ (v : XMLDoc) →
+  RightInverse.from xmlStage (RightInverse.to xmlStage v) ≈ₓ v
+testUniversalXMLRetraction v = RightInverse.inverseʳ xmlStage refl
+
+-- Concrete: parsing then printing a printed document gives it back (functions
+-- in the AST rule out `≡` on documents themselves).
+reprint : String → Maybe String
+reprint s = Data.Maybe.map (λ d → renderXML d) (parseXML (toList s))
+
+_ : reprint "<p>x <b>z</b> y</p>" ≡ just "<p>x <b>z</b> y</p>"
+_ = refl
+
+_ : reprint "<a k=\"&quot;&#10;\" />" ≡ just "<a k=\"&quot;&#10;\" />"
+_ = refl
+
+_ : reprint "<a><b></a>" ≡ nothing
+_ = refl
+
+-- The rendered map (`GeoAgda.Tests.Milestone5`) parses back to a document that
+-- prints the same.
+_ : reprint (renderXML renderedMapDoc) ≡ just (renderXML renderedMapDoc)
+_ = refl
