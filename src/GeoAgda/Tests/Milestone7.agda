@@ -84,7 +84,7 @@ testMapRoundTrip = refl
 ------------------------------------------------------------------------
 
 -- (The universal XML round-trip and retraction theorems are still to be
--- proved: `GeoAgda.Parsing.XML.Soundness` is a stub; see JSONPlan.md.)
+-- proved: `GeoAgda.Parsing.XML.Soundness` is a stub; see plans/JSONPlan.md.)
 
 -- Verify universal JSON round-trip for ANY JSON (up to bisimilarity)
 testUniversalRoundTrip : ∀ (v : JSON) → ∃ λ v′ → parseJSON (printJSON v) ≡ just v′ × v′ ≈ⱼ v

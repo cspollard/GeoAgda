@@ -12,7 +12,7 @@ This document outlines the ordered implementation roadmap for **GeoAgda**, an Ag
 - [x] **Milestone 4: Schema Validation & Typed GeoJSON Extraction**
 - [x] **Milestone 5: Catamorphic SVG Map Rendering Pipeline**
 - [x] **Milestone 6: Fixture Validation & Natural Earth Vector Data Ingestion**
-- [ ] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG** (JSON half done: see `JSONPlan.md`; XML/SVG half open)
+- [ ] **Milestone 7: Comprehensive Parsing Left Inverses for JSON, XML, and SVG** (JSON half done: see `plans/JSONPlan.md`; XML/SVG half open)
 - [x] **Milestone 8: Verified Schema Conformance & Proof-Carrying Extraction Shortcuts**
 - [ ] **Milestone 9: Algebraic Map Representation via Containers & Free Monads (Multi-Source Ingestion to SVG)**
 
