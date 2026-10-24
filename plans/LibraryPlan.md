@@ -24,7 +24,7 @@ imported as a library, with the dependency direction enforced: the library must 
    `JSONRoundTrip`, `Milestone1–4` where they only use library modules); the app keeps pipeline tests.
 2. Decide the name; register it in `~/.agda/libraries` (or add as a git submodule) and switch the app's `.agda-lib`
    from the `parsnip/src` include to `depend: parsnip`.
-3. Split history: `git filter-repo --subdirectory-filter formats` into a new repo (or `git subtree split`).
+3. Split history: `git filter-repo --subdirectory-filter parsnip` into a new repo (or `git subtree split`).
 4. Pin the stdlib version in both projects; move `plans/JSONPlan.md` and `plans/XMLPlan.md` to the library.
 5. Remove `parsnip/` from this repo (or replace with the submodule).
 
