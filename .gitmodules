@@ -1,3 +1,6 @@
 [submodule "natural-earth-geojson"]
 	path = natural-earth-geojson
 	url = https://github.com/martynafford/natural-earth-geojson
+[submodule "parsnip"]
+	path = parsnip
+	url = git@github.com:cspollard/parsnip.git

@@ -1,5 +1,0 @@
-name: parsnip
-include:
-  src
-depend:
-  standard-library
