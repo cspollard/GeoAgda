@@ -1,4 +1,4 @@
-name: formats
+name: parsnip
 include:
   src
 depend:

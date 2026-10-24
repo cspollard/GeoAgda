@@ -2,7 +2,7 @@ name: GeoAgda
 include:
   src
   exe
-  formats/src
+  parsnip/src
 depend:
   standard-library
   agda-categories

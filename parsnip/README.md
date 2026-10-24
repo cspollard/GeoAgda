@@ -1,4 +1,4 @@
-# formats
+# parsnip
 
 Verified printers and parsers for JSON and XML (and an SVG vocabulary), with
 proved right inverses: `parse (print x) ≈ x`.  Container free-monad ASTs that
