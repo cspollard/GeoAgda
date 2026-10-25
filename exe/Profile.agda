@@ -10,7 +10,8 @@ open import Agda.Builtin.Unit using () renaming (⊤ to Unit)
 open import Data.String as String using (String; _++_; toList)
 open import Data.List using (List; []; _∷_; length)
 open import Data.Maybe using (Maybe; just; nothing)
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; _%_)
+import Data.Nat
 import Data.Nat.Show as NatShow
 open import IO.Primitive.Core using (pure; _>>=_; _>>_)
 open import IO.Primitive.Finite using (readFile; putStrLn)
@@ -68,7 +69,8 @@ run "svg"      s with parseJSON (toList s)
 ...   | nothing = 0
 ...   | just fc = length (printXML (renderMapSVG defaultTerrainStyle fc))
 run "xmlbig"   s = length (printXML (element "p" (("d" , fromList (replicate 100000 'a')) ∷ []) []))
-run "numbers"  s = length (Data.List.concat (Data.List.map (λ n → toList (renderJSONNumber (jsonNumber Sign.+ n [] (+ 0)))) (Data.List.upTo 20000)))
+run "numbers"  s = length (Data.List.concat (Data.List.map (λ n → toList (renderJSONNumber (jsonNumber Sign.+ (n Data.Nat.% 180) [] (+ 0)))) (Data.List.iterate Data.Nat.suc 0 100000)))
+run "numbersbig"  s = length (Data.List.concat (Data.List.map (λ n → toList (renderJSONNumber (jsonNumber Sign.+ n [] (+ 0)))) (Data.List.iterate Data.Nat.suc 0 100000)))
 run "path"     s with parseJSON (toList s) Data.Maybe.>>= extractFeatureCollection
 ... | nothing = 0
 ... | just (featureCollection fs _) = foldr _+_ 0 (map pathLen fs)
