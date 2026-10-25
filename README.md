@@ -44,12 +44,12 @@ Options (`bin/Earth --help`; `GeoAgda.Compose.Options`):
 | `--land=flat` | land in one colour, no elevation |
 | `--land=areas` | named plains, deserts and ranges with hypsometric tints, plus peaks and labels |
 | `--resolution=10m\|50m\|110m` | Natural Earth scale of land, lakes, rivers, borders and country names (default `10m`, like the bathymetry) |
-| `--elevation-bands=DIR` | with `--land=elevation`, shade land from real elevation data (see below) instead of the named landform regions |
+| `--elevation-bands=DIR` | draw the ETOPO band files in `DIR` (see below): ocean depth in place of Natural Earth's bathymetry, and with `--land=elevation` land elevation in place of the named landform regions |
 | `--lake-depths=FILE` | shade lake depth from the file made by `scripts/build_lake_depths.py` |
 | `--borders` | draw country boundaries (off by default) |
 | `--country-names` | label countries (off by default) |
 | `--precision=DEG` | round coordinates to this grid (default `0.01`); `0` keeps every vertex exactly as read, for land and water, and ignores `--thin` |
-| `--thin=DEG` | drop bathymetry vertices closer than this (default `0.3`; `0` keeps all) |
+| `--thin=DEG` | drop Natural Earth bathymetry vertices closer than this (default `0.3`; `0` keeps all); not used with `--elevation-bands` |
 
 It takes under a minute and about 2.5 GB of memory (the 10m bathymetry files are up to 23 MB each; every
 layer is read, reduced and dropped before the next, so the peak is the largest single file). Coordinates
@@ -60,8 +60,9 @@ are rounded to 0.01°, and the bathymetry is thinned so that vertices are at lea
 
 Natural Earth ships no elevation raster, so `--land=elevation` alone shades land by the named landform
 regions (coarse). `scripts/build_elevation_bands.py` vectorizes NOAA ETOPO 2022 (1 arc-minute ice surface,
-downloaded once to `data/cache`, about 470 MB) into one GeoJSON file per elevation band, with the band edges
-of the green palette; it needs `numpy`, `contourpy` and `tifffile`. `make elevation` runs it and `make earth`
+downloaded once to `data/cache`, about 470 MB) into one GeoJSON file per band: land elevation bands with
+the edges of the green palette, and ocean depth bands with the edges of `depthColor` (they replace Natural
+Earth's bathymetry contours, and share a grid with the land so the coastlines agree); it needs `numpy`, `contourpy` and `tifffile`. `make elevation` runs it and `make earth`
 passes the result to `bin/Earth`:
 
 ```
@@ -70,8 +71,7 @@ bin/Earth --elevation-bands=data/cache/elevation
 ```
 
 `--step 3` (default) averages 3×3 cells, giving 3′ bands; `--step 1` is the full 1′ grid but several times
-larger. The default bands total about 56 MB; `bin/Earth` takes a few minutes and about 3.3 GB, and the SVG is
-about 160 MB.
+larger. The default bands total about 150 MB (56 MB land, 92 MB ocean); the SVG is about 190 MB.
 
 ### Lake depths
 

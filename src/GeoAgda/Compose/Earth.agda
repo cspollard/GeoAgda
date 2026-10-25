@@ -25,7 +25,7 @@ open import GeoAgda.Compose
 open import GeoAgda.Compose.Text
 open import GeoAgda.Compose.Options
 open import GeoAgda.Rendering.SVG.Style using (SVGStyle; defaultTerrainStyle)
-open import GeoAgda.Rendering.SVG.Palette using (greenElevationColor)
+open import GeoAgda.Rendering.SVG.Palette using (greenElevationColor; depthColor)
 
 ------------------------------------------------------------------------
 -- Helpers
@@ -54,10 +54,15 @@ scaled o theme name = scale ++ "/" ++ theme ++ "/ne_" ++ scale ++ "_" ++ name ++
 
 -- The style the options call for: green shades by elevation, or the
 -- hypsometric tints of the areas of interest.
+-- Gaps between layers show the shallowest water, not the deep ocean.
+backdrop : SVGStyle → SVGStyle
+backdrop s = record s { oceanFill = just (depthColor 0) }
+
 earthStyle : Options → SVGStyle
 earthStyle o with Options.land o
-... | areas = defaultTerrainStyle
-... | _     = record defaultTerrainStyle { elevationPalette = greenElevationColor }
+... | areas = backdrop defaultTerrainStyle
+... | _     = backdrop (record defaultTerrainStyle { elevationPalette = greenElevationColor })
+
 
 private
   Props : Set
@@ -204,6 +209,15 @@ regions o = group (layers (Options.resolution o))
 bandEdges : List ℕ
 bandEdges = 0 ∷ 100 ∷ 250 ∷ 500 ∷ 800 ∷ 1200 ∷ 1800 ∷ 2800 ∷ 4000 ∷ []
 
+-- Lower edges (m below sea level) of the ocean bands, one `bathymetry_<edge>.json` each.
+depthEdges : List ℕ
+depthEdges = 0 ∷ 10 ∷ 25 ∷ 50 ∷ 100 ∷ 200 ∷ 400 ∷ 700 ∷ 1000 ∷ 1500 ∷ 2200 ∷ 3300 ∷ 5000 ∷ []
+
+-- One ocean band file (same layout as the elevation bands).
+oceanBand : Options → String → ℕ → Layer
+oceanBand o dir edge = fileLayer (dir ++ "/bathymetry_" ++ show edge ++ ".json")
+  (λ f → rebuild (roundGeom o) f (λ _ → Feature.properties f))
+
 -- One band file; its features already carry `featurecla` and `elevation`.
 elevationBand : Options → String → ℕ → Layer
 elevationBand o dir edge = fileLayer (dir ++ "/elevation_" ++ show edge ++ ".json")
@@ -275,14 +289,8 @@ countryLabels o = layer (scaled o "cultural" "admin_0_countries") convert
 -- elevation comes from the band files if given, else from the named regions; borders and country names only when asked for.
 earthRecipe : Options → Recipe
 earthRecipe o =
-    simpleGroup (bathymetry o "L" 0)
-  ∷ simpleGroup (bathymetry o "K" 200)
-  ∷ simpleGroup (bathymetry o "J" 1000)
-  ∷ simpleGroup (bathymetry o "I" 2000)
-  ∷ simpleGroup (bathymetry o "G" 4000)
-  ∷ simpleGroup (bathymetry o "E" 6000)
-  ∷ simpleGroup (bathymetry o "A" 10000)
-  ∷ simpleGroup (land o)
+    ocean (Options.elevationBands o)
+  ++ˡ simpleGroup (land o)
   ∷ landforms (Options.land o)
   ++ˡ simpleGroup (glaciers o)
   ∷ simpleGroup (lakes o)
@@ -291,6 +299,19 @@ earthRecipe o =
   ∷ when (Options.borders o) (simpleGroup (borders o))
   ++ˡ when (Options.countryNames o) (simpleGroup (countryLabels o))
   where
+    -- ETOPO ocean bands if the band directory is given, else Natural Earth's contours
+    ocean : Maybe String → Recipe
+    ocean (just dir) = map (λ e → simpleGroup (oceanBand o dir e)) depthEdges
+    ocean nothing =
+        simpleGroup (bathymetry o "L" 0)
+      ∷ simpleGroup (bathymetry o "K" 200)
+      ∷ simpleGroup (bathymetry o "J" 1000)
+      ∷ simpleGroup (bathymetry o "I" 2000)
+      ∷ simpleGroup (bathymetry o "G" 4000)
+      ∷ simpleGroup (bathymetry o "E" 6000)
+      ∷ simpleGroup (bathymetry o "A" 10000)
+      ∷ []
+
     withLakeDepths : Maybe String → Recipe
     withLakeDepths (just file) = simpleGroup (lakeDepths o file) ∷ []
     withLakeDepths nothing     = []

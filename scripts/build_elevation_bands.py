@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-Vectorize a global elevation grid into elevation-band polygons (GeoJSON).
+Vectorize a global elevation grid into land elevation bands and ocean depth bands (GeoJSON).
 
 Input is NOAA ETOPO 2022 (60 arc-second, ice-surface GeoTIFF, public domain), downloaded on first use.
-Output is a directory with one GeoJSON file per elevation band of the land above sea level,
-`elevation_<lower edge in m>.json` (separate files keep each input small for the Agda reader).  Each is a
-FeatureCollection holding one MultiPolygon:
+Output is a directory with one GeoJSON file per band (separate files keep each input small for the Agda
+reader), each a FeatureCollection holding one MultiPolygon:
 
-    {"featurecla": "Elevation band", "elevation": <m>, "min": <m>, "max": <m>}
+    elevation_<lower edge in m>.json   land above sea level
+        {"featurecla": "Elevation band", "elevation": <m>, "min": <m>, "max": <m>}
+    bathymetry_<lower edge in m>.json  ocean below sea level
+        {"featurecla": "Bathymetry", "depth": <m>, "min": <m>, "max": <m>}
 
-The band edges are those of the green palette in GeoAgda.Rendering.SVG.Palette, and `elevation` is a
+The band edges are those of the palettes in GeoAgda.Rendering.SVG.Palette, and `elevation` / `depth` is a
 value inside the band, so the renderer's palette picks the right shade.  `bin/Earth --elevation-bands=DIR`
-draws the bands over the land.
+draws them: the land bands for --land=elevation, the ocean bands in place of Natural Earth's bathymetry.
+Land and ocean come from one grid, so their coastlines agree.
 
     python3 scripts/build_elevation_bands.py [--step N] [--round DEG] [--min-area DEG2] [out-dir]
 
@@ -37,6 +40,8 @@ DEM = os.path.join(CACHE, "ETOPO_2022_v1_60s_surface.tif")
 
 # Lower edges of the bands, metres: the thresholds of `greenElevationColor`.
 EDGES = [0, 100, 250, 500, 800, 1200, 1800, 2800, 4000]
+# Lower edges of the ocean depth bands, metres below sea level: the bands of `depthColor`.
+DEPTH_EDGES = [0, 10, 25, 50, 100, 200, 400, 700, 1000, 1500, 2200, 3300, 5000]
 TOP = 1e9
 
 
@@ -107,6 +112,22 @@ def coords(rings):
     return "[" + ",".join("[" + ",".join(f"[{fmt(x)},{fmt(y)}]" for x, y in r) + "]" for r in rings) + "]"
 
 
+def write_bands(gen, edges, out, prefix, props, args):
+    """One file per band [lo, hi): `<prefix>_<lo>.json` holding a single MultiPolygon feature."""
+    for lo, hi in zip(edges, edges[1:] + [TOP]):
+        polys = band_polygons(gen, lo if lo > 0 else 1e-3, hi, args.round, args.min_area)
+        print(f"{prefix} {lo:>5} m and up: {len(polys)} polygons", file=sys.stderr)
+        if not polys:
+            continue
+        p = props(lo, hi)
+        geom = '{"type":"MultiPolygon","coordinates":[' + ",".join(coords(q) for q in polys) + "]}"
+        feat = '{"type":"Feature","properties":' + json.dumps(p) + ',"geometry":' + geom + "}"
+        path = os.path.join(out, f"{prefix}_{lo}.json")
+        with open(path, "w") as f:
+            f.write('{"type":"FeatureCollection","features":[\n' + feat + "\n]}\n")
+        print(f"  wrote {path} ({os.path.getsize(path) / 1e6:.1f} MB)", file=sys.stderr)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--step", type=int, default=3)
@@ -117,23 +138,23 @@ def main():
 
     download()
     lon, lat, z = load(args.step)
-    gen = contourpy.contour_generator(lon, lat, z, fill_type=contourpy.FillType.OuterOffset)
     os.makedirs(args.out, exist_ok=True)
-    for lo, hi in zip(EDGES, EDGES[1:] + [TOP]):
-        polys = band_polygons(gen, lo if lo > 0 else 1e-3, hi, args.round, args.min_area)
-        print(f"{lo:>5} m and up: {len(polys)} polygons", file=sys.stderr)
-        if not polys:
-            continue
-        elev = hi if hi < TOP else lo + 500          # inside the band, as the palette expects
-        props = {"featurecla": "Elevation band", "elevation": elev, "min": lo}
-        if hi < TOP:
-            props["max"] = hi
-        geom = '{"type":"MultiPolygon","coordinates":[' + ",".join(coords(p) for p in polys) + "]}"
-        feat = '{"type":"Feature","properties":' + json.dumps(props) + ',"geometry":' + geom + "}"
-        path = os.path.join(args.out, f"elevation_{lo}.json")
-        with open(path, "w") as f:
-            f.write('{"type":"FeatureCollection","features":[\n' + feat + "\n]}\n")
-        print(f"  wrote {path} ({os.path.getsize(path) / 1e6:.1f} MB)", file=sys.stderr)
+    fill = contourpy.FillType.OuterOffset
+
+    def land_props(lo, hi):
+        # a value inside the band, as the palette expects
+        p = {"featurecla": "Elevation band", "elevation": hi if hi < TOP else lo + 500, "min": lo}
+        return p if hi == TOP else {**p, "max": hi}
+
+    def ocean_props(lo, hi):
+        # `depthColor` colours a band by `d <= upper edge`
+        p = {"featurecla": "Bathymetry", "depth": hi if hi < TOP else lo + 1000, "min": lo}
+        return p if hi == TOP else {**p, "max": hi}
+
+    write_bands(contourpy.contour_generator(lon, lat, z, fill_type=fill), EDGES, args.out,
+                "elevation", land_props, args)
+    write_bands(contourpy.contour_generator(lon, lat, -z, fill_type=fill), DEPTH_EDGES, args.out,
+                "bathymetry", ocean_props, args)
 
 
 if __name__ == "__main__":
