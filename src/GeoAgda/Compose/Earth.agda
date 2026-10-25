@@ -199,6 +199,16 @@ regions o = group (layers (Options.resolution o))
     layers res50m  = regionsFull o (path "50m") ∷ regionsFull o (path "110m") ∷ []
     layers res110m = regionsFull o (path "110m") ∷ regionsNamed o (path "50m") ∷ []
 
+-- Lower edges (m) of the bands that scripts/build_elevation_bands.py writes,
+-- one `elevation_<edge>.json` each.
+bandEdges : List ℕ
+bandEdges = 0 ∷ 100 ∷ 250 ∷ 500 ∷ 800 ∷ 1200 ∷ 1800 ∷ 2800 ∷ 4000 ∷ []
+
+-- One band file; its features already carry `featurecla` and `elevation`.
+elevationBand : Options → String → ℕ → Layer
+elevationBand o dir edge = fileLayer (dir ++ "/elevation_" ++ show edge ++ ".json")
+  (λ f → rebuild (roundGeom o) f (λ _ → Feature.properties f))
+
 -- Named summits and every 6000 m+ peak.
 peaks : Options → Layer
 peaks o = layer "10m/physical/ne_10m_geography_regions_elevation_points.json" convert
@@ -257,8 +267,8 @@ countryLabels o = layer (scaled o "cultural" "admin_0_countries") convert
 -- The recipe, bottom layer first
 ------------------------------------------------------------------------
 
--- Landforms (regions and peaks) are drawn only when elevation or areas
--- of interest are wanted; borders and country names only when asked for.
+-- Landforms are drawn only when elevation or areas of interest are wanted:
+-- elevation comes from the band files if given, else from the named regions; borders and country names only when asked for.
 earthRecipe : Options → Recipe
 earthRecipe o =
     simpleGroup (bathymetry o "L" 0)
@@ -282,5 +292,7 @@ earthRecipe o =
 
     landforms : LandMode → Recipe
     landforms flat      = []
-    landforms elevation = regions o ∷ []
+    landforms elevation with Options.elevationBands o
+    ... | just dir = map (λ e → simpleGroup (elevationBand o dir e)) bandEdges
+    ... | nothing  = regions o ∷ []
     landforms areas     = regions o ∷ simpleGroup (peaks o) ∷ []

@@ -8,7 +8,10 @@ MAIN_SRC := exe/Main.agda
 EARTH_TARGET := $(BIN_DIR)/Earth
 EARTH_SRC := exe/Earth.agda
 
-.PHONY: all check typecheck test run earth clean
+ELEVATION_DIR := data/cache/elevation
+ELEVATION_STAMP := $(ELEVATION_DIR)/elevation_0.json
+
+.PHONY: all check typecheck test run earth elevation clean
 
 all: $(TARGET)
 
@@ -22,9 +25,15 @@ $(EARTH_TARGET): $(EARTH_SRC) $(SRC_FILES)
 	@mkdir -p $(BUILD_DIR)/earth $(BIN_DIR)
 	$(AGDA) --compile --compile-dir=$(BUILD_DIR)/earth --ghc-flag=-O2 --ghc-flag=-o --ghc-flag=$(EARTH_TARGET) $(EARTH_SRC)
 
-# Compose the earth-with-elevation map: bin/Earth [data-dir [out.svg]]
-earth: $(EARTH_TARGET)
-	./$(EARTH_TARGET)
+# Elevation bands vectorized from NOAA ETOPO 2022 (downloads ~470 MB on first use)
+$(ELEVATION_STAMP): scripts/build_elevation_bands.py
+	python3 scripts/build_elevation_bands.py $(ELEVATION_DIR)
+
+elevation: $(ELEVATION_STAMP)
+
+# Compose the earth-with-elevation map: bin/Earth [options] [data-dir [out.svg]]
+earth: $(EARTH_TARGET) $(ELEVATION_STAMP)
+	./$(EARTH_TARGET) --elevation-bands=$(ELEVATION_DIR) --precision=0
 
 check:
 	$(AGDA) $(MAIN_SRC)

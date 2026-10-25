@@ -79,7 +79,7 @@ loadLayer dir l =
           in say (Layer.path l ++ˢ ": " ++ˢ show (length feats) ++ˢ " features, weight "
                   ++ˢ show (weight feats)) >>
              pure feats
-  where file = dir ++ˢ "/" ++ˢ Layer.path l
+  where file = layerFile dir l
 
 loadLayers : String → List Layer → IO (List Feature)
 loadLayers dir []        = pure []

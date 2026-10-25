@@ -16,3 +16,6 @@ test/
 *~
 *.swp
 *.swo
+
+# downloaded elevation data and derived bands
+data/cache/

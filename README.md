@@ -44,6 +44,7 @@ Options (`bin/Earth --help`; `GeoAgda.Compose.Options`):
 | `--land=flat` | land in one colour, no elevation |
 | `--land=areas` | named plains, deserts and ranges with hypsometric tints, plus peaks and labels |
 | `--resolution=10m\|50m\|110m` | Natural Earth scale of land, lakes, rivers, borders and country names (default `10m`, like the bathymetry) |
+| `--elevation-bands=DIR` | with `--land=elevation`, shade land from real elevation data (see below) instead of the named landform regions |
 | `--borders` | draw country boundaries (off by default) |
 | `--country-names` | label countries (off by default) |
 | `--precision=DEG` | round coordinates to this grid (default `0.01`); `0` keeps every vertex exactly as read, for land and water, and ignores `--thin` |
@@ -53,6 +54,23 @@ It takes under a minute and about 2.5 GB of memory (the 10m bathymetry files are
 layer is read, reduced and dropped before the next, so the peak is the largest single file). Coordinates
 are rounded to 0.01°, and the bathymetry is thinned so that vertices are at least 0.3° apart
 (`GeoAgda.Model.GeoJSON.Simplify`); both are configurable. Open `earth.svg` in a browser.
+
+### Real elevation data
+
+Natural Earth ships no elevation raster, so `--land=elevation` alone shades land by the named landform
+regions (coarse). `scripts/build_elevation_bands.py` vectorizes NOAA ETOPO 2022 (1 arc-minute ice surface,
+downloaded once to `data/cache`, about 470 MB) into one GeoJSON file per elevation band, with the band edges
+of the green palette; it needs `numpy`, `contourpy` and `tifffile`. `make elevation` runs it and `make earth`
+passes the result to `bin/Earth`:
+
+```
+python3 scripts/build_elevation_bands.py [--step N] [--round DEG] [--min-area DEG2] [out-dir]
+bin/Earth --elevation-bands=data/cache/elevation
+```
+
+`--step 3` (default) averages 3×3 cells, giving 3′ bands; `--step 1` is the full 1′ grid but several times
+larger. The default bands total about 56 MB; `bin/Earth` takes a few minutes and about 3.3 GB, and the SVG is
+about 160 MB.
 
 To change the map, edit the recipe in `src/GeoAgda/Compose/Earth.agda`: a list of `Group`s of `Layer`s, each
 naming a source file and a function from source feature to composite feature (or `nothing` to drop it).

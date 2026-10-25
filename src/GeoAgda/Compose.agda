@@ -14,7 +14,7 @@ open import Data.List as List using (List; []; _∷_; map; concat; length)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Nat using (ℕ; _<ᵇ_)
 open import Data.Product using (_,_)
-open import Data.String using (String)
+open import Data.String using (String; _++_)
 open import Data.String.Properties using (_==_)
 open import Data.Sign using (Sign)
 open import Data.Integer using (+_)
@@ -30,10 +30,23 @@ import Data.Sign as Sign
 ------------------------------------------------------------------------
 
 record Layer : Set where
-  constructor layer
+  constructor layerAt
   field
-    path    : String                  -- relative to the data directory
-    convert : Feature → Maybe Feature -- `nothing` drops the feature
+    path      : String                  -- relative to the data directory, or to the working directory
+    inDataDir : Bool                    -- which of the two
+    convert   : Feature → Maybe Feature -- `nothing` drops the feature
+
+-- A layer from a file of the Natural Earth data directory.
+layer : String → (Feature → Maybe Feature) → Layer
+layer p c = layerAt p true c
+
+-- A layer from any other file.
+fileLayer : String → (Feature → Maybe Feature) → Layer
+fileLayer p c = layerAt p false c
+
+-- Where a layer is read from, given the data directory.
+layerFile : String → Layer → String
+layerFile dir l = if Layer.inDataDir l then dir ++ "/" ++ Layer.path l else Layer.path l
 
 record Group : Set where
   constructor group
