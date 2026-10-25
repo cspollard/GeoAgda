@@ -9,9 +9,9 @@
 module GeoAgda.Compose.Earth where
 
 open import Data.Bool using (Bool; true; false; if_then_else_; _∧_; _∨_)
-open import Data.List as List using (List; []; _∷_; map)
+open import Data.List as List using (List; []; _∷_; map) renaming (_++_ to _++ˡ_)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
-open import Data.Nat using (ℕ; _≤ᵇ_)
+open import Data.Nat using (ℕ; suc; pred; _≤ᵇ_)
 open import Data.Nat.Show using (show)
 open import Data.Product using (_×_; _,_)
 open import Data.String as String using (String; _++_)
@@ -23,15 +23,26 @@ open import GeoAgda.Model.GeoJSON.Simplify using (simplifyGeometry)
 open import GeoAgda.Rendering.SVG.NaturalEarth using (stringProp; natProp; firstStringProp)
 open import GeoAgda.Compose
 open import GeoAgda.Compose.Text
+open import GeoAgda.Compose.Options
+open import GeoAgda.Rendering.SVG.Style using (SVGStyle; defaultTerrainStyle)
+open import GeoAgda.Rendering.SVG.Palette using (greenElevationColor)
 
 ------------------------------------------------------------------------
 -- Helpers
 ------------------------------------------------------------------------
 
--- 0.01° rounding for everything; bathymetry is also thinned to vertices ≥ 0.3° apart.
-roundGeom bathyGeom : Geometry → Maybe Geometry
-roundGeom = simplifyGeometry 100 0
-bathyGeom = simplifyGeometry 100 3000
+-- Everything is rounded to `precision`; bathymetry is also thinned to
+-- vertices at least `thinning` apart.
+roundGeom bathyGeom : Options → Geometry → Maybe Geometry
+roundGeom o = simplifyGeometry (suc (pred (Options.precision o))) 0
+bathyGeom o = simplifyGeometry (suc (pred (Options.precision o))) (Options.thinning o)
+
+-- The style the options call for: green shades by elevation, or the
+-- hypsometric tints of the areas of interest.
+earthStyle : Options → SVGStyle
+earthStyle o with Options.land o
+... | areas = defaultTerrainStyle
+... | _     = record defaultTerrainStyle { elevationPalette = greenElevationColor }
 
 private
   Props : Set
@@ -57,6 +68,12 @@ private
   labelProps g with labelPoint g
   ... | nothing = []
   ... | just (pos x y) = ("LABELX" , numberⱼ x) ∷ ("LABELY" , numberⱼ y) ∷ []
+
+  -- Only the areas-of-interest map names its regions.
+  regionLabel : Options → String → Geometry → Props
+  regionLabel o name g with Options.land o
+  ... | areas = ("name" , strP name) ∷ ("LABELRANK" , natP 1) ∷ ("scalerank" , natP 1) ∷ labelProps g
+  ... | _     = []
 
 ------------------------------------------------------------------------
 -- Elevation tables (metres)
@@ -107,20 +124,25 @@ prominentPeaks =
 ------------------------------------------------------------------------
 
 -- Depth contours, shallowest first, thinned.
-bathymetry : String → ℕ → Layer
-bathymetry code depth =
+bathymetry : Options → String → ℕ → Layer
+bathymetry o code depth =
   layer ("10m/physical/ne_10m_bathymetry_" ++ code ++ "_" ++ show depth ++ ".json")
-        (λ f → rebuild bathyGeom f (λ _ →
+        (λ f → rebuild (bathyGeom o) f (λ _ →
                  ("featurecla" , strP "Bathymetry") ∷ ("depth" , natP depth) ∷ ("scalerank" , natP 10) ∷ []))
 
-land : Layer
-land = layer "110m/physical/ne_110m_land.json"
-  (λ f → rebuild roundGeom f (λ _ →
-           ("featurecla" , strP "Land") ∷ ("elevation" , natP 50) ∷ ("scalerank" , natP 10) ∷ []))
+-- Without elevation the land is one flat colour.
+land : Options → Layer
+land o = layer "110m/physical/ne_110m_land.json"
+  (λ f → rebuild (roundGeom o) f (λ _ →
+           ("featurecla" , strP "Land") ∷ landElevation (Options.land o) ++ˡ ("scalerank" , natP 10) ∷ []))
+  where
+    landElevation : LandMode → Props
+    landElevation flat = []
+    landElevation _    = ("elevation" , natP 50) ∷ []
 
 -- Regions from the 110m set; the "Iberian Peninsula" name is normalised.
-regions110 : Layer
-regions110 = layer "110m/physical/ne_110m_geography_regions_polys.json" convert
+regions110 : Options → Layer
+regions110 o = layer "110m/physical/ne_110m_geography_regions_polys.json" convert
   where
     convert : Feature → Maybe Feature
     convert f =
@@ -130,32 +152,30 @@ regions110 = layer "110m/physical/ne_110m_geography_regions_polys.json" convert
                 uname = upper raw
                 name  = if uname == "PENINSULA IBERICA" then "Iberian Peninsula" else title raw
                 elev  = Maybe.fromMaybe (defaultElevation cla) (lookupˢ uname regionElevations)
-            in rebuild roundGeom f (λ g →
-                 ("featurecla" , strP cla) ∷ ("name" , strP name) ∷ ("elevation" , natP elev)
-                 ∷ ("LABELRANK" , natP 1) ∷ ("scalerank" , natP 1) ∷ labelProps g))
+            in rebuild (roundGeom o) f (λ g →
+                 ("featurecla" , strP cla) ∷ regionLabel o name g ++ˡ ("elevation" , natP elev) ∷ []))
       else nothing
 
 -- Named ranges and plateaus from the 50m set that the 110m set lacks.
-regions50 : Layer
-regions50 = layer "50m/physical/ne_50m_geography_regions_polys.json" convert
+regions50 : Options → Layer
+regions50 o = layer "50m/physical/ne_50m_geography_regions_polys.json" convert
   where
     convert : Feature → Maybe Feature
     convert f =
       let raw   = asciiFold (nameOf f)
           cla   = Maybe.fromMaybe "Range/mtn" (stringProp (Feature.properties f) "featurecla")
       in lookupˢ (upper raw) regionElevations >>= λ elev →
-         rebuild roundGeom f (λ g →
-           ("featurecla" , strP cla) ∷ ("name" , strP (title raw)) ∷ ("elevation" , natP elev)
-           ∷ ("LABELRANK" , natP 1) ∷ ("scalerank" , natP 1) ∷ labelProps g)
+         rebuild (roundGeom o) f (λ g →
+           ("featurecla" , strP cla) ∷ regionLabel o (title raw) g ++ˡ ("elevation" , natP elev) ∷ [])
 
 -- The 50m regions only fill in names the 110m set does not have.
-regions : Group
-regions = group (regions110 ∷ regions50 ∷ [])
+regions : Options → Group
+regions o = group (regions110 o ∷ regions50 o ∷ [])
                 (dedupeBy (λ f → Maybe.map upper (stringProp (Feature.properties f) "name")))
 
 -- Named summits and every 6000 m+ peak.
-peaks : Layer
-peaks = layer "10m/physical/ne_10m_geography_regions_elevation_points.json" convert
+peaks : Options → Layer
+peaks o = layer "10m/physical/ne_10m_geography_regions_elevation_points.json" convert
   where
     convert : Feature → Maybe Feature
     convert f =
@@ -164,33 +184,33 @@ peaks = layer "10m/physical/ne_10m_geography_regions_elevation_points.json" conv
       in natProp props "elevation" >>= λ elev →
          let rank = Maybe.fromMaybe 10 (natProp props "scalerank")
          in if (upper (asciiFold raw) ∈ˢ prominentPeaks) ∨ ((6000 ≤ᵇ elev) ∧ (rank ≤ᵇ 2))
-            then rebuild roundGeom f (λ _ →
+            then rebuild (roundGeom o) f (λ _ →
                    ("featurecla" , strP "spot elevation") ∷ ("name" , strP (asciiFold raw))
                    ∷ ("elevation" , natP elev) ∷ ("scalerank" , natP 1) ∷ [])
             else nothing
 
 -- A layer whose features keep their geometry and get the given class.
-plain : String → String → Layer
-plain path cla = layer path
-  (λ f → rebuild roundGeom f (λ _ → ("featurecla" , strP cla) ∷ ("scalerank" , natP 10) ∷ []))
+plain : Options → String → String → Layer
+plain o path cla = layer path
+  (λ f → rebuild (roundGeom o) f (λ _ → ("featurecla" , strP cla) ∷ ("scalerank" , natP 10) ∷ []))
 
-glaciers : Layer
-glaciers = plain "110m/physical/ne_110m_glaciated_areas.json" "Glaciated areas"
+glaciers : Options → Layer
+glaciers o = plain o "110m/physical/ne_110m_glaciated_areas.json" "Glaciated areas"
 
-lakes : Layer
-lakes = layer "110m/physical/ne_110m_lakes.json"
-  (λ f → rebuild roundGeom f (λ _ →
+lakes : Options → Layer
+lakes o = layer "110m/physical/ne_110m_lakes.json"
+  (λ f → rebuild (roundGeom o) f (λ _ →
            ("featurecla" , strP "Lake") ∷ ("name" , strP (asciiFold (nameOf f))) ∷ ("scalerank" , natP 10) ∷ []))
 
-rivers : Layer
-rivers = plain "110m/physical/ne_110m_rivers_lake_centerlines.json" "River"
+rivers : Options → Layer
+rivers o = plain o "110m/physical/ne_110m_rivers_lake_centerlines.json" "River"
 
-borders : Layer
-borders = plain "110m/cultural/ne_110m_admin_0_boundary_lines_land.json" "Admin-0 boundary lines"
+borders : Options → Layer
+borders o = plain o "110m/cultural/ne_110m_admin_0_boundary_lines_land.json" "Admin-0 boundary lines"
 
 -- A label point for each major country.
-countryLabels : Layer
-countryLabels = layer "110m/cultural/ne_110m_admin_0_countries.json" convert
+countryLabels : Options → Layer
+countryLabels o = layer "110m/cultural/ne_110m_admin_0_countries.json" convert
   where
     convert : Feature → Maybe Feature
     convert f =
@@ -198,7 +218,7 @@ countryLabels = layer "110m/cultural/ne_110m_admin_0_countries.json" convert
           rank  = Maybe.fromMaybe 10 (natProp props "LABELRANK")
           name  = asciiFold (Maybe.fromMaybe "" (firstStringProp ("NAME" ∷ "NAME_EN" ∷ "ADMIN" ∷ []) props))
       in if (rank ≤ᵇ 2) ∧ not-empty name
-         then (roundGeom (Feature.geometry f) >>= λ g →
+         then (roundGeom o (Feature.geometry f) >>= λ g →
                labelPoint g >>= λ c →
                just (feature nothing (pointG c)
                        (("featurecla" , strP "CountryLabel") ∷ ("NAME" , strP name) ∷ ("LABELRANK" , natP rank)
@@ -211,21 +231,30 @@ countryLabels = layer "110m/cultural/ne_110m_admin_0_countries.json" convert
 -- The recipe, bottom layer first
 ------------------------------------------------------------------------
 
-earthRecipe : Recipe
-earthRecipe =
-    simpleGroup (bathymetry "L" 0)
-  ∷ simpleGroup (bathymetry "K" 200)
-  ∷ simpleGroup (bathymetry "J" 1000)
-  ∷ simpleGroup (bathymetry "I" 2000)
-  ∷ simpleGroup (bathymetry "G" 4000)
-  ∷ simpleGroup (bathymetry "E" 6000)
-  ∷ simpleGroup (bathymetry "A" 10000)
-  ∷ simpleGroup land
-  ∷ regions
-  ∷ simpleGroup peaks
-  ∷ simpleGroup glaciers
-  ∷ simpleGroup lakes
-  ∷ simpleGroup rivers
-  ∷ simpleGroup borders
-  ∷ simpleGroup countryLabels
-  ∷ []
+-- Landforms (regions and peaks) are drawn only when elevation or areas
+-- of interest are wanted; borders and country names only when asked for.
+earthRecipe : Options → Recipe
+earthRecipe o =
+    simpleGroup (bathymetry o "L" 0)
+  ∷ simpleGroup (bathymetry o "K" 200)
+  ∷ simpleGroup (bathymetry o "J" 1000)
+  ∷ simpleGroup (bathymetry o "I" 2000)
+  ∷ simpleGroup (bathymetry o "G" 4000)
+  ∷ simpleGroup (bathymetry o "E" 6000)
+  ∷ simpleGroup (bathymetry o "A" 10000)
+  ∷ simpleGroup (land o)
+  ∷ landforms (Options.land o)
+  ++ˡ simpleGroup (glaciers o)
+  ∷ simpleGroup (lakes o)
+  ∷ simpleGroup (rivers o)
+  ∷ when (Options.borders o) (simpleGroup (borders o))
+  ++ˡ when (Options.countryNames o) (simpleGroup (countryLabels o))
+  where
+    when : Bool → Group → Recipe
+    when true  g = g ∷ []
+    when false _ = []
+
+    landforms : LandMode → Recipe
+    landforms flat      = []
+    landforms elevation = regions o ∷ []
+    landforms areas     = regions o ∷ simpleGroup (peaks o) ∷ []

@@ -3,7 +3,7 @@
 -- Composition helpers: text clean-up, vertex thinning, label anchors.
 module GeoAgda.Tests.Compose where
 
-open import Data.List using (_∷_; length)
+open import Data.List using ([]; _∷_; length)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Nat using (ℕ)
 open import Data.String using (String; toList; _++_)
@@ -13,6 +13,9 @@ open import Data.JSON.RoundTrip using (parseJSON)
 open import GeoAgda
 open import GeoAgda.Compose
 open import GeoAgda.Compose.Text
+open import GeoAgda.Compose.Options
+open import Data.Sum using (inj₂; inj₁)
+open import Data.Bool using (true; false)
 open import GeoAgda.Model.GeoJSON.Simplify
 
 ------------------------------------------------------------------------
@@ -76,3 +79,26 @@ render nothing          = nothing
 testLabel : render (geometryOf "{\"type\":\"MultiPolygon\",\"coordinates\":[[[[0,0],[4,0],[4,2],[0,2],[0,0]]],[[[10,10],[11,10],[10,10]]]]}"
                       >>= labelPoint) ≡ just "2.00,1.00"
 testLabel = refl
+
+------------------------------------------------------------------------
+-- Earth options
+------------------------------------------------------------------------
+
+testDegrees : parseDegrees "0.01" ≡ just 100
+testDegrees = refl
+
+testDegreesWhole : parseDegrees "3" ≡ just 30000
+testDegreesWhole = refl
+
+testDegreesTooFine : parseDegrees "0.00001" ≡ nothing
+testDegreesTooFine = refl
+
+testDefaults : parseArgs [] ≡ inj₂ defaultInvocation
+testDefaults = refl
+
+testFlags : parseArgs ("--land=areas" ∷ "--borders" ∷ "--thin=0" ∷ "dir" ∷ "o.svg" ∷ [])
+  ≡ inj₂ (invocation (options areas true false 100 0) "dir" "o.svg")
+testFlags = refl
+
+testBadFlag : parseArgs ("--nope" ∷ []) ≡ inj₁ "unknown option --nope"
+testBadFlag = refl

@@ -43,6 +43,7 @@ open import GeoAgda.Model.GeoJSON.Simplify public
 open import GeoAgda.Compose public
 open import GeoAgda.Compose.Text public
 open import GeoAgda.Compose.Earth public
+open import GeoAgda.Compose.Options public
 
 -- End-to-End Ingestion & Rendering Pipeline
 open import GeoAgda.Pipeline public

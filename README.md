@@ -33,13 +33,25 @@ country labels.
 ```
 git submodule update --init natural-earth-geojson    # the data (large)
 make earth                                           # builds bin/Earth and writes earth.svg
-bin/Earth [data-dir [out.svg]]                       # defaults: natural-earth-geojson, earth.svg
+bin/Earth [options] [data-dir [out.svg]]             # defaults: natural-earth-geojson, earth.svg
 ```
+
+Options (`bin/Earth --help`; `GeoAgda.Compose.Options`):
+
+| option | effect |
+| --- | --- |
+| `--land=elevation` (default) | land in shades of green by elevation |
+| `--land=flat` | land in one colour, no elevation |
+| `--land=areas` | named plains, deserts and ranges with hypsometric tints, plus peaks and labels |
+| `--borders` | draw country boundaries (off by default) |
+| `--country-names` | label countries (off by default) |
+| `--precision=DEG` | round coordinates to this grid (default `0.01`) |
+| `--thin=DEG` | drop bathymetry vertices closer than this (default `0.3`; `0` keeps all) |
 
 It takes under a minute and about 2.5 GB of memory (the 10m bathymetry files are up to 23 MB each; every
 layer is read, reduced and dropped before the next, so the peak is the largest single file). Coordinates
 are rounded to 0.01°, and the bathymetry is thinned so that vertices are at least 0.3° apart
-(`GeoAgda.Model.GeoJSON.Simplify`). Open `earth.svg` in a browser.
+(`GeoAgda.Model.GeoJSON.Simplify`); both are configurable. Open `earth.svg` in a browser.
 
 To change the map, edit the recipe in `src/GeoAgda/Compose/Earth.agda`: a list of `Group`s of `Layer`s, each
 naming a source file and a function from source feature to composite feature (or `nothing` to drop it).

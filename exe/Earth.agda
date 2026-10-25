@@ -1,8 +1,9 @@
 {-# OPTIONS --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
--- `Earth [data-dir [out.svg]]`: compose the earth-with-elevation map from the
+-- `Earth [options] [data-dir [out.svg]]`: compose the earth-with-elevation map from the
 -- Natural Earth GeoJSON files in `data-dir` (default `natural-earth-geojson`)
--- and write it as SVG (default `earth.svg`).
+-- and write it as SVG (default `earth.svg`).  `Earth --help` lists the options
+-- (land shading, country boundaries and names, level of detail).
 --
 -- Each layer is read, parsed, reduced and fully evaluated before the next file
 -- is read, so peak memory is that of the largest single input.
@@ -15,6 +16,7 @@ open import Data.Maybe using (just; nothing)
 open import Data.Nat using (ℕ; _+_)
 open import Data.Nat.Show using (show)
 open import Data.String as String using (String; toList) renaming (_++_ to _++ˢ_)
+open import Data.Sum using (inj₁; inj₂)
 open import Function using (case_of_)
 open import IO.Primitive.Core using (pure; _>>=_; _>>_)
 open import IO.Primitive.Finite using (readFile; writeFile; putStrLn)
@@ -24,11 +26,11 @@ open import Data.JSON.AST using (jsonNumber)
 open import Data.JSON.RoundTrip using (parseJSON)
 open import Data.XML.Print using (renderXML)
 open import GeoAgda.Compose
-open import GeoAgda.Compose.Earth using (earthRecipe)
+open import GeoAgda.Compose.Earth using (earthRecipe; earthStyle)
+open import GeoAgda.Compose.Options
 open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
-open import GeoAgda.Rendering.SVG.Style using (defaultTerrainStyle)
 
 say : String → IO Unit
 say msg = putStrLn ("[Earth] " ++ˢ msg)
@@ -96,16 +98,17 @@ loadRecipe dir (g ∷ gs)  =
   loadRecipe dir gs >>= λ rest →
   pure (fs ++ rest)
 
-build : String → String → IO Unit
-build dir out =
+build : Invocation → IO Unit
+build (invocation o dir out) =
   say ("Reading Natural Earth data from " ++ˢ dir) >>
-  (loadRecipe dir earthRecipe >>= λ feats →
+  (loadRecipe dir (earthRecipe o) >>= λ feats →
    say ("Composed " ++ˢ show (length feats) ++ˢ " features; rendering") >>
-   (writeFile out (renderXML (renderMapSVG defaultTerrainStyle (featureCollection feats nothing))) >>
+   (writeFile out (renderXML (renderMapSVG (earthStyle o) (featureCollection feats nothing))) >>
     say ("Wrote " ++ˢ out)))
 
 main : IO Unit
-main = getArgs >>= λ where
-  []                  → build "natural-earth-geojson" "earth.svg"
-  (dir ∷ [])          → build dir "earth.svg"
-  (dir ∷ out ∷ _)     → build dir out
+main = getArgs >>= λ args → case args of λ where
+  ("--help" ∷ _) → putStrLn usage
+  _ → case parseArgs args of λ where
+    (inj₁ err) → say err >> putStrLn usage
+    (inj₂ inv) → build inv

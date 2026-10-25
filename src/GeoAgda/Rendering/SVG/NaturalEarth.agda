@@ -68,21 +68,6 @@ bathymetryColor d =
   if d ≤ᵇ 9000 then "#03143c" else
   "#020b24"
 
--- Natural Earth elevation palette (meters above sea level)
--- Hypsometric tints: lush coastal green -> spring green -> yellow-green -> savanna buff -> upland tan -> plateau ochre -> sienna -> alpine brown -> snow cap
-elevationColor : ℕ → String
-elevationColor e =
-  if e ≤ᵇ 100  then "#a8cca0" else   -- 0 - 100m: lowlands & coastal plains (lush green)
-  if e ≤ᵇ 250  then "#bed89f" else   -- 100 - 250m: lowlands & valleys (soft spring green)
-  if e ≤ᵇ 500  then "#dae3a8" else   -- 250 - 500m: plains & rolling lowlands (warm yellow-green)
-  if e ≤ᵇ 800  then "#eadcb0" else   -- 500 - 800m: interior plains & steppes (buff savanna tan)
-  if e ≤ᵇ 1200 then "#dec28a" else   -- 800 - 1200m: upland plateaus & hills (warm ochre tan)
-  if e ≤ᵇ 1800 then "#cb9c62" else   -- 1200 - 1800m: highlands & lower plateaus (rich ochre)
-  if e ≤ᵇ 2800 then "#b37742" else   -- 1800 - 2800m: mountains (warm sienna)
-  if e ≤ᵇ 4000 then "#94562c" else   -- 2800 - 4000m: high ranges (deep sienna)
-  if e ≤ᵇ 5000 then "#773c1d" else   -- 4000 - 5000m: rugged alpine crags (deep mountain brown)
-  "#e8eef2"                          -- 5000m+: glaciated summits & snow caps
-
 terrainColorByContinent : String → String
 terrainColorByContinent c =
   if c == "Africa"        then "#d8be91" else
@@ -111,7 +96,7 @@ elevationOf props = natProp props "elevation"
 
 defaultTerrainFeatureStyle : SVGStyle → Properties → SVGStyle
 defaultTerrainFeatureStyle s props with elevationOf props
-... | just e  = solid (elevationColor e) "0.05" s
+... | just e  = solid (SVGStyle.elevationPalette s e) "0.05" s
 ... | nothing with stringProp props "CONTINENT"
 ...   | just cont = paint (terrainColorByContinent cont) "#7d7565" "0.08" s
 ...   | nothing   = paint "#a8cca0" "#98bc90" "0.08" s
@@ -155,7 +140,7 @@ classRules =
   ∷ ("Coastline" ∷ [] , static (outline "#7a7266" "0.1"))
   ∷ ("Minor coastline" ∷ [] , static (outline "#7a7266" "0.08"))
   ∷ ("spot elevation" ∷ [] ,
-       λ props s → let c = Maybe.maybe elevationColor "#94562c" (elevationOf props)
+       λ props s → let c = Maybe.maybe (SVGStyle.elevationPalette s) "#94562c" (elevationOf props)
                    in record (paint c "#ffffff" "0.2" s) { pointRadius = "1.5" })
   ∷ []
 
@@ -177,7 +162,7 @@ terrainStyleByFeatureClass : SVGStyle → String → Properties → SVGStyle
 terrainStyleByFeatureClass s cla props with lookupRule cla classRules
 ... | just r  = r props s
 ... | nothing with elevationOf props
-...   | just e  = solid (elevationColor e) "0.04" s
+...   | just e  = solid (SVGStyle.elevationPalette s e) "0.04" s
 ...   | nothing with lookupRule cla landformRules
 ...     | just r  = r props s
 ...     | nothing = defaultTerrainFeatureStyle s props

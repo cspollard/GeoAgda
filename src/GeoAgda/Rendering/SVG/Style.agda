@@ -3,12 +3,14 @@
 module GeoAgda.Rendering.SVG.Style where
 
 open import Data.Bool using (Bool; true; false)
+open import Data.Nat using (ℕ)
 open import Data.String using (String)
 open import Data.List using ([]; _∷_)
 open import Data.Product using (_,_)
 open import Data.Maybe using (Maybe; just; nothing)
 
 open import Data.SVG using (Attrs)
+open import GeoAgda.Rendering.SVG.Palette using (elevationColor)
 
 ------------------------------------------------------------------------
 -- SVG Styling Configuration
@@ -28,15 +30,16 @@ record SVGStyle : Set where
     topLevelLabelsOnly : Bool
     labelFontSize      : String
     labelColor         : String
+    elevationPalette   : ℕ → String   -- fill by elevation in metres
 
 defaultPointStyle : SVGStyle
-defaultPointStyle = svgStyle (just "#e41a1c") (just "#333333") (just "1") nothing "4" nothing false true false "3.0" "#111111"
+defaultPointStyle = svgStyle (just "#e41a1c") (just "#333333") (just "1") nothing "4" nothing false true false "3.0" "#111111" elevationColor
 
 defaultPolygonStyle : SVGStyle
-defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "0.05") (just "0.8") "3" nothing false false false "2.8" "#2b231d"
+defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "0.05") (just "0.8") "3" nothing false false false "2.8" "#2b231d" elevationColor
 
 defaultTerrainStyle : SVGStyle
-defaultTerrainStyle = svgStyle (just "#a8cca0") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#092244") true true true "1.2" "#222222"
+defaultTerrainStyle = svgStyle (just "#a8cca0") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#092244") true true true "1.2" "#222222" elevationColor
 
 ------------------------------------------------------------------------
 -- Style updates
