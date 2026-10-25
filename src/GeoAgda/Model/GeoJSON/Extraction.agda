@@ -1,137 +1,152 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
+-- Partial extraction of the GeoJSON model from a parsed JSON value.
+--
+-- Every extractor is a chain of the total projections of
+-- `Data.JSON.Schema` in the `Maybe` monad.  `GeoAgda.Model.GeoJSON.Conformance`
+-- gives the declarative account of when extraction succeeds, and
+-- `GeoAgda.Model.GeoJSON.Properties` proves the two agree.
 module GeoAgda.Model.GeoJSON.Extraction where
 
-open import Data.Bool using (Bool; true; false; if_then_else_)
 open import Data.String as String using (String)
-open import Data.String.Properties using (_==_)
-open import Data.List as List using (List; []; _∷_; map)
-open import Data.Product using (_×_; _,_; proj₁; proj₂)
+open import Data.String.Properties using (_≟_)
+open import Data.List as List using (List; []; _∷_)
+open import Data.Product using (_×_; _,_)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
 import Data.Maybe.Effectful as Maybe
 import Data.List.Effectful as ListE
-open import Function using (_∘_; _$_)
+open import Data.Unit using (⊤; tt)
+open import Function using (_∘_)
+open import Relation.Nullary.Decidable using (yes; no)
 
 open import Data.JSON.AST using (JSON; JSONNumber)
 open import Data.JSON.Schema using (asArray; asObject; asString; asNumber; lookupField)
 open import GeoAgda.Model.GeoJSON.Types
+open import GeoAgda.Model.GeoJSON.Schema
+
+Object : Set
+Object = List (String × JSON)
 
 ------------------------------------------------------------------------
--- Coordinate & Position Extraction
+-- Helpers
 ------------------------------------------------------------------------
-
-mkPos : Maybe JSONNumber → Maybe JSONNumber → Maybe Position
-mkPos (just lon) (just lat) = just (pos lon lat)
-mkPos _          _          = nothing
-
--- Extract a single [longitude, latitude] pair
-extractPosition : JSON → Maybe Position
-extractPosition v with asArray v
-... | just (lonV ∷ latV ∷ []) = mkPos (asNumber lonV) (asNumber latV)
-... | _                       = nothing
 
 -- Map extraction across a list, failing if any element fails
 mapM : ∀ {A B : Set} → (A → Maybe B) → List A → Maybe (List B)
 mapM = mapA
   where open ListE.TraversableA Maybe.applicative
 
--- Extract a line or ring of positions
+guardEq : String → String → Maybe ⊤
+guardEq s t with s ≟ t
+... | yes _ = just tt
+... | no  _ = nothing
+
+-- Succeeds when the `type` member is the string `tag`.
+hasType : String → Object → Maybe ⊤
+hasType tag kvs =
+  lookupField "type" kvs >>= λ tv →
+  asString tv            >>= λ s  →
+  guardEq s tag
+
+-- The elements of a JSON array, each extracted with `f`.
+extractListOf : ∀ {A : Set} → (JSON → Maybe A) → JSON → Maybe (List A)
+extractListOf f v = asArray v >>= mapM f
+
+------------------------------------------------------------------------
+-- Coordinate & Position Extraction
+------------------------------------------------------------------------
+
+-- Extract a single [longitude, latitude] pair
+extractPosition : JSON → Maybe Position
+extractPosition v = asArray v >>= λ where
+  (lonV ∷ latV ∷ []) →
+    asNumber lonV >>= λ lon →
+    asNumber latV >>= λ lat →
+    just (pos lon lat)
+  _ → nothing
+
+-- A line or ring of positions
 extractPositions : JSON → Maybe (List Position)
-extractPositions v with asArray v
-... | nothing   = nothing
-... | just arrs = mapM extractPosition arrs
+extractPositions = extractListOf extractPosition
 
--- Extract polygon rings: list of linear rings (outer + inner holes)
+-- Polygon rings: list of linear rings (outer + inner holes)
 extractRings : JSON → Maybe (List (List Position))
-extractRings v with asArray v
-... | nothing   = nothing
-... | just arrs = mapM extractPositions arrs
+extractRings = extractListOf extractPositions
 
--- Extract multi-polygon: list of polygon rings
+-- Multi-polygon: list of polygon rings
 extractPolygons : JSON → Maybe (List (List (List Position)))
-extractPolygons v with asArray v
-... | nothing   = nothing
-... | just arrs = mapM extractRings arrs
+extractPolygons = extractListOf extractRings
 
 ------------------------------------------------------------------------
 -- Geometry Extraction
 ------------------------------------------------------------------------
 
-extractGeometryFromObject : List (String × JSON) → Maybe Geometry
-extractGeometryFromObject kvs = do
-  typeVal   ← lookupField "type" kvs
-  coordsVal ← lookupField "coordinates" kvs
-  typeName  ← asString typeVal
-  if typeName == "Point"
-    then Maybe.map pointG (extractPosition coordsVal)
-    else (if typeName == "MultiPoint"
-          then Maybe.map multiPointG (extractPositions coordsVal)
-          else (if typeName == "LineString"
-                then Maybe.map lineStringG (extractPositions coordsVal)
-                else (if typeName == "MultiLineString"
-                      then Maybe.map multiLineStringG (extractRings coordsVal)
-                      else (if typeName == "Polygon"
-                            then Maybe.map polygonG (extractRings coordsVal)
-                            else (if typeName == "MultiPolygon"
-                                  then Maybe.map multiPolygonG (extractPolygons coordsVal)
-                                  else nothing)))))
+extractCoordinates : Kind → JSON → Maybe Geometry
+extractCoordinates point           v = Maybe.map pointG (extractPosition v)
+extractCoordinates multiPoint      v = Maybe.map multiPointG (extractPositions v)
+extractCoordinates lineString      v = Maybe.map lineStringG (extractPositions v)
+extractCoordinates multiLineString v = Maybe.map multiLineStringG (extractRings v)
+extractCoordinates polygon         v = Maybe.map polygonG (extractRings v)
+extractCoordinates multiPolygon    v = Maybe.map multiPolygonG (extractPolygons v)
+
+extractGeometryFromObject : Object → Maybe Geometry
+extractGeometryFromObject kvs =
+  lookupField "type" kvs        >>= λ typeVal   →
+  asString typeVal              >>= λ typeName  →
+  parseKind typeName            >>= λ kind      →
+  lookupField "coordinates" kvs >>= λ coordsVal →
+  extractCoordinates kind coordsVal
 
 extractGeometry : JSON → Maybe Geometry
-extractGeometry v with asObject v
-... | nothing  = nothing
-... | just kvs = extractGeometryFromObject kvs
+extractGeometry v = asObject v >>= extractGeometryFromObject
 
 ------------------------------------------------------------------------
 -- Feature Extraction
 ------------------------------------------------------------------------
 
-extractFeatureFromObject : List (String × JSON) → Maybe Feature
-extractFeatureFromObject kvs = do
-  typeVal  ← lookupField "type" kvs
-  geomVal  ← lookupField "geometry" kvs
-  typeName ← asString typeVal
-  if typeName == "Feature"
-    then (do
-      geom ← extractGeometry geomVal
-      let idVal = lookupField "id" kvs >>= asString
-          props = lookupField "properties" kvs >>= asObject
-          finalProps = Maybe.fromMaybe [] props
-      just (feature idVal geom finalProps))
-    else nothing
+-- A feature's optional `id` and `properties` members are read leniently.
+featureOf : Object → Geometry → Feature
+featureOf kvs geom =
+  feature (lookupField "id" kvs >>= asString)
+          geom
+          (Maybe.fromMaybe [] (lookupField "properties" kvs >>= asObject))
+
+extractFeatureFromObject : Object → Maybe Feature
+extractFeatureFromObject kvs =
+  hasType "Feature" kvs        >>= λ _        →
+  lookupField "geometry" kvs   >>= λ geomVal  →
+  extractGeometry geomVal      >>= λ geom     →
+  just (featureOf kvs geom)
 
 extractFeature : JSON → Maybe Feature
-extractFeature v with asObject v
-... | nothing  = nothing
-... | just kvs = extractFeatureFromObject kvs
+extractFeature v = asObject v >>= extractFeatureFromObject
 
 ------------------------------------------------------------------------
 -- FeatureCollection Extraction
 ------------------------------------------------------------------------
 
 extractBBox : JSON → Maybe BBox
-extractBBox v with asArray v
-... | just (minLonV ∷ minLatV ∷ maxLonV ∷ maxLatV ∷ []) = do
-        minLon ← asNumber minLonV
-        minLat ← asNumber minLatV
-        maxLon ← asNumber maxLonV
-        maxLat ← asNumber maxLatV
-        just (bbox minLon minLat maxLon maxLat)
-... | _ = nothing
+extractBBox v = asArray v >>= λ where
+  (minLonV ∷ minLatV ∷ maxLonV ∷ maxLatV ∷ []) →
+    asNumber minLonV >>= λ minLon →
+    asNumber minLatV >>= λ minLat →
+    asNumber maxLonV >>= λ maxLon →
+    asNumber maxLatV >>= λ maxLat →
+    just (bbox minLon minLat maxLon maxLat)
+  _ → nothing
 
-extractFeatureCollectionFromObject : List (String × JSON) → Maybe FeatureCollection
-extractFeatureCollectionFromObject kvs = do
-  typeVal     ← lookupField "type" kvs
-  featuresVal ← lookupField "features" kvs
-  typeName    ← asString typeVal
-  if typeName == "FeatureCollection"
-    then (do
-      featArr ← asArray featuresVal
-      feats   ← mapM extractFeature featArr
-      let mbBBox = lookupField "bbox" kvs >>= extractBBox
-      just (featureCollection feats mbBBox))
-    else nothing
+-- The optional `bbox` member is read leniently.
+collectionOf : Object → List Feature → FeatureCollection
+collectionOf kvs feats =
+  featureCollection feats (lookupField "bbox" kvs >>= extractBBox)
+
+extractFeatureCollectionFromObject : Object → Maybe FeatureCollection
+extractFeatureCollectionFromObject kvs =
+  hasType "FeatureCollection" kvs >>= λ _        →
+  lookupField "features" kvs      >>= λ featVal  →
+  asArray featVal                 >>= λ featArr  →
+  mapM extractFeature featArr     >>= λ feats    →
+  just (collectionOf kvs feats)
 
 extractFeatureCollection : JSON → Maybe FeatureCollection
-extractFeatureCollection v with asObject v
-... | nothing  = nothing
-... | just kvs = extractFeatureCollectionFromObject kvs
+extractFeatureCollection v = asObject v >>= extractFeatureCollectionFromObject
