@@ -77,7 +77,8 @@ GeoAgda/
 │   └── Validate.agda     -- decision procedures; validateAndExtract ≡ extractFeatureCollection
 ├── Rendering/SVG/
 │   ├── Style.agda        -- SVGStyle and style updates (paint, outline, solid)
-│   ├── NaturalEarth.agda -- Natural Earth property names, palettes, feature-class rule tables
+│   ├── Palette.agda      -- colour palettes (bathymetry, elevation, continent)
+│   ├── NaturalEarth.agda -- Natural Earth property names, feature-class rule tables
 │   ├── Projection.agda   -- number formatting, equirectangular projection
 │   ├── PathData.agda     -- `points` / path-data (`d`) formatting
 │   ├── Scaled.agda       -- fixed-point (×10⁴) coordinate arithmetic

@@ -1,7 +1,7 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
 -- Natural Earth specific conventions: property names, feature classes and
--- the cartographic palette used to style them.
+-- the rules that style them (colours come from `Palette`).
 module GeoAgda.Rendering.SVG.NaturalEarth where
 
 open import Data.Bool using (Bool; true; false; if_then_else_)
@@ -18,6 +18,7 @@ open import Data.JSON.AST using (jsonNumber)
 open import Data.JSON.Schema using (lookupField; asNumber; asString)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Style
+open import GeoAgda.Rendering.SVG.Palette
 
 ------------------------------------------------------------------------
 -- Property lookup
@@ -48,36 +49,6 @@ featureId : Feature → Maybe String
 featureId (feature (just fid) _ _) = just fid
 featureId (feature nothing _ props) =
   firstStringProp ("ISO_A3" ∷ "ADM0_A3" ∷ []) props <∣> featureName props
-
-------------------------------------------------------------------------
--- Palettes
-------------------------------------------------------------------------
-
--- Natural Earth bathymetry palette by depth (meters below sea level)
-bathymetryColor : ℕ → String
-bathymetryColor d =
-  if d ≤ᵇ 0    then "#bfe3eb" else
-  if d ≤ᵇ 200  then "#9ecae1" else
-  if d ≤ᵇ 1000 then "#6baed6" else
-  if d ≤ᵇ 2000 then "#4292c6" else
-  if d ≤ᵇ 3000 then "#2171b5" else
-  if d ≤ᵇ 4000 then "#08519c" else
-  if d ≤ᵇ 5000 then "#084081" else
-  if d ≤ᵇ 6000 then "#08306b" else
-  if d ≤ᵇ 8000 then "#052052" else
-  if d ≤ᵇ 9000 then "#03143c" else
-  "#020b24"
-
-terrainColorByContinent : String → String
-terrainColorByContinent c =
-  if c == "Africa"        then "#d8be91" else
-  if c == "Asia"          then "#c6cca2" else
-  if c == "Europe"        then "#bdcaa0" else
-  if c == "North America" then "#c2bea0" else
-  if c == "South America" then "#b5c494" else
-  if c == "Oceania"       then "#d9c69f" else
-  if c == "Antarctica"    then "#eef5f8" else
-  "#cad3ab"
 
 ------------------------------------------------------------------------
 -- Numeric property lookup
