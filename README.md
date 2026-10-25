@@ -22,3 +22,24 @@ make            # compile bin/Main
 ```
 
 `parsnip/make-everything.sh` checks the library alone.
+
+## Earth map with elevation
+
+The terrain style (the default) tints features by `elevation` and by `featurecla`, so a layered
+physical map needs a composite GeoJSON file. `scripts/build_earth_composite.py` builds one from the
+Natural Earth submodule: bathymetry contours, land, hypsometric regions with elevations, spot summits,
+glaciers, lakes, rivers, borders and country labels.
+
+```
+git submodule update --init natural-earth-geojson          # the data (large)
+mkdir -p data/fixtures
+python3 scripts/build_earth_composite.py                   # run from the repo root
+make                                                       # build bin/Main if you haven't
+./bin/Main data/fixtures/earth_physical_topography.geojson earth.svg
+```
+
+The script reads `natural-earth-geojson/` and writes `data/fixtures/earth_physical_topography.geojson`
+(paths are relative, so run it from the repository root). If that file already exists, its
+bathymetry layer is reused instead of rebuilt from the 10m files. Open `earth.svg` in a browser.
+To restyle, pass another `SVGStyle` to `GeoAgda.Pipeline.geojsonToSVG`; the default is
+`defaultTerrainStyle` (`GeoAgda.Rendering.SVG.Style`).
