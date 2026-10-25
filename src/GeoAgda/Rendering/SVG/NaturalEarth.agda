@@ -100,10 +100,10 @@ classRules =
                    in record (solid c "0.02" s) { opacity = just "1.0" })
   ∷ ("Glaciated areas" ∷ "Antarctic Ice Shelf" ∷ "glacier" ∷ [] , static (paint "#f4f9fa" "#c8dde6" "0.05"))
   ∷ ("Antarctic Ice Shelf Edge" ∷ [] , static (outline "#b0cce0" "0.15"))
-  ∷ ("Lake" ∷ "Reservoir" ∷ "Pluvial lake" ∷ [] , static (paint "#7baecb" "#568dae" "0.08"))
-  ∷ ("Alkaline Lake" ∷ [] , static (paint "#8ebed4" "#6aa0ba" "0.08"))
-  ∷ ("River" ∷ "Lake Centerline" ∷ [] , static (outline "#4a90c4" "0.15"))
-  ∷ ("River (Intermittent)" ∷ [] , static (outline "#6baed6" "0.12"))
+  ∷ ("Lake" ∷ "Reservoir" ∷ "Pluvial lake" ∷ [] , static (paint "#9bbfd0" "#7fa8bc" "0.08"))
+  ∷ ("Alkaline Lake" ∷ [] , static (paint "#a8c9d8" "#8db4c6" "0.08"))
+  ∷ ("River" ∷ "Lake Centerline" ∷ [] , static (outline "#6f9fc0" "0.05"))
+  ∷ ("River (Intermittent)" ∷ [] , static (outline "#8fb5cf" "0.04"))
   ∷ ("Reefs" ∷ [] , static (outline "#5fb39c" "0.1"))
   ∷ ("Admin-0 boundary lines" ∷ "International boundary (real)" ∷ [] , static (outline "#777065" "0.2"))
   ∷ ("CountryLabel" ∷ [] ,
@@ -118,7 +118,7 @@ classRules =
 -- Landform rules, used only for features without an elevation.
 landformRules : Table
 landformRules =
-    ("Land" ∷ "land" ∷ [] , static (paint "#a8cca0" "#98bc90" "0.08"))
+    ("Land" ∷ "land" ∷ [] , static (paint "#9bb497" "#8aa686" "0.08"))
   ∷ ("Admin-0 country" ∷ "Admin-0 sovereignty" ∷ "Admin-0 map unit" ∷ "Country" ∷ [] , static (paint "#a8cca0" "#8c827a" "0.2"))
   ∷ ("Range/mtn" ∷ "mountain" ∷ "Gorge" ∷ [] , static (paint "#94562c" "#773c1d" "0.08"))
   ∷ ("Foothills" ∷ [] , static (paint "#b37742" "#94562c" "0.06"))

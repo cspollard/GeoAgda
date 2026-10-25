@@ -39,7 +39,7 @@ defaultPolygonStyle : SVGStyle
 defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "0.05") (just "0.8") "3" nothing false false false "2.8" "#2b231d" elevationColor
 
 defaultTerrainStyle : SVGStyle
-defaultTerrainStyle = svgStyle (just "#a8cca0") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#092244") true true true "1.2" "#222222" elevationColor
+defaultTerrainStyle = svgStyle (just "#a8cca0") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#486889") true true true "1.2" "#222222" elevationColor
 
 ------------------------------------------------------------------------
 -- Style updates
