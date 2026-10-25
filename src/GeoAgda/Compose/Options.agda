@@ -27,7 +27,7 @@ record Options : Set where
     land         : LandMode
     borders      : Bool   -- country boundary lines
     countryNames : Bool   -- country name labels
-    precision    : ℕ      -- coordinates are rounded to a multiple of this (positive)
+    precision    : ℕ      -- coordinates are rounded to a multiple of this; 0: geometry is kept exactly as read
     thinning     : ℕ      -- bathymetry vertices are kept ≥ this far apart (0: no thinning)
 
 defaultOptions : Options
@@ -50,7 +50,8 @@ usage = "usage: Earth [options] [data-dir [out.svg]]\n\
   \       areas: named plains, deserts and ranges, peaks and their labels\n\
   \  --borders                    draw country boundaries\n\
   \  --country-names              label countries\n\
-  \  --precision=DEGREES          round coordinates to this grid (default 0.01)\n\
+  \  --precision=DEGREES          round coordinates to this grid (default 0.01);\n\
+  \                               0 keeps every vertex as read, ignoring --thin\n\
   \  --thin=DEGREES               thin bathymetry vertices closer than this\n\
   \                               (default 0.3; 0 keeps them all)"
 
@@ -119,7 +120,7 @@ private
     if k == "--land"          then flagValue k v (λ x → parseLand x >>=ᴹ λ m → just (setLand m)) else
     if k == "--borders"       then inj₂ (setBorders true) else
     if k == "--country-names" then inj₂ (setNames true) else
-    if k == "--precision"     then flagValue k v (λ x → parseDegrees x >>=ᴹ λ n → if n ≤ᵇ 0 then nothing else just (setPrecision n)) else
+    if k == "--precision"     then flagValue k v (λ x → parseDegrees x >>=ᴹ λ n → just (setPrecision n)) else
     if k == "--thin"          then flagValue k v (λ x → parseDegrees x >>=ᴹ λ n → just (setThinning n)) else
     inj₁ ("unknown option " ++ˢ k)
 

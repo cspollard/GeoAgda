@@ -45,7 +45,7 @@ Options (`bin/Earth --help`; `GeoAgda.Compose.Options`):
 | `--land=areas` | named plains, deserts and ranges with hypsometric tints, plus peaks and labels |
 | `--borders` | draw country boundaries (off by default) |
 | `--country-names` | label countries (off by default) |
-| `--precision=DEG` | round coordinates to this grid (default `0.01`) |
+| `--precision=DEG` | round coordinates to this grid (default `0.01`); `0` keeps every vertex exactly as read, for land and water, and ignores `--thin` |
 | `--thin=DEG` | drop bathymetry vertices closer than this (default `0.3`; `0` keeps all) |
 
 It takes under a minute and about 2.5 GB of memory (the 10m bathymetry files are up to 23 MB each; every

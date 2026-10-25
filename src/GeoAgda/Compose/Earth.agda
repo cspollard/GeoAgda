@@ -11,7 +11,7 @@ module GeoAgda.Compose.Earth where
 open import Data.Bool using (Bool; true; false; if_then_else_; _∧_; _∨_)
 open import Data.List as List using (List; []; _∷_; map) renaming (_++_ to _++ˡ_)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
-open import Data.Nat using (ℕ; suc; pred; _≤ᵇ_)
+open import Data.Nat using (ℕ; zero; suc; _≤ᵇ_)
 open import Data.Nat.Show using (show)
 open import Data.Product using (_×_; _,_)
 open import Data.String as String using (String; _++_)
@@ -31,11 +31,16 @@ open import GeoAgda.Rendering.SVG.Palette using (greenElevationColor)
 -- Helpers
 ------------------------------------------------------------------------
 
+simplify : Options → ℕ → Geometry → Maybe Geometry
+simplify o r g with Options.precision o
+... | zero  = just g
+... | suc p = simplifyGeometry (suc p) r g
+
 -- Everything is rounded to `precision`; bathymetry is also thinned to
--- vertices at least `thinning` apart.
+-- vertices at least `thinning` apart.  Precision 0 keeps geometry untouched.
 roundGeom bathyGeom : Options → Geometry → Maybe Geometry
-roundGeom o = simplifyGeometry (suc (pred (Options.precision o))) 0
-bathyGeom o = simplifyGeometry (suc (pred (Options.precision o))) (Options.thinning o)
+roundGeom o = simplify o 0
+bathyGeom o = simplify o (Options.thinning o)
 
 -- The style the options call for: green shades by elevation, or the
 -- hypsometric tints of the areas of interest.
