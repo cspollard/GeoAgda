@@ -6,9 +6,9 @@ open import Level using (0ℓ)
 open import Data.Bool using (Bool; true; false; if_then_else_)
 open import Data.Char using (Char)
 open import Data.String as String using (String; toList; fromList)
-open import Data.Nat as ℕ using (ℕ; zero; suc; _*_; _/_; _%_) renaming (_+_ to _+ℕ_)
+open import Data.Nat as ℕ using (ℕ; zero; suc; _*_; _/_; _%_; _<ᵇ_) renaming (_+_ to _+ℕ_)
 import Data.Nat.Show as NatShow
-open import Data.Integer as ℤ using (ℤ; +_; -[1+_]; 0ℤ; _-_; ∣_∣; _+_; _⊓_; _⊔_)
+open import Data.Integer as ℤ using (ℤ; +_; -[1+_]; 0ℤ; _-_; ∣_∣; _+_)
 open import Data.Sign using (Sign; +; -)
 open import Data.Fin as Fin using (Fin)
 open import Data.List as List using (List; []; _∷_; _++_; concat; map; intersperse)
@@ -209,6 +209,20 @@ scaledℤToJSONNumber -[1+ n ] =
 
 
 
+-- Min and max of scaled coordinates.  The stdlib `_⊓_`/`_⊔_` on ℤ recurse on
+-- the magnitude (unary), which makes them cost ~10⁶ steps on a coordinate
+-- like 180.0 (scaled by 10⁴); these use the primitive `_<ᵇ_` instead.
+private
+  _<ᶻ_ : ℤ → ℤ → Bool
+  (+_ m)   <ᶻ (+_ n)   = m <ᵇ n
+  (+_ _)   <ᶻ -[1+ _ ] = false
+  -[1+ _ ] <ᶻ (+_ _)   = true
+  -[1+ m ] <ᶻ -[1+ n ] = n <ᵇ m
+
+minℤ maxℤ : ℤ → ℤ → ℤ
+minℤ x y = if y <ᶻ x then y else x
+maxℤ x y = if x <ᶻ y then y else x
+
 positionsBBoxScaled : List Position → Maybe (ℤ × ℤ × ℤ × ℤ)
 positionsBBoxScaled [] = nothing
 positionsBBoxScaled (p ∷ ps) =
@@ -221,7 +235,7 @@ positionsBBoxScaled (p ∷ ps) =
     go minX minY maxX maxY (p ∷ ps) =
       let px = jsonNumberToScaledℤ (Position.lon p)
           py = jsonNumberToScaledℤ (Position.lat p)
-      in go (minX ℤ.⊓ px) (minY ℤ.⊓ py) (maxX ℤ.⊔ px) (maxY ℤ.⊔ py) ps
+      in go (minℤ minX px) (minℤ minY py) (maxℤ maxX px) (maxℤ maxY py) ps
 
 bboxCenter : (ℤ × ℤ × ℤ × ℤ) → Position
 bboxCenter (minX , minY , maxX , maxY) =

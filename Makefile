@@ -10,7 +10,7 @@ MAIN_SRC := exe/Main.agda
 
 all: $(TARGET)
 
-SRC_FILES := $(shell find src -name "*.agda" 2>/dev/null)
+SRC_FILES := $(shell find src parsnip/src -name "*.agda" 2>/dev/null)
 
 $(TARGET): $(MAIN_SRC) $(SRC_FILES)
 	@mkdir -p $(BUILD_DIR) $(BIN_DIR)
