@@ -1,6 +1,6 @@
 # Plan: GeoAgda ergonomics cleanup
 
-Status: audit done (2026-10-25); step 1 done. Every step must leave `make check`,
+Status: audit done (2026-10-25); steps 1–2 done. Every step must leave `make check`,
 `make-everything.sh` and `parsnip/make-everything.sh` green, and gets its own commit.
 
 ## Audit findings

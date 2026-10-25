@@ -8,6 +8,8 @@ open import Data.String.Properties using (_==_)
 open import Data.List as List using (List; []; _∷_; map)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
+import Data.Maybe.Effectful as Maybe
+import Data.List.Effectful as ListE
 open import Function using (_∘_; _$_)
 
 open import Data.JSON.AST using (JSON; JSONNumber)
@@ -28,13 +30,10 @@ extractPosition v with asArray v
 ... | just (lonV ∷ latV ∷ []) = mkPos (asNumber lonV) (asNumber latV)
 ... | _                       = nothing
 
--- Helper: Map extraction across a list, failing if any element fails
+-- Map extraction across a list, failing if any element fails
 mapM : ∀ {A B : Set} → (A → Maybe B) → List A → Maybe (List B)
-mapM _ []       = just []
-mapM f (x ∷ xs) = do
-  y  ← f x
-  ys ← mapM f xs
-  just (y ∷ ys)
+mapM = mapA
+  where open ListE.TraversableA Maybe.applicative
 
 -- Extract a line or ring of positions
 extractPositions : JSON → Maybe (List Position)

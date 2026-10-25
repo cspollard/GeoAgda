@@ -6,6 +6,7 @@ open import Data.Bool using (Bool; true; false; if_then_else_)
 open import Data.Char using (Char)
 open import Data.String as String using (String; toList; fromList)
 open import Data.Nat as ℕ using (ℕ; zero; suc; _*_; _/_; _%_; _<ᵇ_) renaming (_+_ to _+ℕ_)
+open import Data.Nat.DivMod using (_mod_)
 import Data.Nat.Show as NatShow
 open import Data.Integer as ℤ using (ℤ; +_; -[1+_]; 0ℤ; _-_; ∣_∣; _+_)
 open import Data.Sign using (Sign; +; -)
@@ -108,16 +109,16 @@ formatMultiPolygonD proj polys =
 
 -- Format standard SVG viewBox attribute "minX minY width height"
 formatViewBox : (minX minY width height : String) → String
-formatViewBox minX minY w h =
-  String._++_ minX (String._++_ " " (String._++_ minY (String._++_ " " (String._++_ w (String._++_ " " h)))))
+formatViewBox minX minY w h = String.unwords (minX ∷ minY ∷ w ∷ h ∷ [])
 
 -- Convert JSONNumber to scaled integer (scaling fraction by factor of 10000)
 scaleFraction : List (Fin 10) → ℕ
-scaleFraction []                       = 0
-scaleFraction (d₁ ∷ [])                 = Fin.toℕ d₁ * 1000
-scaleFraction (d₁ ∷ d₂ ∷ [])             = (Fin.toℕ d₁ * 1000) +ℕ (Fin.toℕ d₂ * 100)
-scaleFraction (d₁ ∷ d₂ ∷ d₃ ∷ [])         = (Fin.toℕ d₁ * 1000) +ℕ (Fin.toℕ d₂ * 100) +ℕ (Fin.toℕ d₃ * 10)
-scaleFraction (d₁ ∷ d₂ ∷ d₃ ∷ d₄ ∷ _)     = (Fin.toℕ d₁ * 1000) +ℕ (Fin.toℕ d₂ * 100) +ℕ (Fin.toℕ d₃ * 10) +ℕ Fin.toℕ d₄
+scaleFraction = go 1000
+  where
+    -- the first four digits get weights 1000, 100, 10, 1; later digits weigh 0
+    go : ℕ → List (Fin 10) → ℕ
+    go _ []       = 0
+    go w (d ∷ ds) = Fin.toℕ d * w +ℕ go (w / 10) ds
 
 jsonNumberToScaledℤ : JSONNumber → ℤ
 jsonNumberToScaledℤ (jsonNumber sign integral fraction _) =
@@ -165,17 +166,9 @@ viewBoxComponentsFromBBox (bbox minLon minLat maxLon maxLat) =
 -- Geometry & Feature Centroid Extraction
 ------------------------------------------------------------------------
 
+-- The last decimal digit of a natural number
 natToFin10 : ℕ → Fin 10
-natToFin10 zero                                                 = Fin.zero
-natToFin10 (suc zero)                                           = Fin.suc Fin.zero
-natToFin10 (suc (suc zero))                                     = Fin.suc (Fin.suc Fin.zero)
-natToFin10 (suc (suc (suc zero)))                               = Fin.suc (Fin.suc (Fin.suc Fin.zero))
-natToFin10 (suc (suc (suc (suc zero))))                         = Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero)))
-natToFin10 (suc (suc (suc (suc (suc zero)))))                   = Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero))))
-natToFin10 (suc (suc (suc (suc (suc (suc zero))))))             = Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero)))))
-natToFin10 (suc (suc (suc (suc (suc (suc (suc zero)))))))       = Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero))))))
-natToFin10 (suc (suc (suc (suc (suc (suc (suc (suc zero)))))))) = Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero)))))))
-natToFin10 _                                                   = Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc (Fin.suc Fin.zero))))))))
+natToFin10 n = n mod 10
 
 halfℤ : ℤ → ℤ
 halfℤ (+_ n)   = +_ (n / 2)
