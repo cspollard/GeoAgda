@@ -8,7 +8,7 @@ open import Data.Maybe using (Maybe; just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
 open import Data.Product using (_×_; _,_; ∃)
 
-open import GeoAgda.Pipeline using (geojsonStringToSVG; geojsonCharsToSVG)
+open import GeoAgda.Pipeline using (geojsonStringToSVG)
 open import Data.XML.AST using (XMLDoc)
 
 ------------------------------------------------------------------------

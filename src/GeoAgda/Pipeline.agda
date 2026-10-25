@@ -1,45 +1,33 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
+-- End-to-end ingestion: GeoJSON text → SVG.
 module GeoAgda.Pipeline where
 
 open import Data.Char using (Char)
-open import Data.String as String using (String; toList; fromList)
+open import Data.String using (String; toList)
 open import Data.List using (List)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
-open import Function using (_∘_; _$_)
 
-open import Data.JSON.AST using (JSON)
 open import Data.XML.AST using (XMLDoc)
 open import Data.XML.Print using (renderXML)
 open import Data.JSON.RoundTrip using (parseJSON)
-open import GeoAgda.Model.GeoJSON.Types using (FeatureCollection)
 open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
-open import GeoAgda.Rendering.SVG.Style using (SVGStyle; defaultPolygonStyle; defaultTerrainStyle)
+open import GeoAgda.Rendering.SVG.Style using (SVGStyle; defaultTerrainStyle)
 open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
 
-------------------------------------------------------------------------
--- Complete End-to-End Ingestion & Rendering Pipeline
-------------------------------------------------------------------------
-
--- Ingest GeoJSON character stream directly to SVG XML Free Monad
-geojsonDocToSVGWithStyle : SVGStyle → List Char → Maybe XMLDoc
-geojsonDocToSVGWithStyle style input = do
-  jsonVal ← parseJSON input
-  fc      ← extractFeatureCollection jsonVal
+-- GeoJSON characters to an SVG document, in the given style.
+geojsonToSVGDoc : SVGStyle → List Char → Maybe XMLDoc
+geojsonToSVGDoc style input = do
+  json ← parseJSON input
+  fc   ← extractFeatureCollection json
   just (renderMapSVG style fc)
 
-geojsonDocToSVG : List Char → Maybe XMLDoc
-geojsonDocToSVG = geojsonDocToSVGWithStyle defaultTerrainStyle
+-- GeoJSON text to SVG text, in the given style.
+geojsonToSVG : SVGStyle → String → Maybe String
+geojsonToSVG style input = do
+  doc ← geojsonToSVGDoc style (toList input)
+  just (renderXML doc)
 
-geojsonDocToPlainSVG : List Char → Maybe XMLDoc
-geojsonDocToPlainSVG = geojsonDocToSVGWithStyle defaultPolygonStyle
-
--- Ingest GeoJSON character stream to rendered SVG XML string
-geojsonCharsToSVG : List Char → Maybe String
-geojsonCharsToSVG input = do
-  svgDoc ← geojsonDocToSVG input
-  just (renderXML svgDoc)
-
--- Ingest GeoJSON String to rendered SVG XML String
+-- … in the default terrain style.
 geojsonStringToSVG : String → Maybe String
-geojsonStringToSVG = geojsonCharsToSVG ∘ toList
+geojsonStringToSVG = geojsonToSVG defaultTerrainStyle

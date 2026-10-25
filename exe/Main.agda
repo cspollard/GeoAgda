@@ -19,18 +19,21 @@ open import GeoAgda.Pipeline using (geojsonStringToSVG)
 -- Core Processing Routine
 ------------------------------------------------------------------------
 
+say : String → IO Unit
+say msg = putStrLn ("[GeoAgda] " ++ msg)
+
 processGeoJSON : String → String → IO Unit
 processGeoJSON inFile outFile =
-  putStrLn ("[GeoAgda] Reading GeoJSON input from: " ++ inFile) >>
-  (readFile inFile >>= λ jsonContent →
-   case (geojsonStringToSVG jsonContent) of λ where
-     (just svgContent) →
-       putStrLn ("[GeoAgda] Successfully parsed GeoJSON and rendered SVG (" ++ inFile ++ ")") >>
-       (putStrLn ("[GeoAgda] Writing SVG output to: " ++ outFile) >>
-        (writeFile outFile svgContent >>
-         putStrLn "[GeoAgda] Done!"))
+  say ("Reading GeoJSON input from: " ++ inFile) >>
+  (readFile inFile >>= λ geojson →
+   case geojsonStringToSVG geojson of λ where
+     (just svg) →
+       say "Parsed GeoJSON and rendered SVG" >>
+       (say ("Writing SVG output to: " ++ outFile) >>
+        (writeFile outFile svg >>
+         say "Done!"))
      nothing →
-       putStrLn ("[GeoAgda] Error: Failed to parse or extract GeoJSON from " ++ inFile))
+       say ("Error: Failed to parse or extract GeoJSON from " ++ inFile))
 
 ------------------------------------------------------------------------
 -- Executable Main Entry Point
