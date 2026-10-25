@@ -155,9 +155,11 @@ land o = layer (scaled o "physical" "land")
     landElevation flat = []
     landElevation _    = ("elevation" , natP 50) ∷ []
 
--- Regions from the 110m set; the "Iberian Peninsula" name is normalised.
-regions110 : Options → Layer
-regions110 o = layer "110m/physical/ne_110m_geography_regions_polys.json" convert
+-- Every landform region of a regions file; the "Iberian Peninsula" name is normalised.
+-- Regions are the only elevation data in Natural Earth's vector set: a polygon
+-- per named plain, desert, plateau or range, with an elevation from the tables above.
+regionsFull : Options → String → Layer
+regionsFull o path = layer path convert
   where
     convert : Feature → Maybe Feature
     convert f =
@@ -171,9 +173,9 @@ regions110 o = layer "110m/physical/ne_110m_geography_regions_polys.json" conver
                  ("featurecla" , strP cla) ∷ regionLabel o name g ++ˡ ("elevation" , natP elev) ∷ []))
       else nothing
 
--- Named ranges and plateaus from the 50m set that the 110m set lacks.
-regions50 : Options → Layer
-regions50 o = layer "50m/physical/ne_50m_geography_regions_polys.json" convert
+-- Only the regions of a file that have an entry in the elevation table.
+regionsNamed : Options → String → Layer
+regionsNamed o path = layer path convert
   where
     convert : Feature → Maybe Feature
     convert f =
@@ -183,10 +185,19 @@ regions50 o = layer "50m/physical/ne_50m_geography_regions_polys.json" convert
          rebuild (roundGeom o) f (λ g →
            ("featurecla" , strP cla) ∷ regionLabel o (title raw) g ++ˡ ("elevation" , natP elev) ∷ [])
 
--- The 50m regions only fill in names the 110m set does not have.
+-- The regions at the chosen scale, then the other scales for names it lacks
+-- (the first feature of each name wins).
 regions : Options → Group
-regions o = group (regions110 o ∷ regions50 o ∷ [])
+regions o = group (layers (Options.resolution o))
                 (dedupeBy (λ f → Maybe.map upper (stringProp (Feature.properties f) "name")))
+  where
+    path : String → String
+    path r = r ++ "/physical/ne_" ++ r ++ "_geography_regions_polys.json"
+
+    layers : Resolution → List Layer
+    layers res10m  = regionsFull o (path "10m") ∷ regionsNamed o (path "50m") ∷ regionsFull o (path "110m") ∷ []
+    layers res50m  = regionsFull o (path "50m") ∷ regionsFull o (path "110m") ∷ []
+    layers res110m = regionsFull o (path "110m") ∷ regionsNamed o (path "50m") ∷ []
 
 -- Named summits and every 6000 m+ peak.
 peaks : Options → Layer
