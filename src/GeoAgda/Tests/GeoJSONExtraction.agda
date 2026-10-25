@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Tests.Milestone4 where
+module GeoAgda.Tests.GeoJSONExtraction where
 
 open import Data.List using (List; []; _∷_)
 open import Data.String using (toList)

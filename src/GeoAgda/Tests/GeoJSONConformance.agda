@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Tests.Milestone8 where
+module GeoAgda.Tests.GeoJSONConformance where
 
 open import Data.List using (List; []; _∷_)
 open import Data.String as String using (String; toList)

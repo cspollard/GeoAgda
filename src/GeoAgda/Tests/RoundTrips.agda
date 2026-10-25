@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Tests.Milestone7 where
+module GeoAgda.Tests.RoundTrips where
 
 open import Data.List using (List; []; _∷_; _++_)
 open import Data.String as String using (String; toList)
@@ -33,7 +33,7 @@ open import Data.SVG
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Style using (defaultPolygonStyle)
 open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
-open import GeoAgda.Tests.Milestone5 using (testFeatureCollection; renderedMapDoc)
+open import GeoAgda.Tests.SVGRendering using (testFeatureCollection; renderedMapDoc)
 
 ------------------------------------------------------------------------
 -- 1. JSON Structural Inversion Tests
@@ -158,7 +158,7 @@ _ = refl
 _ : reprint "<a><b></a>" ≡ nothing
 _ = refl
 
--- The rendered map (`GeoAgda.Tests.Milestone5`) parses back to a document that
+-- The rendered map (`GeoAgda.Tests.SVGRendering`) parses back to a document that
 -- prints the same.
 _ : reprint (renderXML renderedMapDoc) ≡ just (renderXML renderedMapDoc)
 _ = refl

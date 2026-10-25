@@ -1,6 +1,6 @@
 # Plan: GeoAgda ergonomics cleanup
 
-Status: audit done (2026-10-25); steps 1–6 done (step 5: option 1, see below). Every step must leave `make check`,
+Status: audit done (2026-10-25); steps 1–7 done (step 5: option 1, see below). Every step must leave `make check`,
 `make-everything.sh` and `parsnip/make-everything.sh` green, and gets its own commit.
 
 ## Audit findings
@@ -67,3 +67,10 @@ Status: audit done (2026-10-25); steps 1–6 done (step 5: option 1, see below).
 - `GeometryCollection` is not covered: `Extraction` never produced it either (needs a recursive schema).
 - Gotcha: a deep `with` chain whose goal contains `extractFeature` took >1 min to check; the proofs avoid it by
   passing results through small helper lemmas (`assemble`, `features-complete`).
+
+## Step 7 outcome (done, partly)
+- `Tests/Milestone{1,2,3,4,5,7,8}` renamed by topic: `Printing`, `InvertibleParsing`, `JSONParsing`,
+  `GeoJSONExtraction`, `SVGRendering`, `RoundTrips`, `GeoJSONConformance`. `make test` typechecks all of `src/`.
+- **Not done:** moving the parsnip-only tests (`Printing`, `InvertibleParsing`, `JSONParsing`, `RoundTrips`,
+  `JSONRoundTrip`) into `parsnip/test`. `parsnip` is a git submodule (separate repo), so that is a commit there
+  and a submodule bump here — left for the owner (belongs with `LibraryPlan.md` step 2).

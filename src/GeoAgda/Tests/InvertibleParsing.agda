@@ -1,6 +1,6 @@
 {-# OPTIONS --safe --cubical-compatible -WnoUnsupportedIndexedMatch #-}
 
-module GeoAgda.Tests.Milestone2 where
+module GeoAgda.Tests.InvertibleParsing where
 
 open import Data.List using ([]; _∷_)
 open import Data.Fin using (zero; suc)

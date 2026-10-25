@@ -2,7 +2,7 @@
 
 
 
-module GeoAgda.Tests.Milestone1 where
+module GeoAgda.Tests.Printing where
 
 open import Data.List using ([]; _∷_)
 open import Data.Product using (_,_)
