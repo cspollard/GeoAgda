@@ -29,14 +29,16 @@ open import Data.Integer using (+_)
 open import Data.XML.Sanitize using (element)
 open import Data.SVG using (svg; g; path)
 open import GeoAgda.Rendering.SVG.Coordinates using (renderJSONNumber)
-open import Data.JSON.Lexer using (tokenize)
+open import Data.JSON.Lexer using (tokenize; tokenizeLoop)
 open import Data.JSON.RoundTrip using (parseJSON)
 open import Data.JSON.Print using (printJSON)
 open import Data.JSON.Parser using (parseTokens)
 open import Data.XML.Print using (printXML)
 open import GeoAgda.Model.GeoJSON.Types using (FeatureCollection; featureCollection)
 open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
-open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; defaultTerrainStyle; defaultPolygonStyle; renderFeature; featureTerrainStyle; SVGStyle; featureName)
+open import GeoAgda.Rendering.SVG.Style using (defaultTerrainStyle; defaultPolygonStyle; SVGStyle)
+open import GeoAgda.Rendering.SVG.NaturalEarth using (featureTerrainStyle; featureName)
+open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; renderFeature)
 open import GeoAgda.Rendering.SVG.Coordinates using (equirectangular; featureCentroid; formatPolygonD; formatMultiPolygonD)
 open import GeoAgda.Model.GeoJSON.Types using (feature; Feature; polygonG; multiPolygonG; Geometry)
 open import Data.List using (map)
@@ -98,6 +100,7 @@ run "svgplain" s with parseJSON (toList s) Data.Maybe.>>= extractFeatureCollecti
 run "svgfeat" s with parseJSON (toList s) Data.Maybe.>>= extractFeatureCollection
 ... | nothing = 0
 ... | just (featureCollection fs _) = foldr _+_ 0 (map (λ f → length (printXML (renderFeature equirectangular defaultPolygonStyle f))) fs)
+run "tokbig"   s = orZero (Data.Maybe.map length (tokenizeLoop 1000000000 (toList s)))
 run _          s = 0
 
 main : IO Unit

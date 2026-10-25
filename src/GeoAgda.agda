@@ -31,6 +31,8 @@ open import GeoAgda.Model.GeoJSON.Conformance public
 
 -- SVG Map Rendering Pipeline
 open import GeoAgda.Rendering.SVG.Coordinates public
+open import GeoAgda.Rendering.SVG.Style public
+open import GeoAgda.Rendering.SVG.NaturalEarth public
 open import GeoAgda.Rendering.SVG.Render public
 
 -- End-to-End Ingestion & Rendering Pipeline

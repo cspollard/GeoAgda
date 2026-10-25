@@ -31,7 +31,8 @@ open import Data.XML.Escape using (lexBody; escapeText; escapeValue; lexBody-esc
 open import Data.SVG
 
 open import GeoAgda.Model.GeoJSON.Types
-open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; defaultPolygonStyle)
+open import GeoAgda.Rendering.SVG.Style using (defaultPolygonStyle)
+open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
 open import GeoAgda.Tests.Milestone5 using (testFeatureCollection; renderedMapDoc)
 
 ------------------------------------------------------------------------

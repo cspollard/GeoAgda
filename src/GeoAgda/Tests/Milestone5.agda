@@ -17,6 +17,7 @@ open import Data.XML.Print using (renderXML)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Coordinates
 open import GeoAgda.Rendering.SVG.Render
+open import GeoAgda.Rendering.SVG.Style
 
 ------------------------------------------------------------------------
 -- Fixture Data

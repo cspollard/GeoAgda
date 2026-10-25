@@ -14,7 +14,8 @@ open import Data.XML.Print using (renderXML)
 open import Data.JSON.RoundTrip using (parseJSON)
 open import GeoAgda.Model.GeoJSON.Types using (FeatureCollection)
 open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
-open import GeoAgda.Rendering.SVG.Render using (renderMapSVG; defaultPolygonStyle; defaultTerrainStyle; SVGStyle)
+open import GeoAgda.Rendering.SVG.Style using (SVGStyle; defaultPolygonStyle; defaultTerrainStyle)
+open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
 
 ------------------------------------------------------------------------
 -- Complete End-to-End Ingestion & Rendering Pipeline
