@@ -50,43 +50,45 @@ This document establishes the architecture principles, design patterns, coding s
 
 ## 2. Directory Structure & Module Layout
 
-The library is organized under `src/GeoAgda/`:
+The repository has two libraries. `parsnip/` (a git submodule with its own `parsnip.agda-lib`; depends only on
+`standard-library`, must never import `GeoAgda.*`) holds the format code:
+
+```
+parsnip/src/Data/
+├── Container/List.agda        -- list container (arrays)
+├── Stage.agda                 -- print/parse stages as stdlib RightInverses
+├── Invertible/                -- invertible-syntax primitives (Core, Char, Combinators)
+├── JSON/                      -- AST, Number, String, Token(s), Lexer, Parser, RoundTrip,
+│                              -- Schema (projections), Conformance (schemas + evidence)
+├── XML/                       -- AST, Escape, Sanitize, Token(s), Lexer, Parser, Print, RoundTrip
+└── SVG.agda                   -- SVG vocabulary over XML
+```
+
+The application, `src/GeoAgda/`, turns GeoJSON into SVG:
 
 ```
 GeoAgda/
-├── Container/                 -- General container extensions and recursion schemes
-│   ├── Indexed.agda           -- Indexed containers and polynomial functors
-│   └── Combinators.agda       -- Custom container combinators and folds
-├── Data/
-│   ├── JSON/
-│   │   ├── AST.agda           -- JSON Container, Free Monad (JSONShape, JSONPosition, JSON)
-│   │   ├── Print.agda         -- JSON pretty-printing catamorphisms
-│   │   ├── Schema.agda        -- Typed JSON schemas and validation predicates
-│   │   └── Dec.agda           -- Decidable schema checking procedures
-│   └── XML/
-│       ├── AST.agda           -- XML/SVG Container and Free Monad
-│       └── Print.agda         -- XML/SVG serialization
-├── Parsing/
-│   ├── Invertible/
-│   │   ├── Core.agda          -- Invertible parsing primitives & LeftInverse combinators
-│   │   ├── Char.agda          -- Character, digit, and whitespace left inverses
-│   │   └── Number.agda        -- Natural, integer, and float/rational parsers
-│   └── JSON/
-│       ├── Lexer.agda         -- Invertible lexical tokenization
-│       └── Parser.agda        -- Invertible JSON parser with LeftInverse proofs
-├── Model/
-│   └── GeoJSON/
-│       ├── Types.agda         -- Position, Geometry, Feature, FeatureCollection
-│       ├── Extraction.agda    -- Schema-driven extraction from JSON Free Monad to GeoJSON
-│       └── Properties.agda    -- Extraction correctness and well-formedness proofs
-└── Rendering/
-    └── SVG/
-        ├── Coordinates.agda   -- Projection from geographic coords (lon/lat) to screen space (x/y)
-        ├── Styling.agda       -- Stroke, fill, opacity, and CSS presentation attributes
-        └── Render.agda        -- Catamorphism mapping GeoJSON models to SVG Free Monads
+├── Model/GeoJSON/
+│   ├── Types.agda        -- Position, Geometry, Feature, FeatureCollection
+│   ├── Schema.agda       -- coordinate schemas, geometry Kinds, decoding into the model
+│   ├── Extraction.agda   -- partial extraction JSON → model (Maybe-bind chains)
+│   ├── Conformance.agda  -- declarative validity evidence + total extraction from it
+│   ├── Properties.agda   -- extraction is sound and complete w.r.t. the evidence
+│   └── Validate.agda     -- decision procedures; validateAndExtract ≡ extractFeatureCollection
+├── Rendering/SVG/
+│   ├── Style.agda        -- SVGStyle and style updates (paint, outline, solid)
+│   ├── NaturalEarth.agda -- Natural Earth property names, palettes, feature-class rule tables
+│   ├── Projection.agda   -- number formatting, equirectangular projection
+│   ├── PathData.agda     -- `points` / path-data (`d`) formatting
+│   ├── Scaled.agda       -- fixed-point (×10⁴) coordinate arithmetic
+│   ├── ViewBox.agda      -- viewBox from a bounding box
+│   ├── Centroid.agda     -- label anchor positions
+│   ├── Coordinates.agda  -- umbrella re-export of the five modules above
+│   └── Render.agda       -- geometry/feature/collection → SVG documents
+├── Pipeline.agda         -- GeoJSON text → SVG text
+└── Tests/                -- compile-time tests, named by topic (`make test`)
+exe/                      -- Main (CLI) and Profile (stage profiler)
 ```
-
----
 
 ## 3. Agda Coding Conventions & Style
 

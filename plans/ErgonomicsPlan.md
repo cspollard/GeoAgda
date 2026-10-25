@@ -1,6 +1,6 @@
 # Plan: GeoAgda ergonomics cleanup
 
-Status: audit done (2026-10-25); steps 1–7 done (step 5: option 1, see below). Every step must leave `make check`,
+Status: audit done (2026-10-25); steps 1–8 done (step 5: option 1, see below). Every step must leave `make check`,
 `make-everything.sh` and `parsnip/make-everything.sh` green, and gets its own commit.
 
 ## Audit findings
@@ -74,3 +74,8 @@ Status: audit done (2026-10-25); steps 1–7 done (step 5: option 1, see below).
 - **Not done:** moving the parsnip-only tests (`Printing`, `InvertibleParsing`, `JSONParsing`, `RoundTrips`,
   `JSONRoundTrip`) into `parsnip/test`. `parsnip` is a git submodule (separate repo), so that is a commit there
   and a submodule bump here — left for the owner (belongs with `LibraryPlan.md` step 2).
+
+## Step 8 outcome (done)
+- Added `README.md`; refreshed `guidelines.md` §2 to the real layout.
+- Left alone on purpose (the owner's files / decisions): the untracked `data/` fixtures (2.4 MB geojson), and the
+  generated `*.jpg`/`*.svg` in the repo root (all already `.gitignore`d).
