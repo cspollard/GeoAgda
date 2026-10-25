@@ -10,7 +10,7 @@ open import Agda.Builtin.IO using (IO)
 open import Data.Integer using (+_)
 open import Data.List using (List; []; _∷_; length; map; foldr; concat; replicate; iterate)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
-open import Data.Nat using (ℕ; suc; _+_)
+open import Data.Nat using (ℕ; suc; _+_; _%_)
 import Data.Nat.Show as NatShow
 open import Data.Product using (_,_)
 import Data.Sign as Sign
