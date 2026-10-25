@@ -45,6 +45,7 @@ Options (`bin/Earth --help`; `GeoAgda.Compose.Options`):
 | `--land=areas` | named plains, deserts and ranges with hypsometric tints, plus peaks and labels |
 | `--resolution=10m\|50m\|110m` | Natural Earth scale of land, lakes, rivers, borders and country names (default `10m`, like the bathymetry) |
 | `--elevation-bands=DIR` | with `--land=elevation`, shade land from real elevation data (see below) instead of the named landform regions |
+| `--lake-depths=FILE` | shade lake depth from the file made by `scripts/build_lake_depths.py` |
 | `--borders` | draw country boundaries (off by default) |
 | `--country-names` | label countries (off by default) |
 | `--precision=DEG` | round coordinates to this grid (default `0.01`); `0` keeps every vertex exactly as read, for land and water, and ignores `--thin` |
@@ -71,6 +72,15 @@ bin/Earth --elevation-bands=data/cache/elevation
 `--step 3` (default) averages 3×3 cells, giving 3′ bands; `--step 1` is the full 1′ grid but several times
 larger. The default bands total about 56 MB; `bin/Earth` takes a few minutes and about 3.3 GB, and the SVG is
 about 160 MB.
+
+### Lake depths
+
+`scripts/build_lake_depths.py` measures lake depth below each lake's own surface from the same ETOPO grid and
+writes depth bands for the lakes it resolves; `bin/Earth --lake-depths=data/cache/lake_depths.json` shades
+them (`make earth` does both). ETOPO 2022 has real lake bottoms for only a few lakes: Baikal and Lakes
+Superior, Michigan, Huron, Erie and Ontario. The script checks 26 well-known lakes (table `REFERENCE`) and keeps
+those whose deepest cell reaches half the published maximum depth. Every other lake stays in the neutral
+lake colour.
 
 To change the map, edit the recipe in `src/GeoAgda/Compose/Earth.agda`: a list of `Group`s of `Layer`s, each
 naming a source file and a function from source feature to composite feature (or `nothing` to drop it).

@@ -34,10 +34,11 @@ record Options : Set where
     precision    : ℕ      -- coordinates are rounded to a multiple of this; 0: geometry is kept exactly as read
     thinning     : ℕ      -- bathymetry vertices are kept ≥ this far apart (0: no thinning)
     resolution   : Resolution
+    lakeDepths     : Maybe String   -- file of lake depth bands (scripts/build_lake_depths.py)
     elevationBands : Maybe String   -- directory of elevation-band files (scripts/build_elevation_bands.py)
 
 defaultOptions : Options
-defaultOptions = options elevation false false 100 3000 res10m nothing
+defaultOptions = options elevation false false 100 3000 res10m nothing nothing
 
 record Invocation : Set where
   constructor invocation
@@ -59,6 +60,8 @@ usage = "usage: Earth [options] [data-dir [out.svg]]\n\
   \  --elevation-bands=DIR         with --land=elevation, shade land from the band files\n\
   \                               in DIR (made by scripts/build_elevation_bands.py)\n\
   \                               instead of the named landform regions\n\
+  \  --lake-depths=FILE           shade the depth of the lakes in FILE (made by\n\
+  \                               scripts/build_lake_depths.py); other lakes stay neutral\n\
   \  --borders                    draw country boundaries\n\
   \  --country-names              label countries\n\
   \  --precision=DEGREES          round coordinates to this grid (default 0.01);\n\
@@ -100,6 +103,9 @@ private
 
   setResolution : Resolution → Invocation → Invocation
   setResolution v = updateOpts λ o → record o { resolution = v }
+
+  setLakeDepths : String → Invocation → Invocation
+  setLakeDepths v = updateOpts λ o → record o { lakeDepths = just v }
 
   setBands : String → Invocation → Invocation
   setBands v = updateOpts λ o → record o { elevationBands = just v }
@@ -145,6 +151,7 @@ private
   parseFlag k v =
     if k == "--land"          then flagValue k v (λ x → parseLand x >>=ᴹ λ m → just (setLand m)) else
     if k == "--resolution"    then flagValue k v (λ x → parseResolution x >>=ᴹ λ r → just (setResolution r)) else
+    if k == "--lake-depths"   then flagValue k v (λ x → just (setLakeDepths x)) else
     if k == "--elevation-bands" then flagValue k v (λ x → just (setBands x)) else
     if k == "--borders"       then inj₂ (setBorders true) else
     if k == "--country-names" then inj₂ (setNames true) else

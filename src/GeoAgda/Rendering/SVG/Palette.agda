@@ -53,6 +53,18 @@ bathymetryColor d =
   if d ≤ᵇ 9000 then "#334c69" else
   "#2a4059"
 
+-- Lake depth in metres below the lake's own surface: the neutral lake blue
+-- (`#9bbfd0`) deepening to a muted navy.
+lakeDepthColor : ℕ → String
+lakeDepthColor d =
+  if d ≤ᵇ 25   then "#8cb3c7" else
+  if d ≤ᵇ 50   then "#7da5bb" else
+  if d ≤ᵇ 100  then "#6e97af" else
+  if d ≤ᵇ 200  then "#5f89a3" else
+  if d ≤ᵇ 400  then "#527b96" else
+  if d ≤ᵇ 800  then "#456d89" else
+  "#39607c"
+
 terrainColorByContinent : String → String
 terrainColorByContinent c =
   if c == "Africa"        then "#d8be91" else

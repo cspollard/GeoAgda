@@ -97,10 +97,10 @@ testDefaults : parseArgs [] ≡ inj₂ defaultInvocation
 testDefaults = refl
 
 testFlags : parseArgs ("--land=areas" ∷ "--borders" ∷ "--thin=0" ∷ "dir" ∷ "o.svg" ∷ [])
-  ≡ inj₂ (invocation (options areas true false 100 0 res10m nothing) "dir" "o.svg")
+  ≡ inj₂ (invocation (options areas true false 100 0 res10m nothing nothing) "dir" "o.svg")
 testFlags = refl
 
-testNoSimplify : parseArgs ("--precision=0" ∷ []) ≡ inj₂ (invocation (options elevation false false 0 3000 res10m nothing) "natural-earth-geojson" "earth.svg")
+testNoSimplify : parseArgs ("--precision=0" ∷ []) ≡ inj₂ (invocation (options elevation false false 0 3000 res10m nothing nothing) "natural-earth-geojson" "earth.svg")
 testNoSimplify = refl
 
 testResolution : parseArgs ("--resolution=50m" ∷ []) ≡ inj₂ (record defaultInvocation { opts = record defaultOptions { resolution = res50m } })
@@ -108,6 +108,9 @@ testResolution = refl
 
 testBands : parseArgs ("--elevation-bands=d" ∷ []) ≡ inj₂ (record defaultInvocation { opts = record defaultOptions { elevationBands = just "d" } })
 testBands = refl
+
+testLakeDepths : parseArgs ("--lake-depths=f" ∷ []) ≡ inj₂ (record defaultInvocation { opts = record defaultOptions { lakeDepths = just "f" } })
+testLakeDepths = refl
 
 testBadFlag : parseArgs ("--nope" ∷ []) ≡ inj₁ "unknown option --nope"
 testBadFlag = refl

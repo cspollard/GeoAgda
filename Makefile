@@ -10,6 +10,7 @@ EARTH_SRC := exe/Earth.agda
 
 ELEVATION_DIR := data/cache/elevation
 ELEVATION_STAMP := $(ELEVATION_DIR)/elevation_0.json
+LAKE_DEPTHS := data/cache/lake_depths.json
 
 .PHONY: all check typecheck test run earth elevation clean
 
@@ -31,9 +32,13 @@ $(ELEVATION_STAMP): scripts/build_elevation_bands.py
 
 elevation: $(ELEVATION_STAMP)
 
+# Lake depth bands (needs the elevation grid downloaded by the rule above)
+$(LAKE_DEPTHS): scripts/build_lake_depths.py $(ELEVATION_STAMP)
+	python3 scripts/build_lake_depths.py $(LAKE_DEPTHS)
+
 # Compose the earth-with-elevation map: bin/Earth [options] [data-dir [out.svg]]
-earth: $(EARTH_TARGET) $(ELEVATION_STAMP)
-	./$(EARTH_TARGET) --elevation-bands=$(ELEVATION_DIR) --precision=0
+earth: $(EARTH_TARGET) $(ELEVATION_STAMP) $(LAKE_DEPTHS)
+	./$(EARTH_TARGET) --elevation-bands=$(ELEVATION_DIR) --lake-depths=$(LAKE_DEPTHS) --precision=0
 
 check:
 	$(AGDA) $(MAIN_SRC)

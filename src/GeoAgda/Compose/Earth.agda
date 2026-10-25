@@ -238,6 +238,10 @@ lakes o = layer (scaled o "physical" "lakes")
   (λ f → rebuild (roundGeom o) f (λ _ →
            ("featurecla" , strP "Lake") ∷ ("name" , strP (asciiFold (nameOf f))) ∷ ("scalerank" , natP 10) ∷ []))
 
+-- Depth bands of the lakes ETOPO resolves, below each lake's own surface.
+lakeDepths : Options → String → Layer
+lakeDepths o file = fileLayer file (λ f → rebuild (roundGeom o) f (λ _ → Feature.properties f))
+
 rivers : Options → Layer
 rivers o = plain o (scaled o "physical" "rivers_lake_centerlines") "River"
 
@@ -282,10 +286,15 @@ earthRecipe o =
   ∷ landforms (Options.land o)
   ++ˡ simpleGroup (glaciers o)
   ∷ simpleGroup (lakes o)
-  ∷ simpleGroup (rivers o)
+  ∷ withLakeDepths (Options.lakeDepths o)
+  ++ˡ simpleGroup (rivers o)
   ∷ when (Options.borders o) (simpleGroup (borders o))
   ++ˡ when (Options.countryNames o) (simpleGroup (countryLabels o))
   where
+    withLakeDepths : Maybe String → Recipe
+    withLakeDepths (just file) = simpleGroup (lakeDepths o file) ∷ []
+    withLakeDepths nothing     = []
+
     when : Bool → Group → Recipe
     when true  g = g ∷ []
     when false _ = []
