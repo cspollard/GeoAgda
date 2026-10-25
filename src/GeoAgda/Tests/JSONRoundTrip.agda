@@ -13,7 +13,7 @@ module GeoAgda.Tests.JSONRoundTrip where
 
 open import Data.Fin.Patterns using (1F; 2F; 5F)
 open import Data.Integer using (+_; -[1+_])
-open import Data.List using (List; []; _∷_)
+open import Data.List using ([]; _∷_)
 open import Data.Maybe as Maybe using (Maybe; just; nothing)
 open import Data.Product using (_,_; ∃; _×_)
 import Data.Sign as Sign
@@ -22,7 +22,7 @@ open import Function.Bundles using (RightInverse)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
 open import Data.JSON.AST
-open import Data.JSON.Equality using (_≈ⱼ_; JSONSetoid)
+open import Data.JSON.Equality using (_≈ⱼ_)
 open import Data.JSON.Number using (jsonNumber)
 open import Data.JSON.Print using (renderJSON; printJSON)
 open import Data.JSON.RoundTrip

@@ -7,12 +7,10 @@
 module Profile where
 
 open import Agda.Builtin.IO using (IO)
-open import Data.Char using (Char)
-open import Data.Fin using (Fin)
 open import Data.Integer using (+_)
 open import Data.List using (List; []; _∷_; length; map; foldr; concat; replicate; iterate)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
-open import Data.Nat using (ℕ; suc; _+_; _%_)
+open import Data.Nat using (ℕ; suc; _+_)
 import Data.Nat.Show as NatShow
 open import Data.Product using (_,_)
 import Data.Sign as Sign

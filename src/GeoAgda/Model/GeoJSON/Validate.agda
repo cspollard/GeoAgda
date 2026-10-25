@@ -8,7 +8,7 @@
 module GeoAgda.Model.GeoJSON.Validate where
 
 open import Data.Empty using (⊥-elim)
-open import Data.Product using (_,_; ∃; proj₁; proj₂)
+open import Data.Product using (∃; proj₁)
 open import Data.Maybe using (Maybe; just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans)
 open import Relation.Nullary.Decidable using (Dec; yes; no)

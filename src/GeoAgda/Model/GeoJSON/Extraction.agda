@@ -11,15 +11,14 @@ module GeoAgda.Model.GeoJSON.Extraction where
 open import Data.String as String using (String)
 open import Data.String.Properties using (_≟_)
 open import Data.List as List using (List; []; _∷_)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (_×_)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
 import Data.Maybe.Effectful as Maybe
 import Data.List.Effectful as ListE
 open import Data.Unit using (⊤; tt)
-open import Function using (_∘_)
 open import Relation.Nullary.Decidable using (yes; no)
 
-open import Data.JSON.AST using (JSON; JSONNumber)
+open import Data.JSON.AST using (JSON)
 open import Data.JSON.Schema using (asArray; asObject; asString; asNumber; lookupField)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Model.GeoJSON.Schema

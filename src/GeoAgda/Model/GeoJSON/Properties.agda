@@ -15,11 +15,11 @@ open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Maybe.Properties using (just-injective)
 open import Data.Empty using (⊥-elim)
 open import Data.String.Properties using (_≟_)
-open import Data.Unit using (⊤; tt)
+open import Data.Unit using (tt)
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary.Decidable using (yes; no)
 
-open import Data.JSON.AST using (JSON; JSONNumber)
+open import Data.JSON.AST using (JSON)
 open import Data.JSON.Schema using (asArray; asObject; asString; asNumber; lookupField)
 open import Data.JSON.Conformance
 open import GeoAgda.Model.GeoJSON.Types

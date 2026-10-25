@@ -6,7 +6,7 @@ module GeoAgda.Pipeline where
 open import Data.Char using (Char)
 open import Data.String using (String; toList)
 open import Data.List using (List)
-open import Data.Maybe using (Maybe; just; nothing; _>>=_)
+open import Data.Maybe using (Maybe; just; _>>=_)
 
 open import Data.XML.AST using (XMLDoc)
 open import Data.XML.Print using (renderXML)

@@ -4,7 +4,7 @@ module GeoAgda.Rendering.SVG.Style where
 
 open import Data.Bool using (Bool; true; false)
 open import Data.String using (String)
-open import Data.List using (List; []; _∷_)
+open import Data.List using ([]; _∷_)
 open import Data.Product using (_,_)
 open import Data.Maybe using (Maybe; just; nothing)
 

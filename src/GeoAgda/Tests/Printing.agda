@@ -6,7 +6,7 @@ module GeoAgda.Tests.Printing where
 
 open import Data.List using ([]; _∷_)
 open import Data.Product using (_,_)
-open import Data.Sign using (+; -)
+open import Data.Sign using (+)
 open import Data.Integer using (0ℤ)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 

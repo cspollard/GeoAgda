@@ -2,19 +2,16 @@
 
 module GeoAgda.Rendering.SVG.Render where
 
-open import Data.Bool using (Bool; true; false; if_then_else_; _∧_; _∨_; not)
-open import Data.Nat using (ℕ; zero; suc; _≤ᵇ_)
+open import Data.Bool using (true; if_then_else_; _∧_)
 open import Data.String as String using (String)
-open import Data.String.Properties using (_==_)
 open import Data.List as List using (List; []; _∷_; map; concat; _++_)
-open import Data.Product using (_×_; _,_)
-open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
+open import Data.Product using (_,_)
+open import Data.Maybe as Maybe using (Maybe; just; nothing)
 open import Function using (case_of_)
 
-open import Data.JSON.AST using (JSON; JSONNumber; jsonNumber)
-open import Data.JSON.Schema using (lookupField; asNumber; asString)
+open import Data.JSON.AST using (JSON)
 open import Data.XML.AST using (XMLDoc)
-open import Data.XML.Sanitize using (element; textElement)
+open import Data.XML.Sanitize using (textElement)
 open import Data.SVG
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Coordinates

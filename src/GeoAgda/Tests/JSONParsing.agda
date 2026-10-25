@@ -6,7 +6,7 @@ open import Data.List using (List; []; _∷_)
 
 open import Data.String using (toList)
 open import Data.Product using (_,_)
-open import Data.Sign using (+; -)
+open import Data.Sign using (+)
 open import Data.Integer using (0ℤ)
 open import Data.Maybe using (just)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)

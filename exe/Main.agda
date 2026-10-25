@@ -5,11 +5,11 @@ module Main where
 open import Agda.Builtin.IO using (IO)
 open import Agda.Builtin.Unit using () renaming (⊤ to Unit; tt to unit)
 open import Data.String as String using (String; _++_)
-open import Data.List using (List; []; _∷_)
-open import Data.Maybe using (Maybe; just; nothing)
+open import Data.List using ([]; _∷_)
+open import Data.Maybe using (just; nothing)
 open import Function using (case_of_)
 
-open import IO.Primitive.Core using (pure; _>>=_; _>>_)
+open import IO.Primitive.Core using (_>>=_; _>>_)
 open import IO.Primitive.Finite using (readFile; writeFile; putStrLn)
 open import System.Environment.Primitive using (getArgs)
 

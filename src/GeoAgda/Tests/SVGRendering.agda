@@ -2,11 +2,10 @@
 
 module GeoAgda.Tests.SVGRendering where
 
-open import Data.List using (List; []; _∷_)
+open import Data.List using ([]; _∷_)
 open import Data.Fin.Patterns using (1F; 2F; 3F; 5F; 8F)
 open import Data.String as String using (String)
-open import Data.String.Properties using (_==_)
-open import Data.Integer using (ℤ; +_; -[1+_])
+open import Data.Integer using (+_)
 open import Data.Sign using (+; -)
 open import Data.Maybe using (just; nothing)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)

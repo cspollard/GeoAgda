@@ -3,9 +3,9 @@
 module GeoAgda.Model.GeoJSON.Types where
 
 open import Data.String using (String)
-open import Data.List using (List; []; _∷_)
-open import Data.Product using (_×_; _,_)
-open import Data.Maybe using (Maybe; just; nothing)
+open import Data.List using (List)
+open import Data.Product using (_×_)
+open import Data.Maybe using (Maybe)
 
 open import Data.JSON.AST using (JSONNumber; JSON)
 

@@ -2,26 +2,26 @@
 
 module GeoAgda.Tests.GeoJSONConformance where
 
-open import Data.List using (List; []; _∷_)
+open import Data.List using ([]; _∷_)
 open import Data.String as String using (String; toList)
 open import Data.Integer using (+_; -[1+_])
 import Data.Sign as Sign
 open import Data.Fin.Patterns using (1F; 2F; 5F)
-open import Data.Maybe using (Maybe; just; nothing)
+open import Data.Maybe using (just; nothing)
 open import Data.Unit using (tt)
-open import Relation.Nullary.Decidable using (yes; no; toWitness)
+open import Relation.Nullary.Decidable using (yes; toWitness)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-open import Data.Product using (_×_; _,_; ∃)
+open import Data.Product using (_,_; ∃)
 
 open import Data.JSON.AST
 open import Data.JSON.Conformance
 open import Data.JSON.RoundTrip using (parseJSON)
 open import GeoAgda.Model.GeoJSON.Types
-open import GeoAgda.Model.GeoJSON.Extraction using (extractPosition; extractGeometry; extractFeatureCollection)
+open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
 open import GeoAgda.Model.GeoJSON.Schema
 open import GeoAgda.Model.GeoJSON.Conformance
 open import GeoAgda.Model.GeoJSON.Validate
-open import GeoAgda.Tests.Fixtures using (pointGeoJSON; polygonGeoJSON; naturalEarthGeoJSON)
+open import GeoAgda.Tests.Fixtures using (pointGeoJSON)
 
 ------------------------------------------------------------------------
 -- 1. Position Conformance & Proof Shortcut Test

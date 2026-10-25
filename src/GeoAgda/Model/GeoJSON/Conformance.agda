@@ -11,10 +11,10 @@
 module GeoAgda.Model.GeoJSON.Conformance where
 
 open import Data.String using (String)
-open import Data.List using (List; []; _∷_)
+open import Data.List using (List)
 open import Data.List.Relation.Unary.All using (All; reduce)
 open import Data.Product using (_×_)
-open import Data.Maybe using (Maybe; just)
+open import Data.Maybe using (just)
 open import Relation.Binary.PropositionalEquality using (_≡_)
 
 open import Data.JSON.AST using (JSON)

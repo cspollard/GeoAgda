@@ -2,9 +2,9 @@
 
 module GeoAgda.Tests.RoundTrips where
 
-open import Data.List using (List; []; _∷_; _++_)
+open import Data.List using ([]; _∷_; _++_)
 open import Data.String as String using (String; toList)
-open import Data.Integer using (+_; -[1+_])
+open import Data.Integer using (+_)
 import Data.Sign as Sign
 open import Data.Fin.Patterns using (1F; 2F; 5F)
 open import Data.Maybe using (Maybe; just; nothing)
@@ -31,9 +31,7 @@ open import Data.XML.Escape using (lexBody; escapeText; escapeValue; lexBody-esc
 open import Data.SVG
 
 open import GeoAgda.Model.GeoJSON.Types
-open import GeoAgda.Rendering.SVG.Style using (defaultPolygonStyle)
-open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
-open import GeoAgda.Tests.SVGRendering using (testFeatureCollection; renderedMapDoc)
+open import GeoAgda.Tests.SVGRendering using (renderedMapDoc)
 
 ------------------------------------------------------------------------
 -- 1. JSON Structural Inversion Tests

@@ -2,14 +2,12 @@
 
 module GeoAgda.Tests.Fixtures where
 
-open import Data.List using (List; []; _∷_)
-open import Data.String as String using (String; toList; fromList)
-open import Data.Maybe using (Maybe; just; nothing)
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
-open import Data.Product using (_×_; _,_; ∃)
+open import Data.String as String using (String)
+open import Data.Maybe using (Maybe; just)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Data.Product using (_,_; ∃)
 
 open import GeoAgda.Pipeline using (geojsonStringToSVG)
-open import Data.XML.AST using (XMLDoc)
 
 ------------------------------------------------------------------------
 -- Fixture 1: Point FeatureCollection
