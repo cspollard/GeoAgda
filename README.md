@@ -25,21 +25,25 @@ make            # compile bin/Main
 
 ## Earth map with elevation
 
-The terrain style (the default) tints features by `elevation` and by `featurecla`, so a layered
-physical map needs a composite GeoJSON file. `scripts/build_earth_composite.py` builds one from the
-Natural Earth submodule: bathymetry contours, land, hypsometric regions with elevations, spot summits,
-glaciers, lakes, rivers, borders and country labels.
+The default terrain style tints features by `elevation` and `featurecla`. The map is composed in Agda
+(`GeoAgda.Compose.Earth`) straight from the Natural Earth submodule, with no intermediate file:
+bathymetry contours, land, hypsometric regions with elevations, summits, glaciers, lakes, rivers, borders and
+country labels.
 
 ```
-git submodule update --init natural-earth-geojson          # the data (large)
-mkdir -p data/fixtures
-python3 scripts/build_earth_composite.py                   # run from the repo root
-make                                                       # build bin/Main if you haven't
-./bin/Main data/fixtures/earth_physical_topography.geojson earth.svg
+git submodule update --init natural-earth-geojson    # the data (large)
+make earth                                           # builds bin/Earth and writes earth.svg
+bin/Earth [data-dir [out.svg]]                       # defaults: natural-earth-geojson, earth.svg
 ```
 
-The script reads `natural-earth-geojson/` and writes `data/fixtures/earth_physical_topography.geojson`
-(paths are relative, so run it from the repository root). If that file already exists, its
-bathymetry layer is reused instead of rebuilt from the 10m files. Open `earth.svg` in a browser.
-To restyle, pass another `SVGStyle` to `GeoAgda.Pipeline.geojsonToSVG`; the default is
-`defaultTerrainStyle` (`GeoAgda.Rendering.SVG.Style`).
+It takes under a minute and about 2.5 GB of memory (the 10m bathymetry files are up to 23 MB each; every
+layer is read, reduced and dropped before the next, so the peak is the largest single file). Coordinates
+are rounded to 0.01°, and the bathymetry is thinned so that vertices are at least 0.3° apart
+(`GeoAgda.Model.GeoJSON.Simplify`). Open `earth.svg` in a browser.
+
+To change the map, edit the recipe in `src/GeoAgda/Compose/Earth.agda`: a list of `Group`s of `Layer`s, each
+naming a source file and a function from source feature to composite feature (or `nothing` to drop it).
+`scripts/build_earth_composite.py` is the earlier Python version; it is superseded by `bin/Earth`.
+
+Possible improvements: also write the composite as GeoJSON (needs a `Feature → JSON` encoder; it would be the
+natural place for an `extract (encode fc) ≡ just fc` lemma), and a streaming tokenizer to lower the peak memory.

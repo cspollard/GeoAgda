@@ -1,6 +1,6 @@
 # Plan: build the earth-with-elevation map in pure Agda
 
-Status: proposal (2026-10-25). Nothing implemented. Replaces `scripts/build_earth_composite.py`.
+Status: **implemented (2026-10-25)** — phases 1–3; phases 4–5 open. Replaces `scripts/build_earth_composite.py`.
 
 ## What the Python script does
 Nine layers from Natural Earth, concatenated into one `FeatureCollection` (bottom to top): bathymetry contours,
@@ -77,3 +77,23 @@ Overall: ~2–3 focused days; the mechanical parts are ~1 day, simplification + 
 3. **Exactness vs the Python output**: byte-identical is not achievable (float rounding, centroid definition);
    is "visually equivalent, same counts and properties" the bar?
 4. **Where the recipe lives**: in this repo, or in a separate small package so `GeoAgda` stays generic.
+
+## Decisions taken
+1. Bathymetry: grid snap first; see *Outcome* — **radial-distance thinning** replaced it (snapping stair-steps).
+2. Output: SVG only for now. A composite GeoJSON file (and the `Feature → JSON` encoder) is a possible later step.
+3. Not exact: visually equivalent is the bar.
+4. Everything stays in this repo; `parsnip` (a submodule) was not touched.
+
+## Outcome
+- New modules: `Compose` (Layer/Group/dedupe/label anchors), `Compose.Text`, `Compose.Earth` (the recipe),
+  `Model.GeoJSON.Simplify`, `exe/Earth.agda`, `make earth`, tests in `Tests/Compose`.
+- A 0.3° grid snap gave ~150 k bathymetry vertices as predicted but visibly stair-stepped contours. Radial thinning
+  (keep a vertex only if ≥ 0.3° from the last kept one, always keep first and last) gives ~130 k vertices on the
+  original outline and matches the old fixture's look. Rings with < 4 vertices after thinning are dropped
+  (1 559 features in total vs 340 bathymetry features in the old fixture, which also dropped small pieces).
+- Measured: 40–50 s, peak RSS ≈ 2.6 GB, 2.3 MB SVG (the old fixture renders to a similar size).
+- Improvement over the Python script: label anchors use the centre of the bounding box of the *longest ring*
+  (mainland) instead of the mean of all vertices (which put e.g. the USA label in the Pacific).
+- Differences from the Python version: names are folded with a Latin-1 table (so `Ø` becomes `O`, not dropped);
+  decimal rounding is half-away-from-zero on the 4-digit fixed-point value.
+- Not done: phase 3's tokenizer fuel (peak memory), phase 4 (GeoJSON encoder), phase 5 (delete the Python script).

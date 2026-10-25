@@ -38,5 +38,11 @@ open import GeoAgda.Rendering.SVG.Style public
 open import GeoAgda.Rendering.SVG.NaturalEarth public
 open import GeoAgda.Rendering.SVG.Render public
 
+-- Composing maps from several sources (the earth-with-elevation recipe)
+open import GeoAgda.Model.GeoJSON.Simplify public
+open import GeoAgda.Compose public
+open import GeoAgda.Compose.Text public
+open import GeoAgda.Compose.Earth public
+
 -- End-to-End Ingestion & Rendering Pipeline
 open import GeoAgda.Pipeline public
