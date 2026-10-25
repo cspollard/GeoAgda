@@ -20,6 +20,10 @@ data LandMode : Set where
   flat      : LandMode   -- one colour: no elevation
   areas     : LandMode   -- named areas of interest and peaks, hypsometric tints
 
+-- Which Natural Earth scale the land, water, border and label layers come from.
+data Resolution : Set where
+  res10m res50m res110m : Resolution
+
 -- Lengths are in units of 10⁻⁴ degrees.
 record Options : Set where
   constructor options
@@ -29,9 +33,10 @@ record Options : Set where
     countryNames : Bool   -- country name labels
     precision    : ℕ      -- coordinates are rounded to a multiple of this; 0: geometry is kept exactly as read
     thinning     : ℕ      -- bathymetry vertices are kept ≥ this far apart (0: no thinning)
+    resolution   : Resolution
 
 defaultOptions : Options
-defaultOptions = options elevation false false 100 3000
+defaultOptions = options elevation false false 100 3000 res10m
 
 record Invocation : Set where
   constructor invocation
@@ -48,6 +53,8 @@ usage = "usage: Earth [options] [data-dir [out.svg]]\n\
   \  --land=elevation|flat|areas  how land is shaded (default elevation)\n\
   \       elevation: shades of green by elevation; flat: one colour;\n\
   \       areas: named plains, deserts and ranges, peaks and their labels\n\
+  \  --resolution=10m|50m|110m   source scale of land, lakes, rivers, borders and\n\
+  \                               country names (default 10m, matching the bathymetry)\n\
   \  --borders                    draw country boundaries\n\
   \  --country-names              label countries\n\
   \  --precision=DEGREES          round coordinates to this grid (default 0.01);\n\
@@ -81,20 +88,26 @@ parseDegrees s with spanᵇ (λ c → not (c ≈ᵇ '.')) (toList s)
   just (w * 10000 + f)
 
 private
+  updateOpts : (Options → Options) → Invocation → Invocation
+  updateOpts f inv = record inv { opts = f (Invocation.opts inv) }
+
   setLand : LandMode → Invocation → Invocation
-  setLand m (invocation (options _ b n p t) d o) = invocation (options m b n p t) d o
+  setLand v = updateOpts λ o → record o { land = v }
+
+  setResolution : Resolution → Invocation → Invocation
+  setResolution v = updateOpts λ o → record o { resolution = v }
 
   setBorders setNames : Bool → Invocation → Invocation
-  setBorders v (invocation (options l _ n p t) d o) = invocation (options l v n p t) d o
-  setNames   v (invocation (options l b _ p t) d o) = invocation (options l b v p t) d o
+  setBorders v = updateOpts λ o → record o { borders = v }
+  setNames   v = updateOpts λ o → record o { countryNames = v }
 
   setPrecision setThinning : ℕ → Invocation → Invocation
-  setPrecision v (invocation (options l b n _ t) d o) = invocation (options l b n v t) d o
-  setThinning  v (invocation (options l b n p _) d o) = invocation (options l b n p v) d o
+  setPrecision v = updateOpts λ o → record o { precision = v }
+  setThinning  v = updateOpts λ o → record o { thinning = v }
 
   setDir setOut : String → Invocation → Invocation
-  setDir v (invocation op _ o) = invocation op v o
-  setOut v (invocation op d _) = invocation op d v
+  setDir v inv = record inv { dataDir = v }
+  setOut v inv = record inv { output = v }
 
   -- "--key=value" ↦ (key , just value); "--key" ↦ (key , nothing)
   splitFlag : String → String × Maybe String
@@ -115,9 +128,16 @@ private
     if v == "flat"      then just flat else
     if v == "areas"     then just areas else nothing
 
+  parseResolution : String → Maybe Resolution
+  parseResolution v =
+    if v == "10m"  then just res10m else
+    if v == "50m"  then just res50m else
+    if v == "110m" then just res110m else nothing
+
   parseFlag : String → Maybe String → String ⊎ (Invocation → Invocation)
   parseFlag k v =
     if k == "--land"          then flagValue k v (λ x → parseLand x >>=ᴹ λ m → just (setLand m)) else
+    if k == "--resolution"    then flagValue k v (λ x → parseResolution x >>=ᴹ λ r → just (setResolution r)) else
     if k == "--borders"       then inj₂ (setBorders true) else
     if k == "--country-names" then inj₂ (setNames true) else
     if k == "--precision"     then flagValue k v (λ x → parseDegrees x >>=ᴹ λ n → just (setPrecision n)) else

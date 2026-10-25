@@ -17,9 +17,10 @@ import Data.Maybe.Effectful as Maybe
 import Data.List.Effectful as ListE
 open import Data.Unit using (⊤; tt)
 open import Relation.Nullary.Decidable using (yes; no)
+open import Function using (case_of_)
 
 open import Data.JSON.AST using (JSON)
-open import Data.JSON.Schema using (asArray; asObject; asString; asNumber; lookupField)
+open import Data.JSON.Schema using (asNull; asArray; asObject; asString; asNumber; lookupField)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Model.GeoJSON.Schema
 
@@ -149,3 +150,25 @@ extractFeatureCollectionFromObject kvs =
 
 extractFeatureCollection : JSON → Maybe FeatureCollection
 extractFeatureCollection v = asObject v >>= extractFeatureCollectionFromObject
+
+------------------------------------------------------------------------
+-- Dropping unlocated features
+------------------------------------------------------------------------
+
+-- RFC 7946 lets a feature have `"geometry": null`; the model has no such
+-- feature, so the strict extractors above reject the whole collection.
+-- This variant skips those features and is otherwise the same
+-- (Natural Earth's 10m rivers file has one).
+extractLocatedFeature : JSON → Maybe (Maybe Feature)
+extractLocatedFeature v = asObject v >>= λ kvs →
+  case lookupField "geometry" kvs >>= asNull of λ where
+    (just _) → just nothing
+    nothing  → Maybe.map just (extractFeatureFromObject kvs)
+
+extractLocatedFeatureCollection : JSON → Maybe FeatureCollection
+extractLocatedFeatureCollection v = asObject v >>= λ kvs →
+  hasType "FeatureCollection" kvs >>= λ _       →
+  lookupField "features" kvs      >>= λ featVal →
+  asArray featVal                 >>= λ featArr →
+  mapM extractLocatedFeature featArr >>= λ feats →
+  just (collectionOf kvs (List.catMaybes feats))

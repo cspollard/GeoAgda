@@ -43,6 +43,7 @@ Options (`bin/Earth --help`; `GeoAgda.Compose.Options`):
 | `--land=elevation` (default) | land in shades of green by elevation |
 | `--land=flat` | land in one colour, no elevation |
 | `--land=areas` | named plains, deserts and ranges with hypsometric tints, plus peaks and labels |
+| `--resolution=10m\|50m\|110m` | Natural Earth scale of land, lakes, rivers, borders and country names (default `10m`, like the bathymetry) |
 | `--borders` | draw country boundaries (off by default) |
 | `--country-names` | label countries (off by default) |
 | `--precision=DEG` | round coordinates to this grid (default `0.01`); `0` keeps every vertex exactly as read, for land and water, and ignores `--thin` |

@@ -42,6 +42,16 @@ roundGeom bathyGeom : Options → Geometry → Maybe Geometry
 roundGeom o = simplify o 0
 bathyGeom o = simplify o (Options.thinning o)
 
+scaleName : Resolution → String
+scaleName res10m  = "10m"
+scaleName res50m  = "50m"
+scaleName res110m = "110m"
+
+-- Path of a Natural Earth file at the chosen scale, e.g. `scaled o "physical" "land"`.
+scaled : Options → String → String → String
+scaled o theme name = scale ++ "/" ++ theme ++ "/ne_" ++ scale ++ "_" ++ name ++ ".json"
+  where scale = scaleName (Options.resolution o)
+
 -- The style the options call for: green shades by elevation, or the
 -- hypsometric tints of the areas of interest.
 earthStyle : Options → SVGStyle
@@ -137,7 +147,7 @@ bathymetry o code depth =
 
 -- Without elevation the land is one flat colour.
 land : Options → Layer
-land o = layer "110m/physical/ne_110m_land.json"
+land o = layer (scaled o "physical" "land")
   (λ f → rebuild (roundGeom o) f (λ _ →
            ("featurecla" , strP "Land") ∷ landElevation (Options.land o) ++ˡ ("scalerank" , natP 10) ∷ []))
   where
@@ -200,22 +210,22 @@ plain o path cla = layer path
   (λ f → rebuild (roundGeom o) f (λ _ → ("featurecla" , strP cla) ∷ ("scalerank" , natP 10) ∷ []))
 
 glaciers : Options → Layer
-glaciers o = plain o "110m/physical/ne_110m_glaciated_areas.json" "Glaciated areas"
+glaciers o = plain o (scaled o "physical" "glaciated_areas") "Glaciated areas"
 
 lakes : Options → Layer
-lakes o = layer "110m/physical/ne_110m_lakes.json"
+lakes o = layer (scaled o "physical" "lakes")
   (λ f → rebuild (roundGeom o) f (λ _ →
            ("featurecla" , strP "Lake") ∷ ("name" , strP (asciiFold (nameOf f))) ∷ ("scalerank" , natP 10) ∷ []))
 
 rivers : Options → Layer
-rivers o = plain o "110m/physical/ne_110m_rivers_lake_centerlines.json" "River"
+rivers o = plain o (scaled o "physical" "rivers_lake_centerlines") "River"
 
 borders : Options → Layer
-borders o = plain o "110m/cultural/ne_110m_admin_0_boundary_lines_land.json" "Admin-0 boundary lines"
+borders o = plain o (scaled o "cultural" "admin_0_boundary_lines_land") "Admin-0 boundary lines"
 
 -- A label point for each major country.
 countryLabels : Options → Layer
-countryLabels o = layer "110m/cultural/ne_110m_admin_0_countries.json" convert
+countryLabels o = layer (scaled o "cultural" "admin_0_countries") convert
   where
     convert : Feature → Maybe Feature
     convert f =

@@ -28,7 +28,7 @@ open import Data.XML.Print using (renderXML)
 open import GeoAgda.Compose
 open import GeoAgda.Compose.Earth using (earthRecipe; earthStyle)
 open import GeoAgda.Compose.Options
-open import GeoAgda.Model.GeoJSON.Extraction using (extractFeatureCollection)
+open import GeoAgda.Model.GeoJSON.Extraction using (extractLocatedFeatureCollection)
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
 
@@ -72,7 +72,7 @@ loadLayer dir l =
   case parseJSON (toList text) of λ where
     nothing → say ("cannot parse " ++ˢ file) >> pure []
     (just json) →
-      case extractFeatureCollection json of λ where
+      case extractLocatedFeatureCollection json of λ where
         nothing → say ("not a feature collection: " ++ˢ file) >> pure []
         (just fc) →
           let feats = applyLayer l fc
