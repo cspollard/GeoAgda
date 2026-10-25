@@ -2,7 +2,6 @@
 
 module GeoAgda.Model.GeoJSON.Conformance where
 
-open import Level using (0ℓ)
 open import Data.Bool using (Bool; true; false)
 open import Data.String as String using (String)
 open import Data.String.Properties using (_≟_)

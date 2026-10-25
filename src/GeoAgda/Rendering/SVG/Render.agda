@@ -2,7 +2,6 @@
 
 module GeoAgda.Rendering.SVG.Render where
 
-open import Level using (0ℓ)
 open import Data.Bool using (Bool; true; false; if_then_else_; _∧_; _∨_; not)
 open import Data.Nat using (ℕ; zero; suc; _≤ᵇ_)
 open import Data.String as String using (String)
@@ -10,7 +9,7 @@ open import Data.String.Properties using (_==_)
 open import Data.List as List using (List; []; _∷_; map; concat; _++_)
 open import Data.Product using (_×_; _,_)
 open import Data.Maybe as Maybe using (Maybe; just; nothing; _>>=_)
-open import Function using (_∘_; _$_)
+open import Function using (case_of_)
 
 open import Data.JSON.AST using (JSON; JSONNumber; jsonNumber)
 open import Data.JSON.Schema using (lookupField; asNumber; asString)
@@ -19,10 +18,6 @@ open import Data.XML.Sanitize using (element; textElement)
 open import Data.SVG
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Coordinates
-
-private
-  case_of_ : ∀ {A B : Set} → A → (A → B) → B
-  case x of f = f x
 
 ------------------------------------------------------------------------
 -- SVG Styling Configuration
@@ -44,23 +39,14 @@ record SVGStyle : Set where
     labelFontSize      : String
     labelColor         : String
 
-defaultStyle : SVGStyle
-defaultStyle = svgStyle nothing nothing nothing nothing "3" nothing false false false "2.8" "#2b231d"
-
 defaultPointStyle : SVGStyle
 defaultPointStyle = svgStyle (just "#e41a1c") (just "#333333") (just "1") nothing "4" nothing false true false "3.0" "#111111"
-
-defaultLineStyle : SVGStyle
-defaultLineStyle = svgStyle (just "none") (just "#377eb8") (just "2") nothing "3" nothing false false false "2.8" "#2b231d"
 
 defaultPolygonStyle : SVGStyle
 defaultPolygonStyle = svgStyle (just "#4daf4a") (just "#333333") (just "0.05") (just "0.8") "3" nothing false false false "2.8" "#2b231d"
 
 defaultTerrainStyle : SVGStyle
 defaultTerrainStyle = svgStyle (just "#a8cca0") (just "#7d7565") (just "0.15") (just "0.95") "3" (just "#092244") true true true "1.2" "#222222"
-
-terrainStyle : SVGStyle
-terrainStyle = defaultTerrainStyle
 
 styleToAttrs : SVGStyle → Attrs
 styleToAttrs s =
@@ -78,7 +64,6 @@ styleToAttrs s =
 -- Terrain Cartographic Palettes & Property Resolution
 ------------------------------------------------------------------------
 
--- Natural Earth bathymetry palette by depth (meters below sea level)
 -- Natural Earth bathymetry palette by depth (meters below sea level)
 bathymetryColor : ℕ → String
 bathymetryColor d =
@@ -108,17 +93,6 @@ elevationColor e =
   if e ≤ᵇ 4000 then "#94562c" else   -- 2800 - 4000m: high ranges (deep sienna)
   if e ≤ᵇ 5000 then "#773c1d" else   -- 4000 - 5000m: rugged alpine crags (deep mountain brown)
   "#e8eef2"                          -- 5000m+: glaciated summits & snow caps
-
--- Natural Earth physical map earth-tone palette for countries/regions
-terrainColorByMapIndex : ℕ → String
-terrainColorByMapIndex 1 = "#e3d5b8"  -- warm dune sand / coastal plain
-terrainColorByMapIndex 2 = "#c2cca0"  -- soft alluvial meadow / river basin
-terrainColorByMapIndex 3 = "#d5cb9d"  -- steppe savanna / plateau tan
-terrainColorByMapIndex 4 = "#c9b585"  -- warm earth hills / upland
-terrainColorByMapIndex 5 = "#b2be96"  -- coastal sage / river delta
-terrainColorByMapIndex 6 = "#c89e6c"  -- terracotta clay / highland plateau
-terrainColorByMapIndex 7 = "#ad8964"  -- mountain earth / rocky highland
-terrainColorByMapIndex _ = "#cad3ab"  -- default natural earth green
 
 terrainColorByContinent : String → String
 terrainColorByContinent c =
@@ -214,12 +188,6 @@ featureTerrainStyle s props with lookupField "featurecla" props >>= asString
 ... | nothing  with lookupField "FEATURECLA" props >>= asString
 ...   | just cla = terrainStyleByFeatureClass s cla props
 ...   | nothing  = defaultTerrainFeatureStyle s props
-
-featureTerrainColor : Properties → String
-featureTerrainColor props =
-  case SVGStyle.fill (featureTerrainStyle defaultTerrainStyle props) of λ where
-    (just c) → c
-    nothing  → "#cad3ab"
 
 featureClassName : Properties → String
 featureClassName props with lookupField "featurecla" props >>= asString
@@ -368,18 +336,9 @@ renderFeatureCollectionWithViewBox proj s vb@(viewBox minX minY w h) (featureCol
        (oceanDoc ++ featDocs ++ labelsDoc)
 
 
-renderFeatureCollection : Projection → SVGStyle → String → FeatureCollection → XMLDoc
-renderFeatureCollection proj s vBox (featureCollection features _) =
-  svg
-    (("viewBox" , vBox) ∷ ("width" , "800") ∷ ("height" , "400") ∷ [])
-    (map (renderFeature proj s) features)
-
 -- Top-level renderer using default equirectangular projection
 renderMapSVG : SVGStyle → FeatureCollection → XMLDoc
 renderMapSVG s fc@(featureCollection _ (just bb)) =
   renderFeatureCollectionWithViewBox equirectangular s (viewBoxComponentsFromBBox bb) fc
 renderMapSVG s fc@(featureCollection _ nothing) =
   renderFeatureCollectionWithViewBox equirectangular s defaultWorldViewBoxRec fc
-
-renderTerrainMapSVG : FeatureCollection → XMLDoc
-renderTerrainMapSVG = renderMapSVG defaultTerrainStyle

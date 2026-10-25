@@ -7,6 +7,7 @@ open import Agda.Builtin.Unit using () renaming (⊤ to Unit; tt to unit)
 open import Data.String as String using (String; _++_)
 open import Data.List using (List; []; _∷_)
 open import Data.Maybe using (Maybe; just; nothing)
+open import Function using (case_of_)
 
 open import IO.Primitive.Core using (pure; _>>=_; _>>_)
 open import IO.Primitive.Finite using (readFile; writeFile; putStrLn)
@@ -30,9 +31,6 @@ processGeoJSON inFile outFile =
          putStrLn "[GeoAgda] Done!"))
      nothing →
        putStrLn ("[GeoAgda] Error: Failed to parse or extract GeoJSON from " ++ inFile))
-  where
-    case_of_ : ∀ {A B : Set} → A → (A → B) → B
-    case x of f = f x
 
 ------------------------------------------------------------------------
 -- Executable Main Entry Point

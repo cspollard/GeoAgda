@@ -2,7 +2,6 @@
 
 module GeoAgda.Pipeline where
 
-open import Level using (0ℓ)
 open import Data.Char using (Char)
 open import Data.String as String using (String; toList; fromList)
 open import Data.List using (List)

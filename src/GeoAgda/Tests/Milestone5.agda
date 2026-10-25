@@ -2,7 +2,6 @@
 
 module GeoAgda.Tests.Milestone5 where
 
-open import Level using (0ℓ)
 open import Data.List using (List; []; _∷_)
 open import Data.Fin.Patterns using (1F; 2F; 3F; 5F; 8F)
 open import Data.String as String using (String)

@@ -2,7 +2,6 @@
 
 module GeoAgda.Tests.Milestone8 where
 
-open import Level using (0ℓ)
 open import Data.List using (List; []; _∷_)
 open import Data.String as String using (String; toList)
 open import Data.Integer using (+_; -[1+_])

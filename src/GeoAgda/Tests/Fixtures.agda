@@ -2,7 +2,6 @@
 
 module GeoAgda.Tests.Fixtures where
 
-open import Level using (0ℓ)
 open import Data.List using (List; []; _∷_)
 open import Data.String as String using (String; toList; fromList)
 open import Data.Maybe using (Maybe; just; nothing)

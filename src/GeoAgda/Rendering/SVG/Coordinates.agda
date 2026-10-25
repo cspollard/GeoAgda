@@ -2,7 +2,6 @@
 
 module GeoAgda.Rendering.SVG.Coordinates where
 
-open import Level using (0ℓ)
 open import Data.Bool using (Bool; true; false; if_then_else_)
 open import Data.Char using (Char)
 open import Data.String as String using (String; toList; fromList)
@@ -14,7 +13,7 @@ open import Data.Fin as Fin using (Fin)
 open import Data.List as List using (List; []; _∷_; _++_; concat; map; intersperse)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
-open import Function using (_∘_; _$_)
+open import Function using (_∘_; case_of_)
 
 open import Data.JSON.AST using (JSONNumber; jsonNumber)
 open import Data.JSON.Print using (printNumber)
@@ -112,10 +111,6 @@ formatViewBox : (minX minY width height : String) → String
 formatViewBox minX minY w h =
   String._++_ minX (String._++_ " " (String._++_ minY (String._++_ " " (String._++_ w (String._++_ " " h)))))
 
--- Default world viewBox spanning -180 to 180 lon and -90 to 90 lat
-defaultWorldViewBox : String
-defaultWorldViewBox = formatViewBox "-180" "-90" "360" "180"
-
 -- Convert JSONNumber to scaled integer (scaling fraction by factor of 10000)
 scaleFraction : List (Fin 10) → ℕ
 scaleFraction []                       = 0
@@ -135,9 +130,6 @@ formatScaledDiff diffℕ =
   in case fracPart of λ where
        zero    → NatShow.show intPart
        (suc _) → String._++_ (NatShow.show intPart) (String._++_ "." (NatShow.show fracPart))
-  where
-    case_of_ : ∀ {A B : Set} → A → (A → B) → B
-    case x of f = f x
 
 computePositiveDiff : JSONNumber → JSONNumber → String
 computePositiveDiff n₁ n₂ =
@@ -168,9 +160,6 @@ viewBoxComponentsFromBBox (bbox minLon minLat maxLon maxLat) =
     (renderJSONNumber (negateJSONNumber maxLat))
     (computePositiveDiff minLon maxLon)
     (computePositiveDiff minLat maxLat)
-
-viewBoxFromBBox : BBox → String
-viewBoxFromBBox bb = viewBoxToString (viewBoxComponentsFromBBox bb)
 
 ------------------------------------------------------------------------
 -- Geometry & Feature Centroid Extraction

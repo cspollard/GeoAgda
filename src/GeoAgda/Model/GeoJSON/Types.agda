@@ -2,7 +2,6 @@
 
 module GeoAgda.Model.GeoJSON.Types where
 
-open import Level using (0ℓ)
 open import Data.String using (String)
 open import Data.List using (List; []; _∷_)
 open import Data.Product using (_×_; _,_)
