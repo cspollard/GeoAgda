@@ -53,35 +53,35 @@ toPolygons = map toRings
 
 -- The geometry types that carry `coordinates`.
 data Kind : Set where
-  point multiPoint lineString multiLineString polygon multiPolygon : Kind
+  pointK multiPointK lineStringK multiLineStringK polygonK multiPolygonK : Kind
 
 allKinds : List Kind
-allKinds = point ∷ multiPoint ∷ lineString ∷ multiLineString ∷ polygon ∷ multiPolygon ∷ []
+allKinds = pointK ∷ multiPointK ∷ lineStringK ∷ multiLineStringK ∷ polygonK ∷ multiPolygonK ∷ []
 
 -- The value of the `type` member.
 kindName : Kind → String
-kindName point           = "Point"
-kindName multiPoint      = "MultiPoint"
-kindName lineString      = "LineString"
-kindName multiLineString = "MultiLineString"
-kindName polygon         = "Polygon"
-kindName multiPolygon    = "MultiPolygon"
+kindName pointK           = "Point"
+kindName multiPointK      = "MultiPoint"
+kindName lineStringK      = "LineString"
+kindName multiLineStringK = "MultiLineString"
+kindName polygonK         = "Polygon"
+kindName multiPolygonK    = "MultiPolygon"
 
 coordinatesSchema : Kind → Schema
-coordinatesSchema point           = positionSchema
-coordinatesSchema multiPoint      = positionsSchema
-coordinatesSchema lineString      = positionsSchema
-coordinatesSchema multiLineString = ringsSchema
-coordinatesSchema polygon         = ringsSchema
-coordinatesSchema multiPolygon    = polygonsSchema
+coordinatesSchema pointK           = positionSchema
+coordinatesSchema multiPointK      = positionsSchema
+coordinatesSchema lineStringK      = positionsSchema
+coordinatesSchema multiLineStringK = ringsSchema
+coordinatesSchema polygonK         = ringsSchema
+coordinatesSchema multiPolygonK    = polygonsSchema
 
 fromCoordinates : (k : Kind) → ⟦ coordinatesSchema k ⟧ → Geometry
-fromCoordinates point           c = pointG (toPosition c)
-fromCoordinates multiPoint      c = multiPointG (toPositions c)
-fromCoordinates lineString      c = lineStringG (toPositions c)
-fromCoordinates multiLineString c = multiLineStringG (toRings c)
-fromCoordinates polygon         c = polygonG (toRings c)
-fromCoordinates multiPolygon    c = multiPolygonG (toPolygons c)
+fromCoordinates pointK           c = pointG (toPosition c)
+fromCoordinates multiPointK      c = multiPointG (toPositions c)
+fromCoordinates lineStringK      c = lineStringG (toPositions c)
+fromCoordinates multiLineStringK c = multiLineStringG (toRings c)
+fromCoordinates polygonK         c = polygonG (toRings c)
+fromCoordinates multiPolygonK    c = multiPolygonG (toPolygons c)
 
 ------------------------------------------------------------------------
 -- Reading the `type` member
@@ -106,9 +106,9 @@ parseKind-sound : ∀ {s k} → parseKind s ≡ just k → s ≡ kindName k
 parseKind-sound = parseKindIn-sound allKinds
 
 parseKind-kindName : ∀ k → parseKind (kindName k) ≡ just k
-parseKind-kindName point           = refl
-parseKind-kindName multiPoint      = refl
-parseKind-kindName lineString      = refl
-parseKind-kindName multiLineString = refl
-parseKind-kindName polygon         = refl
-parseKind-kindName multiPolygon    = refl
+parseKind-kindName pointK           = refl
+parseKind-kindName multiPointK      = refl
+parseKind-kindName lineStringK      = refl
+parseKind-kindName multiLineStringK = refl
+parseKind-kindName polygonK         = refl
+parseKind-kindName multiPolygonK    = refl

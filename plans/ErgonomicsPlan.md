@@ -1,6 +1,6 @@
 # Plan: GeoAgda ergonomics cleanup
 
-Status: audit done (2026-10-25); steps 1–4 done. Every step must leave `make check`,
+Status: audit done (2026-10-25); steps 1–5 done (option 1: Conformance extended, see below). Every step must leave `make check`,
 `make-everything.sh` and `parsnip/make-everything.sh` green, and gets its own commit.
 
 ## Audit findings
@@ -55,3 +55,15 @@ Status: audit done (2026-10-25); steps 1–4 done. Every step must leave `make c
 ## Out of scope / needs a decision
 - Splitting `parsnip` into its own repo (`LibraryPlan.md` step 2) — owner's call on timing.
 - Changing the rendered SVG output; steps 1–4 must be output-preserving (diff `example.svg` before/after).
+
+## Step 5 outcome (done)
+- `Extraction` is now a chain of `Maybe` binds driven by a `Kind` table (`Model/GeoJSON/Schema.agda`).
+- `Conformance` has evidence for all six geometry kinds with coordinates (Point … MultiPolygon), features and
+  collections; total extraction from evidence keeps `id`, `properties` and `bbox` exactly as `Extraction` does.
+- `Properties` proves extraction is sound and complete w.r.t. that evidence at every level.
+- `Validate` decides conformance (coordinates directly from the schema; geometry/feature/collection through the
+  sound and complete extractor) and proves `validateAndExtract v ≡ extractFeatureCollection v` for all `v`,
+  and that this holds for *any* decision procedure.
+- `GeometryCollection` is not covered: `Extraction` never produced it either (needs a recursive schema).
+- Gotcha: a deep `with` chain whose goal contains `extractFeature` took >1 min to check; the proofs avoid it by
+  passing results through small helper lemmas (`assemble`, `features-complete`).

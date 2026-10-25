@@ -27,7 +27,10 @@ open import Data.JSON.Schema public
 open import Data.JSON.Conformance public
 open import GeoAgda.Model.GeoJSON.Types public
 open import GeoAgda.Model.GeoJSON.Extraction public
+open import GeoAgda.Model.GeoJSON.Schema public
 open import GeoAgda.Model.GeoJSON.Conformance public
+open import GeoAgda.Model.GeoJSON.Properties public
+open import GeoAgda.Model.GeoJSON.Validate public
 
 -- SVG Map Rendering Pipeline
 open import GeoAgda.Rendering.SVG.Coordinates public

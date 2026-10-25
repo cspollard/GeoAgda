@@ -82,12 +82,12 @@ extractPolygons = extractListOf extractRings
 ------------------------------------------------------------------------
 
 extractCoordinates : Kind → JSON → Maybe Geometry
-extractCoordinates point           v = Maybe.map pointG (extractPosition v)
-extractCoordinates multiPoint      v = Maybe.map multiPointG (extractPositions v)
-extractCoordinates lineString      v = Maybe.map lineStringG (extractPositions v)
-extractCoordinates multiLineString v = Maybe.map multiLineStringG (extractRings v)
-extractCoordinates polygon         v = Maybe.map polygonG (extractRings v)
-extractCoordinates multiPolygon    v = Maybe.map multiPolygonG (extractPolygons v)
+extractCoordinates pointK           v = Maybe.map pointG (extractPosition v)
+extractCoordinates multiPointK      v = Maybe.map multiPointG (extractPositions v)
+extractCoordinates lineStringK      v = Maybe.map lineStringG (extractPositions v)
+extractCoordinates multiLineStringK v = Maybe.map multiLineStringG (extractRings v)
+extractCoordinates polygonK         v = Maybe.map polygonG (extractRings v)
+extractCoordinates multiPolygonK    v = Maybe.map multiPolygonG (extractPolygons v)
 
 extractGeometryFromObject : Object → Maybe Geometry
 extractGeometryFromObject kvs =
