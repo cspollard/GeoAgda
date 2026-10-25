@@ -80,7 +80,8 @@ writes depth bands for the lakes it resolves; `bin/Earth --lake-depths=data/cach
 them (`make earth` does both). ETOPO 2022 has real lake bottoms for only a few lakes: Baikal and Lakes
 Superior, Michigan, Huron, Erie and Ontario. The script checks 26 well-known lakes (table `REFERENCE`) and keeps
 those whose deepest cell reaches half the published maximum depth. Every other lake stays in the neutral
-lake colour.
+lake colour (the surface colour of the depth scale). Lakes and the ocean share one depth scale,
+`depthColor` in `GeoAgda.Rendering.SVG.Palette`, whose bands grow geometrically with depth.
 
 To change the map, edit the recipe in `src/GeoAgda/Compose/Earth.agda`: a list of `Group`s of `Layer`s, each
 naming a source file and a function from source feature to composite feature (or `nothing` to drop it).

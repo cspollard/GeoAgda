@@ -38,32 +38,25 @@ greenElevationColor e =
   if e ≤ᵇ 4000 then "#eff4ed" else
   "#fbfdfa"
 
--- Natural Earth bathymetry palette by depth (meters below sea level)
-bathymetryColor : ℕ → String
-bathymetryColor d =
-  if d ≤ᵇ 0    then "#d3e6ea" else
-  if d ≤ᵇ 200  then "#bcd6e0" else
-  if d ≤ᵇ 1000 then "#a2c1d3" else
-  if d ≤ᵇ 2000 then "#89acc6" else
-  if d ≤ᵇ 3000 then "#7399b8" else
-  if d ≤ᵇ 4000 then "#6289a9" else
-  if d ≤ᵇ 5000 then "#547899" else
-  if d ≤ᵇ 6000 then "#486889" else
-  if d ≤ᵇ 8000 then "#3d5a7a" else
-  if d ≤ᵇ 9000 then "#334c69" else
-  "#2a4059"
-
--- Lake depth in metres below the lake's own surface: the neutral lake blue
--- (`#9bbfd0`) deepening to a muted navy.
-lakeDepthColor : ℕ → String
-lakeDepthColor d =
-  if d ≤ᵇ 25   then "#8cb3c7" else
-  if d ≤ᵇ 50   then "#7da5bb" else
-  if d ≤ᵇ 100  then "#6e97af" else
-  if d ≤ᵇ 200  then "#5f89a3" else
-  if d ≤ᵇ 400  then "#527b96" else
-  if d ≤ᵇ 800  then "#456d89" else
-  "#39607c"
+-- One depth scale for the ocean and for lakes: metres below the water surface,
+-- in steps that grow geometrically (about x1.5-2) so the shallows keep detail.
+-- Each band is `d ≤ upper edge`; features carry the lower edge of their band or a value inside it.
+depthColor : ℕ → String
+depthColor d =
+  if d ≤ᵇ 0     then "#d3e6ea" else
+  if d ≤ᵇ 10    then "#cde2e8" else
+  if d ≤ᵇ 25    then "#c7dee5" else
+  if d ≤ᵇ 50    then "#c2dae3" else
+  if d ≤ᵇ 100   then "#bcd6e0" else
+  if d ≤ᵇ 200   then "#afcbda" else
+  if d ≤ᵇ 400   then "#a2c1d3" else
+  if d ≤ᵇ 700   then "#95b6cd" else
+  if d ≤ᵇ 1000  then "#89acc6" else
+  if d ≤ᵇ 1500  then "#7ea2bf" else
+  if d ≤ᵇ 2200  then "#7399b8" else
+  if d ≤ᵇ 3300  then "#6a91b0" else
+  if d ≤ᵇ 5000  then "#6289a9" else
+  "#486889"
 
 terrainColorByContinent : String → String
 terrainColorByContinent c =

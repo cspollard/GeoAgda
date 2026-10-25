@@ -47,7 +47,9 @@ REFERENCE = {
 }
 
 LAKES = os.path.join("natural-earth-geojson", "10m", "physical", "ne_10m_lakes.json")
-EDGES = [10, 25, 50, 100, 200, 400, 800, 1200]   # lower edges of the depth bands, metres
+# Lower edges of the depth bands, metres: the bands of `depthColor` in GeoAgda.Rendering.SVG.Palette,
+# the one depth scale of ocean and lakes.
+EDGES = [10, 25, 50, 100, 200, 400, 700, 1000, 1500, 2200, 3300, 5000]
 TOP = 1e9
 RES = 1 / 60                                      # ETOPO 60 arc-second grid
 

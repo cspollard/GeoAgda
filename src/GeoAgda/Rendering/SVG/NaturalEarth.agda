@@ -96,14 +96,14 @@ lookupRule cla ((names , r) ∷ rs)  =
 classRules : Table
 classRules =
     ("Bathymetry" ∷ [] ,
-       λ props s → let c = bathymetryColor (Maybe.fromMaybe 0 (natProp props "depth"))
+       λ props s → let c = depthColor (Maybe.fromMaybe 0 (natProp props "depth"))
                    in record (solid c "0.02" s) { opacity = just "1.0" })
   ∷ ("Glaciated areas" ∷ "Antarctic Ice Shelf" ∷ "glacier" ∷ [] , static (paint "#f4f9fa" "#c8dde6" "0.05"))
   ∷ ("Antarctic Ice Shelf Edge" ∷ [] , static (outline "#b0cce0" "0.15"))
-  ∷ ("Lake" ∷ "Reservoir" ∷ "Pluvial lake" ∷ [] , static (paint "#9bbfd0" "#7fa8bc" "0.08"))
-  ∷ ("Alkaline Lake" ∷ [] , static (paint "#a8c9d8" "#8db4c6" "0.08"))
+  ∷ ("Lake" ∷ "Reservoir" ∷ "Pluvial lake" ∷ [] , static (paint (depthColor 0) "#a8c6d3" "0.08"))
+  ∷ ("Alkaline Lake" ∷ [] , static (paint (depthColor 0) "#a8c6d3" "0.08"))
   ∷ ("Lake depth" ∷ [] ,
-       λ props s → let c = lakeDepthColor (Maybe.fromMaybe 0 (natProp props "depth"))
+       λ props s → let c = depthColor (Maybe.fromMaybe 0 (natProp props "depth"))
                    in record (solid c "0.03" s) { opacity = just "1.0" })
   ∷ ("River" ∷ "Lake Centerline" ∷ [] , static (outline "#6f9fc0" "0.05"))
   ∷ ("River (Intermittent)" ∷ [] , static (outline "#8fb5cf" "0.04"))
