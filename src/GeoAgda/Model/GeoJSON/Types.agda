@@ -8,6 +8,7 @@ open import Data.Product using (_×_)
 open import Data.Maybe using (Maybe)
 
 open import Data.JSON.AST using (JSONNumber; JSON)
+open import GeoAgda.Model.Path using (Path)
 
 ------------------------------------------------------------------------
 -- GeoJSON Position (Coordinates)
@@ -33,6 +34,9 @@ data Geometry : Set where
   polygonG            : List (List Position) → Geometry
   multiPolygonG       : List (List (List Position)) → Geometry
   geometryCollectionG : List Geometry → Geometry
+  -- A polygon or multipolygon already converted to a path (`GeoAgda.Model.GeoJSON.Reduce`): all rings, outer
+  -- ring first in each polygon, as one `Path`.  Not produced by the GeoJSON decoder.
+  pathG               : Path → Geometry
 
 ------------------------------------------------------------------------
 -- GeoJSON Bounding Box

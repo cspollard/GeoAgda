@@ -19,9 +19,10 @@ open import Data.String.Properties using (_==_)
 
 open import Data.JSON.AST using (JSON; numberⱼ)
 open import GeoAgda.Model.GeoJSON.Types
-open import GeoAgda.Model.GeoJSON.Simplify using (simplifyGeometry)
+open import GeoAgda.Model.GeoJSON.Reduce using (reduceGeometry; exactGeometry)
 open import GeoAgda.Rendering.SVG.NaturalEarth using (stringProp; natProp; firstStringProp)
 open import GeoAgda.Compose
+open import Function.Strict using (_$!′_)
 open import GeoAgda.Compose.Text
 open import GeoAgda.Compose.Options
 open import GeoAgda.Rendering.SVG.Style using (SVGStyle; defaultTerrainStyle)
@@ -33,11 +34,12 @@ open import GeoAgda.Rendering.SVG.Palette using (greenElevationColor; depthColor
 
 simplify : Options → ℕ → Geometry → Maybe Geometry
 simplify o r g with Options.precision o
-... | zero  = just g
-... | suc p = simplifyGeometry (suc p) r g
+... | zero  = just (exactGeometry g)
+... | suc p = reduceGeometry (suc p) r g
 
 -- Everything is rounded to `precision`; bathymetry is also thinned to
--- vertices at least `thinning` apart.  Precision 0 keeps geometry untouched.
+-- vertices at least `thinning` apart.  Precision 0 keeps geometry untouched (polygons are
+-- converted to exact paths).  Polygons come out as `pathG` paths.
 roundGeom bathyGeom : Options → Geometry → Maybe Geometry
 roundGeom o = simplify o 0
 bathyGeom o = simplify o (Options.thinning o)
@@ -76,9 +78,12 @@ private
   lookupˢ k []            = nothing
   lookupˢ k ((k′ , v) ∷ t) = if k == k′ then just v else lookupˢ k t
 
-  -- Rebuild a feature from its (simplified) geometry and new properties.
+  -- Rebuild a feature from its (simplified) geometry and new properties.  The properties are
+  -- evaluated as the feature is: `props` often reads `Feature.properties f`, and an unevaluated
+  -- `props g` would keep the whole source feature `f` (its full-resolution geometry) alive.
   rebuild : (Geometry → Maybe Geometry) → Feature → (Geometry → Props) → Maybe Feature
-  rebuild simp f props = Maybe.map (λ g → feature nothing g (props g)) (simp (Feature.geometry f))
+  rebuild simp f props =
+    Maybe.map (λ g → feature nothing g $!′ props g) (simp (Feature.geometry f))
 
   nameOf : Feature → String
   nameOf f = Maybe.fromMaybe "" (stringProp (Feature.properties f) "name")

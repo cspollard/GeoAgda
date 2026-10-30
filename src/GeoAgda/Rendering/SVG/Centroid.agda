@@ -4,13 +4,15 @@
 module GeoAgda.Rendering.SVG.Centroid where
 
 open import Data.Integer as ℤ using (ℤ)
-open import Data.List using (List; []; _∷_; concat)
+open import Data.List using (List; []; _∷_; concat; map)
 open import Data.Product using (_×_; _,_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Function using (_∘_)
 
 open import Data.JSON.Schema using (lookupField; asNumber)
+open import GeoAgda.Model.Exact using (fromExactPt)
 open import GeoAgda.Model.GeoJSON.Types
+open import GeoAgda.Model.Path using (pathRings)
 open import GeoAgda.Rendering.SVG.Scaled
 
 positionsBBoxScaled : List Position → Maybe (ℤ × ℤ × ℤ × ℤ)
@@ -39,6 +41,9 @@ geometryCentroid (lineStringG ps)                 = positionsBBoxScaled ps >>= (
 geometryCentroid (multiLineStringG pss)           = positionsBBoxScaled (concat pss) >>= (just ∘ bboxCenter)
 geometryCentroid (polygonG [])                    = nothing
 geometryCentroid (polygonG (ring ∷ _))             = positionsBBoxScaled ring >>= (just ∘ bboxCenter)
+geometryCentroid (pathG p) with pathRings p
+... | []         = nothing
+... | ring ∷ _   = positionsBBoxScaled (map fromExactPt ring) >>= (just ∘ bboxCenter)
 geometryCentroid (multiPolygonG [])               = nothing
 geometryCentroid (multiPolygonG ((ring ∷ _) ∷ _)) = positionsBBoxScaled ring >>= (just ∘ bboxCenter)
 geometryCentroid (multiPolygonG ([] ∷ ps))        = geometryCentroid (multiPolygonG ps)

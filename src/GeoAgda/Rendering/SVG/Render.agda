@@ -15,6 +15,7 @@ open import Data.XML.Sanitize using (textElement)
 open import Data.SVG
 open import GeoAgda.Model.GeoJSON.Types
 open import GeoAgda.Rendering.SVG.Coordinates
+open import GeoAgda.Rendering.SVG.Path using (renderPath)
 open import GeoAgda.Rendering.SVG.Style
 open import GeoAgda.Rendering.SVG.NaturalEarth
 
@@ -42,6 +43,9 @@ mutual
 
   renderGeometry proj s (multiPolygonG polys) =
     path (formatMultiPolygonD proj polys) (("fill-rule" , "evenodd") ∷ styleToAttrs s)
+
+  renderGeometry proj s (pathG p) =
+    path (String.fromList (renderPath proj p)) (("fill-rule" , "evenodd") ∷ styleToAttrs s)
 
   renderGeometry proj s (geometryCollectionG geoms) =
     g [] (renderGeometryList proj s geoms)

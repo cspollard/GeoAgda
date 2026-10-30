@@ -10,26 +10,27 @@
 module Earth where
 
 open import Agda.Builtin.IO using (IO)
-open import Agda.Builtin.Unit using () renaming (⊤ to Unit)
+open import Agda.Builtin.Unit using (tt) renaming (⊤ to Unit)
 open import Data.List as List using (List; []; _∷_; _++_; length; map; foldl)
 open import Data.Maybe using (just; nothing)
 open import Data.Nat using (ℕ; _+_)
 open import Data.Nat.Show using (show)
 open import Data.String as String using (String; toList) renaming (_++_ to _++ˢ_)
-open import Data.Sum using (inj₁; inj₂)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Function using (case_of_)
 open import IO.Primitive.Core using (pure; _>>=_; _>>_)
-open import IO.Primitive.Finite using (readFile; writeFile; putStrLn)
+open import IO.Primitive.Finite using (readFile; writeFile; appendFile; putStrLn)
 open import System.Environment.Primitive using (getArgs)
 
 open import Data.JSON.AST using (jsonNumber)
 open import Data.JSON.RoundTrip using (parseJSON)
-open import Data.XML.Print using (renderXML)
+open import Data.XML.Chunks using (xmlChunks)
 open import GeoAgda.Compose
 open import GeoAgda.Compose.Earth using (earthRecipe; earthStyle)
 open import GeoAgda.Compose.Options
 open import GeoAgda.Model.GeoJSON.Extraction using (extractLocatedFeatureCollection)
 open import GeoAgda.Model.GeoJSON.Types
+open import GeoAgda.Model.Path using (pathWeight)
 open import GeoAgda.Rendering.SVG.Render using (renderMapSVG)
 
 say : String → IO Unit
@@ -61,24 +62,31 @@ weight = foldl (λ acc f → acc + geomWeight (Feature.geometry f)) 0
     geomWeight (polygonG rs)          = ringsW rs
     geomWeight (multiPolygonG ps)     = foldl (λ acc rs → acc + ringsW rs) 0 ps
     geomWeight (geometryCollectionG _) = 0
+    geomWeight (pathG p)              = pathWeight p
 
 ------------------------------------------------------------------------
 -- Loading
 ------------------------------------------------------------------------
 
+-- The features of one layer file, or why there are none.  This is a pure function of the file's text, so
+-- the IO step below sees only its (forced) result: with the parse and the extracted collection in scope of
+-- the IO continuation instead, every loaded file's source stayed alive until the whole load finished.
+convertText : Layer → String → String ⊎ List Feature
+convertText l text with parseJSON (toList text)
+... | nothing   = inj₁ "cannot parse "
+... | just json with extractLocatedFeatureCollection json
+...   | nothing = inj₁ "not a feature collection: "
+...   | just fc = inj₂ (applyLayer l fc)
+
 loadLayer : String → Layer → IO (List Feature)
 loadLayer dir l =
   readFile file >>= λ text →
-  case parseJSON (toList text) of λ where
-    nothing → say ("cannot parse " ++ˢ file) >> pure []
-    (just json) →
-      case extractLocatedFeatureCollection json of λ where
-        nothing → say ("not a feature collection: " ++ˢ file) >> pure []
-        (just fc) →
-          let feats = applyLayer l fc
-          in say (Layer.path l ++ˢ ": " ++ˢ show (length feats) ++ˢ " features, weight "
-                  ++ˢ show (weight feats)) >>
-             pure feats
+  case convertText l text of λ where
+    (inj₁ why)   → say (why ++ˢ file) >> pure []
+    (inj₂ feats) →
+      say (Layer.path l ++ˢ ": " ++ˢ show (length feats) ++ˢ " features, weight "
+           ++ˢ show (weight feats)) >>
+      pure feats
   where file = layerFile dir l
 
 loadLayers : String → List Layer → IO (List Feature)
@@ -98,13 +106,20 @@ loadRecipe dir (g ∷ gs)  =
   loadRecipe dir gs >>= λ rest →
   pure (fs ++ rest)
 
+-- Write the chunks one after the other; each is dropped once written, so the
+-- whole document is never in memory as text.
+writeChunks : String → List String → IO Unit
+writeChunks out []       = pure tt
+writeChunks out (c ∷ cs) = appendFile out c >> writeChunks out cs
+
 build : Invocation → IO Unit
 build (invocation o dir out) =
   say ("Reading Natural Earth data from " ++ˢ dir) >>
   (loadRecipe dir (earthRecipe o) >>= λ feats →
    say ("Composed " ++ˢ show (length feats) ++ˢ " features; rendering") >>
-   (writeFile out (renderXML (renderMapSVG (earthStyle o) (featureCollection feats nothing))) >>
-    say ("Wrote " ++ˢ out)))
+   (writeFile out "" >>
+    (writeChunks out (xmlChunks (renderMapSVG (earthStyle o) (featureCollection feats nothing))) >>
+     say ("Wrote " ++ˢ out))))
 
 main : IO Unit
 main = getArgs >>= λ args → case args of λ where

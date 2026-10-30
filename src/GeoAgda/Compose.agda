@@ -21,7 +21,9 @@ open import Data.Integer using (+_)
 open import Function using (_∘_)
 
 open import Data.JSON.AST using (JSON; jsonNumber; numberⱼ; stringⱼ)
+open import GeoAgda.Model.Exact using (fromExactPt)
 open import GeoAgda.Model.GeoJSON.Types
+open import GeoAgda.Model.Path using (pathRings)
 open import GeoAgda.Rendering.SVG.Centroid using (positionsBBoxScaled; bboxCenter; geometryCentroid)
 import Data.Sign as Sign
 
@@ -106,6 +108,7 @@ private
   rings (polygonG rs)          = rs
   rings (multiPolygonG ps)     = concat ps
   rings (geometryCollectionG _) = []
+  rings (pathG p)              = map (map fromExactPt) (pathRings p)
 
   longest : List (List Position) → Maybe (List Position)
   longest []        = nothing

@@ -31,11 +31,11 @@ formatPoints proj pts = fromList (formatPointsList proj pts)
 -- Formatting SVG Path Data ("d" attribute)
 ------------------------------------------------------------------------
 
-private
-  formatPathLines : Projection → List Position → List Char
-  formatPathLines proj []       = []
-  formatPathLines proj (p ∷ ps) =
-    ' ' ∷ 'L' ∷ ' ' ∷ formatPointPair (proj p) ++ formatPathLines proj ps
+-- The ` L x,y` segments after the first vertex of a ring.
+formatPathLines : Projection → List Position → List Char
+formatPathLines proj []       = []
+formatPathLines proj (p ∷ ps) =
+  ' ' ∷ 'L' ∷ ' ' ∷ formatPointPair (proj p) ++ formatPathLines proj ps
 
 -- Formats a closed linear ring as "M x0 y0 L x1 y1 ... Z"
 formatRingD : Projection → List Position → List Char

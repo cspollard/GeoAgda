@@ -24,7 +24,7 @@ $(TARGET): $(MAIN_SRC) $(SRC_FILES)
 
 $(EARTH_TARGET): $(EARTH_SRC) $(SRC_FILES)
 	@mkdir -p $(BUILD_DIR)/earth $(BIN_DIR)
-	$(AGDA) --compile --compile-dir=$(BUILD_DIR)/earth --ghc-flag=-O2 --ghc-flag=-o --ghc-flag=$(EARTH_TARGET) $(EARTH_SRC)
+	$(AGDA) --compile --compile-dir=$(BUILD_DIR)/earth --ghc-flag=-O2 --ghc-flag=-rtsopts --ghc-flag=-o --ghc-flag=$(EARTH_TARGET) $(EARTH_SRC)
 
 # Elevation bands vectorized from NOAA ETOPO 2022 (downloads ~470 MB on first use)
 $(ELEVATION_STAMP): scripts/build_elevation_bands.py

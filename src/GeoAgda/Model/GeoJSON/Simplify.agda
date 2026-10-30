@@ -142,6 +142,7 @@ mutual
   simplifyGeometry g r (polygonG rs)          = Maybe.map polygonG (polygonRings g r rs)
   simplifyGeometry g r (multiPolygonG ps)     = nonEmpty multiPolygonG (catMaybes (map (polygonRings g r) ps))
   simplifyGeometry g r (geometryCollectionG gs) = nonEmpty geometryCollectionG (simplifyGeometries g r gs)
+  simplifyGeometry g r (pathG p)              = just (pathG p)   -- already reduced
 
   simplifyGeometries : (g r : ℕ) .{{_ : NonZero g}} → List Geometry → List Geometry
   simplifyGeometries g r []        = []
