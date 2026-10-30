@@ -12,7 +12,7 @@ ELEVATION_DIR := data/cache/elevation
 ELEVATION_STAMP := $(ELEVATION_DIR)/elevation_0.json
 LAKE_DEPTHS := data/cache/lake_depths.json
 
-.PHONY: all check typecheck test run earth elevation clean
+.PHONY: all check typecheck test html run earth elevation clean
 
 all: $(TARGET)
 
@@ -49,8 +49,15 @@ typecheck: check
 test:
 	bash make-everything.sh
 
+# Typecheck every module under src/ and render highlighted HTML to html/.
+html:
+	@mkdir -p $(BUILD_DIR)
+	@(echo "module Everything where"; for f in $$(find src -name '*.agda' | sort); do \
+	    echo "import $$(echo $${f#src/} | sed -E 's#/#.#g; s#\.agda$$##')"; done) > $(BUILD_DIR)/Everything.agda
+	$(AGDA) --html --html-dir=html -i $(BUILD_DIR) $(BUILD_DIR)/Everything.agda
+
 run: $(TARGET)
 	./$(TARGET)
 
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET) $(EARTH_TARGET)
+	rm -rf $(BUILD_DIR) html $(TARGET) $(EARTH_TARGET)

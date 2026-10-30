@@ -19,3 +19,4 @@ test/
 
 # downloaded elevation data and derived bands
 data/cache/
+html/

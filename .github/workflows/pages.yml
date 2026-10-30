@@ -1,0 +1,68 @@
+name: Deploy Agda HTML to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # setup-agda ships a prebuilt Agda 2.7.0.1 binary for 22.04 only (not 24.04 / ubuntu-latest).
+    runs-on: ubuntu-22.04
+    steps:
+      # .gitmodules uses an ssh URL; CI has no ssh key.
+      - run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - uses: actions/checkout@v4
+
+      # Only parsnip is needed to typecheck; natural-earth-geojson is data.
+      - run: git submodule update --init parsnip
+
+      - uses: wenkokke/setup-agda@v2
+        with:
+          agda-version: 2.7.0.1
+          agda-stdlib-version: none
+
+      # setup-agda only knows stdlib <= 2.1.1, so fetch the pinned libraries ourselves.
+      - name: Install libraries
+        run: |
+          git clone --depth 1 --branch v2.3 https://github.com/agda/agda-stdlib.git ~/agda-stdlib
+          git clone https://github.com/agda/agda-categories.git ~/agda-categories
+          git -C ~/agda-categories checkout c2e7c13edfeb3536244777f760265f4cfe960960
+          # Upstream names these standard-library-2.x; our .agda-lib files say plain standard-library.
+          sed -i 's/^name: standard-library.*/name: standard-library/' ~/agda-stdlib/standard-library.agda-lib
+          sed -i 's/^depend: standard-library.*/depend: standard-library/' ~/agda-categories/agda-categories.agda-lib
+          mkdir -p ~/.agda
+          printf 'standard-library\nagda-categories\n' > ~/.agda/defaults
+          {
+            echo ~/agda-stdlib/standard-library.agda-lib
+            echo ~/agda-categories/agda-categories.agda-lib
+          } > ~/.agda/libraries
+
+      - name: Typecheck and render html/
+        run: make html
+
+      - run: cp html/Everything.html html/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
