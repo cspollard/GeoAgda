@@ -18,7 +18,7 @@ jobs:
   build:
     # setup-agda ships a prebuilt Agda 2.7.0.1 binary for 22.04 only (not 24.04 / ubuntu-latest).
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       # .gitmodules uses an ssh URL; CI has no ssh key.
       - run: git config --global url."https://github.com/".insteadOf "git@github.com:"
